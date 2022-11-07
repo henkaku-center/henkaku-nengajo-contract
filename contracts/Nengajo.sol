@@ -56,6 +56,7 @@ contract Nengajo is ERC1155, ERC1155Supply, ERC1155URIStorage {
     }
 
     function mint(uint256 _tokenId) public {
+        require(mintable, "not mintable");
         uint256 currentSupply = totalSupply(_tokenId);
         require(maxSupply[_tokenId] > currentSupply, "not available");
         _mint(msg.sender, _tokenId, 1, "");

@@ -5,12 +5,13 @@ import { Nengajo } from '../typechain-types'
 
 describe('CreateNengajo', () => {
   let NengajoContract: Nengajo
+  let deployer: SignerWithAddress
   let creator: SignerWithAddress
   let user1: SignerWithAddress
   let user2: SignerWithAddress
 
   before(async () => {
-    ;[creator, user1, user2] = await ethers.getSigners()
+    ;[deployer, creator, user1, user2] = await ethers.getSigners()
     const NengajoFactory = await ethers.getContractFactory('Nengajo')
     NengajoContract = await NengajoFactory.deploy('Henkaku Nengajo', 'HNJ')
     await NengajoContract.deployed()
@@ -23,6 +24,7 @@ describe('CreateNengajo', () => {
   })
 
   it('mint nengajo', async () => {
+    await(await NengajoContract.connect(deployer).switchMintable())
     await NengajoContract.connect(user1).mint(1)
     const balance = await NengajoContract.connect(user1).balanceOf(
       user1.address,
