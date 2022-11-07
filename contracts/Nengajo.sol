@@ -11,15 +11,18 @@ contract Nengajo is ERC1155, ERC1155Supply, ERC1155URIStorage {
 
     string public name;
     string public symbol;
+    bool public mintable;
 
     mapping(uint256 => uint256) private maxSupply;
 
-    constructor(string memory _name, string memory _symbol) ERC1155('') {
+    constructor(string memory _name, string memory _symbol) ERC1155("") {
         name = _name;
         symbol = _symbol;
     }
 
-    function registerCreative(uint256 _maxSupply, string memory _metaDataURL) public {
+    function registerCreative(uint256 _maxSupply, string memory _metaDataURL)
+        public
+    {
         _tokenIds.increment();
         uint256 tokenId = _tokenIds.current();
         _setURI(tokenId, _metaDataURL);
@@ -32,11 +35,30 @@ contract Nengajo is ERC1155, ERC1155Supply, ERC1155URIStorage {
         _mint(msg.sender, _tokenId, 1, "");
     }
 
-    function uri(uint256 _tokenId) public view override(ERC1155, ERC1155URIStorage) returns (string memory) {
+    function uri(uint256 _tokenId)
+        public
+        view
+        override(ERC1155, ERC1155URIStorage)
+        returns (string memory)
+    {
         return ERC1155URIStorage.uri(_tokenId);
     }
 
-    function _beforeTokenTransfer(address _operator, address _from, address _to, uint256[] memory _ids, uint256[] memory _amounts, bytes memory _data) internal virtual override(ERC1155, ERC1155Supply) {
-        ERC1155Supply._beforeTokenTransfer(_operator, _from, _to, _ids, _amounts, _data);
+    function _beforeTokenTransfer(
+        address _operator,
+        address _from,
+        address _to,
+        uint256[] memory _ids,
+        uint256[] memory _amounts,
+        bytes memory _data
+    ) internal virtual override(ERC1155, ERC1155Supply) {
+        ERC1155Supply._beforeTokenTransfer(
+            _operator,
+            _from,
+            _to,
+            _ids,
+            _amounts,
+            _data
+        );
     }
 }
