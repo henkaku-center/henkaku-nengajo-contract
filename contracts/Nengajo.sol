@@ -12,8 +12,8 @@ contract Nengajo is ERC1155, ERC1155Supply, ERC1155URIStorage {
     string public name;
     string public symbol;
     bool public mintable;
-    uint256 immutable open_blockTimestamp;
-    uint256 immutable close_blockTimestamp;
+    uint256 public immutable open_blockTimestamp;
+    uint256 public immutable close_blockTimestamp;
 
     mapping(uint256 => uint256) private maxSupply;
     mapping(address => bool) public admins;
@@ -55,6 +55,22 @@ contract Nengajo is ERC1155, ERC1155Supply, ERC1155URIStorage {
         mintable = !mintable;
     }
 
+    function checkRemainingOpenTime() external view returns (uint256) {
+        if (open_blockTimestamp > block.timestamp) {
+            return open_blockTimestamp - block.timestamp;
+        } else {
+            return 0;
+        }
+    }
+
+    function checkRemainingCloseTime() external view returns (uint256) {
+        if (close_blockTimestamp > block.timestamp) {
+            return close_blockTimestamp - block.timestamp;
+        } else {
+            return 0;
+        }
+    }
+
     function registerCreative(uint256 _maxSupply, string memory _metaDataURL)
         public
     {
@@ -65,7 +81,11 @@ contract Nengajo is ERC1155, ERC1155Supply, ERC1155URIStorage {
     }
 
     function mint(uint256 _tokenId) public {
-        require(mintable, "not mintable");
+        require(
+            (block.timestamp > open_blockTimestamp &&
+                close_blockTimestamp > block.timestamp) || mintable,
+            "not minting time and not mintable"
+        );
         uint256 currentSupply = totalSupply(_tokenId);
         require(maxSupply[_tokenId] > currentSupply, "not available");
         _mint(msg.sender, _tokenId, 1, "");

@@ -3,8 +3,8 @@ import { expect } from 'chai'
 import { ethers } from 'hardhat'
 import { Nengajo } from '../typechain-types'
 
-const open_blockTimestamp: number = 123
-const close_blockTimestamp: number = 456
+const open_blockTimestamp: number = 1672498800
+const close_blockTimestamp: number = 1704034800
 
 describe('CreateNengajo', () => {
   let NengajoContract: Nengajo
@@ -136,5 +136,110 @@ describe('CheckMintable', () => {
 
     mintable = await NengajoContract.mintable()
     expect(mintable).to.equal(false)
+  })
+})
+
+describe('check timestamp', () => {
+  let NengajoContract: Nengajo
+  let deployer: SignerWithAddress
+  let creator: SignerWithAddress
+  let user1: SignerWithAddress
+  let user2: SignerWithAddress
+
+  const day = 24 * 60 * 60
+  const hour = 60 * 60
+  const minute = 60
+  const second = 1
+  
+  const calcRemainingTime = (time: number) => {
+    const remainingTime = time
+  
+    const days = Math.floor(remainingTime / day)
+    const hours = Math.floor(remainingTime % day / hour)
+    const minutes = Math.floor(remainingTime % hour / minute)
+    const seconds = Math.floor(remainingTime % minute / second)
+    const returnTime = `${days}日 ${hours}時間 ${minutes}分 ${seconds}秒`
+  
+    return returnTime
+  }
+
+  before(async () => {
+    [deployer, creator, user1, user2] = await ethers.getSigners()
+    const NengajoFactory = await ethers.getContractFactory('Nengajo')
+    NengajoContract = await NengajoFactory.deploy('Henkaku Nengajo', 'HNJ', open_blockTimestamp, close_blockTimestamp)
+    await NengajoContract.deployed()
+  })
+
+  it('check remaining open time', async () => {
+    const checkRemainingOpenTime = await NengajoContract.callStatic.checkRemainingOpenTime()
+    expect(checkRemainingOpenTime.toNumber()).to.below(4676081)
+  })
+
+  it('check remaining close time', async () => {
+    const checkRemainingCloseTime = await NengajoContract.callStatic.checkRemainingCloseTime()
+    expect(checkRemainingCloseTime.toNumber()).to.below(36212059)
+  })
+})
+
+describe('after minting term', () => {
+  let NengajoContract: Nengajo
+  let deployer: SignerWithAddress
+  let creator: SignerWithAddress
+  let user1: SignerWithAddress
+  let user2: SignerWithAddress
+
+  const day = 24 * 60 * 60
+  const hour = 60 * 60
+  const minute = 60
+  const second = 1
+  
+  const calcRemainingTime = (time: number) => {
+    const remainingTime = time
+  
+    const days = Math.floor(remainingTime / day)
+    const hours = Math.floor(remainingTime % day / hour)
+    const minutes = Math.floor(remainingTime % hour / minute)
+    const seconds = Math.floor(remainingTime % minute / second)
+    const returnTime = `${days}日 ${hours}時間 ${minutes}分 ${seconds}秒`
+  
+    return returnTime
+  }
+
+  before(async () => {
+    [deployer, creator, user1, user2] = await ethers.getSigners()
+    const NengajoFactory = await ethers.getContractFactory('Nengajo')
+    NengajoContract = await NengajoFactory.deploy('Henkaku Nengajo', 'HNJ', 946652400, 946652400)
+    await NengajoContract.deployed()
+  })
+
+  it('check remaining open time', async () => {
+    const checkRemainingOpenTime = await NengajoContract.callStatic.checkRemainingOpenTime()
+    expect(checkRemainingOpenTime.toNumber()).to.equal(0)
+  })
+
+  it('check remaining close time', async () => {
+    const checkRemainingCloseTime = await NengajoContract.callStatic.checkRemainingCloseTime()
+    expect(checkRemainingCloseTime.toNumber()).to.equal(0)
+  })
+
+  it('failed with minting time', async () => {
+
+    const checkRemainingOpenTime = await NengajoContract.callStatic.checkRemainingOpenTime()
+
+    const checkRemainingCloseTime = await NengajoContract.callStatic.checkRemainingCloseTime()
+
+    await NengajoContract.connect(creator).registerCreative(1, 'ipfs://test1')
+    const tokenURI = await NengajoContract.uri(1)
+    expect(tokenURI).equal('ipfs://test1')
+
+    let mintable
+    mintable = await NengajoContract.mintable()
+    expect(mintable).to.equal(false)
+
+    if (checkRemainingOpenTime || !checkRemainingCloseTime && !mintable) {
+      await expect(NengajoContract.connect(user1).mint(1)).to.be.revertedWith(
+        'not minting time and not mintable'
+      )
+    }
   })
 })
