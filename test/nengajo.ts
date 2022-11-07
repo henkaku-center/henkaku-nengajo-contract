@@ -3,6 +3,9 @@ import { expect } from 'chai'
 import { ethers } from 'hardhat'
 import { Nengajo } from '../typechain-types'
 
+const open_blockTimestamp: number = 123
+const close_blockTimestamp: number = 456
+
 describe('CreateNengajo', () => {
   let NengajoContract: Nengajo
   let deployer: SignerWithAddress
@@ -13,7 +16,7 @@ describe('CreateNengajo', () => {
   before(async () => {
     ;[deployer, creator, user1, user2] = await ethers.getSigners()
     const NengajoFactory = await ethers.getContractFactory('Nengajo')
-    NengajoContract = await NengajoFactory.deploy('Henkaku Nengajo', 'HNJ')
+    NengajoContract = await NengajoFactory.deploy('Henkaku Nengajo', 'HNJ', open_blockTimestamp, close_blockTimestamp)
     await NengajoContract.deployed()
   })
 
@@ -51,7 +54,7 @@ describe('CheckMintable', () => {
   before(async () => {
     [deployer, creator, user1, user2, user3] = await ethers.getSigners()
     const NengajoFactory = await ethers.getContractFactory('Nengajo')
-    NengajoContract = await NengajoFactory.deploy('Henkaku Nengajo', 'HNJ')
+    NengajoContract = await NengajoFactory.deploy('Henkaku Nengajo', 'HNJ', open_blockTimestamp, close_blockTimestamp)
     await NengajoContract.deployed()
   })
 

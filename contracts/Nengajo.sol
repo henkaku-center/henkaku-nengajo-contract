@@ -12,14 +12,23 @@ contract Nengajo is ERC1155, ERC1155Supply, ERC1155URIStorage {
     string public name;
     string public symbol;
     bool public mintable;
+    uint256 immutable open_blockTimestamp;
+    uint256 immutable close_blockTimestamp;
 
     mapping(uint256 => uint256) private maxSupply;
     mapping(address => bool) public admins;
 
-    constructor(string memory _name, string memory _symbol) ERC1155("") {
+    constructor(
+        string memory _name,
+        string memory _symbol,
+        uint256 _open_blockTimestamp,
+        uint256 _close_blockTimestamp
+    ) ERC1155("") {
         name = _name;
         symbol = _symbol;
         admins[msg.sender] = true;
+        open_blockTimestamp = _open_blockTimestamp;
+        close_blockTimestamp = _close_blockTimestamp;
     }
 
     modifier onlyAdmins() {
