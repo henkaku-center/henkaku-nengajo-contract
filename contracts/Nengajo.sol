@@ -14,10 +14,36 @@ contract Nengajo is ERC1155, ERC1155Supply, ERC1155URIStorage {
     bool public mintable;
 
     mapping(uint256 => uint256) private maxSupply;
+    mapping(address => bool) public admins;
 
     constructor(string memory _name, string memory _symbol) ERC1155("") {
         name = _name;
         symbol = _symbol;
+        admins[msg.sender] = true;
+    }
+
+    modifier onlyAdmins() {
+        require(admins[msg.sender], "Admins only");
+        _;
+    }
+
+    function addAdmins(address[] memory _newAdmins) external onlyAdmins {
+        uint256 _newAdminsLength = _newAdmins.length;
+        require(_newAdminsLength > 0, "Need one or more new admins");
+
+        if (_newAdminsLength == 1 && !admins[_newAdmins[0]]) {
+            admins[_newAdmins[0]] = true;
+        } else {
+            for (uint256 i = 0; i < _newAdminsLength; ++i) {
+                if (!admins[_newAdmins[i]]) {
+                    admins[_newAdmins[i]] = true;
+                }
+            }
+        }
+    }
+
+    function switchMintable() external onlyAdmins {
+        mintable = !mintable;
     }
 
     function registerCreative(uint256 _maxSupply, string memory _metaDataURL)
