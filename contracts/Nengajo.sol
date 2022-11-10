@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+// hello world
+
 contract Nengajo is ERC1155, ERC1155Supply, ERC1155URIStorage {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
