@@ -22,16 +22,16 @@ describe('CreateNengajo', () => {
 
   it('register creative', async () => {
     await NengajoContract.connect(creator).registerCreative(1, 'ipfs://test1')
-    const tokenURI = await NengajoContract.uri(1)
+    const tokenURI = await NengajoContract.uri(0)
     expect(tokenURI).equal('ipfs://test1')
   })
 
   it('mint nengajo', async () => {
     await(await NengajoContract.connect(deployer).switchMintable())
-    await NengajoContract.connect(user1).mint(1)
+    await NengajoContract.connect(user1).mint(0)
     const balance = await NengajoContract.connect(user1).balanceOf(
       user1.address,
-      1
+      0
     )
     expect(balance).equal(1)
   })
@@ -229,7 +229,7 @@ describe('after minting term', () => {
     const checkRemainingCloseTime = await NengajoContract.callStatic.checkRemainingCloseTime()
 
     await NengajoContract.connect(creator).registerCreative(1, 'ipfs://test1')
-    const tokenURI = await NengajoContract.uri(1)
+    const tokenURI = await NengajoContract.uri(0)
     expect(tokenURI).equal('ipfs://test1')
 
     let mintable
@@ -237,7 +237,7 @@ describe('after minting term', () => {
     expect(mintable).to.equal(false)
 
     if (checkRemainingOpenTime || !checkRemainingCloseTime && !mintable) {
-      await expect(NengajoContract.connect(user1).mint(1)).to.be.revertedWith(
+      await expect(NengajoContract.connect(user1).mint(0)).to.be.revertedWith(
         'not minting time and not mintable'
       )
     }

@@ -28,10 +28,10 @@ contract Nengajo is ERC1155, ERC1155Supply, ERC1155URIStorage, MintManager {
     function registerCreative(uint256 _maxSupply, string memory _metaDataURL)
         public
     {
-        _tokenIds.increment();
         uint256 tokenId = _tokenIds.current();
         _setURI(tokenId, _metaDataURL);
         maxSupply[tokenId] = _maxSupply;
+        _tokenIds.increment();
     }
 
     function mint(uint256 _tokenId) public {
