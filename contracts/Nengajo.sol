@@ -4,8 +4,9 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./MintManager.sol";
+import "./InteractHenkakuToken.sol";
 
-contract Nengajo is ERC1155, ERC1155Supply, MintManager {
+contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
@@ -24,8 +25,10 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager {
         string memory _name,
         string memory _symbol,
         uint256 _open_blockTimestamp,
-        uint256 _close_blockTimestamp
-    ) ERC1155("") MintManager(_open_blockTimestamp, _close_blockTimestamp) {
+        uint256 _close_blockTimestamp,
+        address _henkakuTokenV2,
+        address _henkakuPoolWallet
+    ) ERC1155("") MintManager(_open_blockTimestamp, _close_blockTimestamp) InteractHenakuToken(_henkakuTokenV2, _henkakuPoolWallet) {
         name = _name;
         symbol = _symbol;
     }
@@ -63,6 +66,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager {
             "not minting time and not mintable"
         );
         uint256 currentSupply = totalSupply(_tokenId);
+        require(balanceOf(msg.sender, _tokenId) == 0, "you already have this nengajo");
         require(
             getRegisteredNengajo(_tokenId).maxSupply > currentSupply,
             "mint limit reached"

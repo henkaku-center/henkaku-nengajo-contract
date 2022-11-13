@@ -1,0 +1,15 @@
+{
+  "semi": false,
+  "singleQuote": true,
+  "useTabs": false,
+  "printWidth": 120,
+  "overrides": [
+    {
+      "files": "*.sol",
+      "options": {
+        "singleQuote": false,
+        "explicitTypes": "always"
+      }
+    }
+  ]
+}
