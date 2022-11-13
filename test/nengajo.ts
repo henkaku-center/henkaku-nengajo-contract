@@ -21,24 +21,70 @@ describe('CreateNengajo', () => {
   })
 
   it('register creative', async () => {
-    await NengajoContract.connect(creator).registerCreative(1, 'ipfs://test1')
+    await NengajoContract.connect(creator).registerCreative(2, 'ipfs://test1')
     const tokenURI = await NengajoContract.uri(0)
     expect(tokenURI).equal('ipfs://test1')
+
+    const getAllRegisteredNengajos = await NengajoContract.getAllRegisteredNengajos()
+    expect(getAllRegisteredNengajos.length).to.equal(1)
+    expect(getAllRegisteredNengajos[0].uri).to.equal('ipfs://test1')
+    expect(getAllRegisteredNengajos[0].creator).to.equal(creator.address)
+    expect(getAllRegisteredNengajos[0].maxSupply).to.equal(2)
+
+    const getRegisteredNengajo = await NengajoContract.getRegisteredNengajo(0)
+    expect(getRegisteredNengajo.uri).to.equal('ipfs://test1')
+    expect(getRegisteredNengajo.creator).to.equal(creator.address)
+    expect(getRegisteredNengajo.maxSupply).to.equal(2)
   })
 
   it('mint nengajo', async () => {
     await(await NengajoContract.connect(deployer).switchMintable())
     await NengajoContract.connect(user1).mint(0)
-    const balance = await NengajoContract.connect(user1).balanceOf(
+    let balance = await NengajoContract.connect(user1).balanceOf(
       user1.address,
       0
     )
-    expect(balance).equal(1)
+    expect(balance).to.equal(1)
+
+    let getAllRegisteredNengajos = await NengajoContract.getAllRegisteredNengajos()
+    expect(getAllRegisteredNengajos.length).to.equal(1)
+    expect(getAllRegisteredNengajos[0].uri).to.equal('ipfs://test1')
+    expect(getAllRegisteredNengajos[0].creator).to.equal(creator.address)
+    expect(getAllRegisteredNengajos[0].maxSupply).to.equal(2)
+
+    let getRegisteredNengajo = await NengajoContract.getRegisteredNengajo(0)
+    expect(getRegisteredNengajo.uri).to.equal('ipfs://test1')
+    expect(getRegisteredNengajo.creator).to.equal(creator.address)
+    expect(getRegisteredNengajo.maxSupply).to.equal(2)
+    
+    await NengajoContract.connect(user2).mint(0)
+    balance = await NengajoContract.connect(user2).balanceOf(
+      user2.address,
+      0
+    )
+    expect(balance).to.equal(1)
+
+    getAllRegisteredNengajos = await NengajoContract.getAllRegisteredNengajos()
+    expect(getAllRegisteredNengajos.length).to.equal(1)
+    expect(getAllRegisteredNengajos[0].uri).to.equal('ipfs://test1')
+    expect(getAllRegisteredNengajos[0].creator).to.equal(creator.address)
+    expect(getAllRegisteredNengajos[0].maxSupply).to.equal(2)
+
+    getRegisteredNengajo = await NengajoContract.getRegisteredNengajo(0)
+    expect(getRegisteredNengajo.uri).to.equal('ipfs://test1')
+    expect(getRegisteredNengajo.creator).to.equal(creator.address)
+    expect(getRegisteredNengajo.maxSupply).to.equal(2)
   })
 
   it('failed with unavailable', async () => {
     await expect(NengajoContract.connect(user2).mint(1)).to.be.revertedWith(
       'not available'
+    )
+  })
+
+  it('failed with mint limit', async () => {
+    await expect(NengajoContract.connect(user2).mint(0)).to.be.revertedWith(
+      'mint limit reached'
     )
   })
 })

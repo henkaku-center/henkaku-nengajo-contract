@@ -2,18 +2,23 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
-import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./MintManager.sol";
 
-contract Nengajo is ERC1155, ERC1155Supply, ERC1155URIStorage, MintManager {
+contract Nengajo is ERC1155, ERC1155Supply, MintManager {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
     string public name;
     string public symbol;
 
-    mapping(uint256 => uint256) private maxSupply;
+    struct NengajoInfo {
+        string uri;
+        address creator;
+        uint256 maxSupply;
+    }
+
+    NengajoInfo[] private registeredNengajos;
 
     constructor(
         string memory _name,
@@ -28,10 +33,27 @@ contract Nengajo is ERC1155, ERC1155Supply, ERC1155URIStorage, MintManager {
     function registerCreative(uint256 _maxSupply, string memory _metaDataURL)
         public
     {
-        uint256 tokenId = _tokenIds.current();
-        _setURI(tokenId, _metaDataURL);
-        maxSupply[tokenId] = _maxSupply;
+        registeredNengajos.push(
+            NengajoInfo(_metaDataURL, msg.sender, _maxSupply)
+        );
         _tokenIds.increment();
+    }
+
+    function getAllRegisteredNengajos()
+        external
+        view
+        returns (NengajoInfo[] memory)
+    {
+        return registeredNengajos;
+    }
+
+    function getRegisteredNengajo(uint256 _tokenId)
+        public
+        view
+        returns (NengajoInfo memory)
+    {
+        require(registeredNengajos.length > _tokenId, "not available");
+        return registeredNengajos[_tokenId];
     }
 
     function mint(uint256 _tokenId) public {
@@ -41,17 +63,20 @@ contract Nengajo is ERC1155, ERC1155Supply, ERC1155URIStorage, MintManager {
             "not minting time and not mintable"
         );
         uint256 currentSupply = totalSupply(_tokenId);
-        require(maxSupply[_tokenId] > currentSupply, "not available");
+        require(
+            getRegisteredNengajo(_tokenId).maxSupply > currentSupply,
+            "mint limit reached"
+        );
         _mint(msg.sender, _tokenId, 1, "");
     }
 
     function uri(uint256 _tokenId)
         public
         view
-        override(ERC1155, ERC1155URIStorage)
+        override(ERC1155)
         returns (string memory)
     {
-        return ERC1155URIStorage.uri(_tokenId);
+        return getRegisteredNengajo(_tokenId).uri;
     }
 
     function _beforeTokenTransfer(
