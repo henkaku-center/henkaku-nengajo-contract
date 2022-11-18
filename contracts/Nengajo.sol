@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./MintManager.sol";
 import "./InteractHenkakuToken.sol";
+import "hardhat/console.sol";
 
 contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
     using Counters for Counters.Counter;
@@ -36,6 +37,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
     function registerCreative(uint256 _maxSupply, string memory _metaDataURL)
         public
     {
+        transferHenkakuV2(_maxSupply * 10);
         registeredNengajos.push(
             NengajoInfo(_metaDataURL, msg.sender, _maxSupply)
         );
