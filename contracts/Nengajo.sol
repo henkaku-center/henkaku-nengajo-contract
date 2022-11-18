@@ -36,6 +36,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
     function registerCreative(uint256 _maxSupply, string memory _metaDataURL)
         public
     {
+        transferHenkakuV2(_maxSupply * 10);
         registeredNengajos.push(
             NengajoInfo(_metaDataURL, msg.sender, _maxSupply)
         );
@@ -55,7 +56,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         view
         returns (NengajoInfo memory)
     {
-        require(registeredNengajos.length > _tokenId, "not available");
+        require(registeredNengajos.length > _tokenId, "Nengajo: not available");
         return registeredNengajos[_tokenId];
     }
 
@@ -63,13 +64,13 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         require(
             (block.timestamp > open_blockTimestamp &&
                 close_blockTimestamp > block.timestamp) || mintable,
-            "not minting time and not mintable"
+            "Nengajo: Not mintable"
         );
-        uint256 currentSupply = totalSupply(_tokenId);
-        require(balanceOf(msg.sender, _tokenId) == 0, "you already have this nengajo");
+        require(checkHenkakuV2Balance(1), "Nengajo: Insufficient Henkaku Token Balance");
+        require(balanceOf(msg.sender, _tokenId) == 0, "Nengajo: You already have this nengajo");
         require(
-            getRegisteredNengajo(_tokenId).maxSupply > currentSupply,
-            "mint limit reached"
+            getRegisteredNengajo(_tokenId).maxSupply > totalSupply(_tokenId),
+            "Nengajo: Mint limit reached"
         );
         _mint(msg.sender, _tokenId, 1, "");
     }

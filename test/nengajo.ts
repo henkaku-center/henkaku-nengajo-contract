@@ -1,34 +1,58 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
-import { Nengajo } from '../typechain-types'
+import { HenkakuToken, Nengajo } from '../typechain-types'
 
 const open_blockTimestamp: number = 1672498800
 const close_blockTimestamp: number = 1704034800
 
+const deployAndDistributeHenkakuV2: (params: {
+  deployer: SignerWithAddress
+  addresses: string[]
+}) => Promise<HenkakuToken> = async ({ deployer, addresses }) => {
+  const HenkakuV2Factory = await ethers.getContractFactory('HenkakuToken')
+  const HenkakuV2Contract = await HenkakuV2Factory.connect(deployer).deploy()
+  await HenkakuV2Contract.deployed()
+
+  await HenkakuV2Contract.addWhitelistUsers(addresses)
+
+  for (const address of addresses) {
+    await HenkakuV2Contract.mint(address, 100)
+  }
+
+  return HenkakuV2Contract
+}
+
 describe('CreateNengajo', () => {
   let NengajoContract: Nengajo
+  let HenkakuTokenContract: HenkakuToken
   let deployer: SignerWithAddress
   let creator: SignerWithAddress
   let user1: SignerWithAddress
   let user2: SignerWithAddress
   let user3: SignerWithAddress
+  let user4: SignerWithAddress
 
   before(async () => {
-    ;[deployer, creator, user1, user2, user3] = await ethers.getSigners()
+    ;[deployer, creator, user1, user2, user3, user4] = await ethers.getSigners()
+    HenkakuTokenContract = await deployAndDistributeHenkakuV2({
+      deployer,
+      addresses: [creator.address, user1.address, user2.address, user3.address, deployer.address],
+    })
     const NengajoFactory = await ethers.getContractFactory('Nengajo')
     NengajoContract = await NengajoFactory.deploy(
       'Henkaku Nengajo',
       'HNJ',
       open_blockTimestamp,
       close_blockTimestamp,
-      '0x0000000000000000000000000000000000000000',
-      '0x0000000000000000000000000000000000000000'
+      HenkakuTokenContract.address,
+      deployer.address
     )
     await NengajoContract.deployed()
   })
 
   it('register creative', async () => {
+    await HenkakuTokenContract.connect(creator).approve(NengajoContract.address, 200)
     await NengajoContract.connect(creator).registerCreative(2, 'ipfs://test1')
     const tokenURI = await NengajoContract.uri(0)
     expect(tokenURI).equal('ipfs://test1')
@@ -45,8 +69,14 @@ describe('CreateNengajo', () => {
     expect(getRegisteredNengajo.maxSupply).to.equal(2)
   })
 
+  it('failed register creative with insufficient henkaku token', async () => {
+    await expect(NengajoContract.connect(creator).registerCreative(1000, 'ipfs://test1')).to.be.revertedWith(
+      'Nengajo: Insufficient HenkakuV2 token'
+    )
+  })
+
   it('mint nengajo', async () => {
-    await await NengajoContract.connect(deployer).switchMintable()
+    await NengajoContract.connect(deployer).switchMintable()
     await NengajoContract.connect(user1).mint(0)
     let balance = await NengajoContract.connect(user1).balanceOf(user1.address, 0)
     expect(balance).to.equal(1)
@@ -79,20 +109,27 @@ describe('CreateNengajo', () => {
   })
 
   it('failed with unavailable', async () => {
-    await expect(NengajoContract.connect(user2).mint(1)).to.be.revertedWith('not available')
+    await expect(NengajoContract.connect(user2).mint(1)).to.be.revertedWith('Nengajo: not available')
   })
 
   it('failed with already have', async () => {
-    await expect(NengajoContract.connect(user2).mint(0)).to.be.revertedWith('you already have this nengajo')
+    await expect(NengajoContract.connect(user2).mint(0)).to.be.revertedWith('Nengajo: You already have this nengajo')
   })
 
   it('failed with mint limit', async () => {
-    await expect(NengajoContract.connect(user3).mint(0)).to.be.revertedWith('mint limit reached')
+    await expect(NengajoContract.connect(user3).mint(0)).to.be.revertedWith('Nengajo: Mint limit reached')
+  })
+
+  it('failed with insufficient Henkaku Token', async () => {
+    await expect(NengajoContract.connect(user4).mint(1)).to.be.revertedWith(
+      'Nengajo: Insufficient Henkaku Token Balance'
+    )
   })
 })
 
 describe('CheckMintable', () => {
   let NengajoContract: Nengajo
+  let HenkakuTokenContract: HenkakuToken
   let deployer: SignerWithAddress
   let creator: SignerWithAddress
   let user1: SignerWithAddress
@@ -101,16 +138,24 @@ describe('CheckMintable', () => {
 
   before(async () => {
     ;[deployer, creator, user1, user2, user3] = await ethers.getSigners()
+    HenkakuTokenContract = await deployAndDistributeHenkakuV2({
+      deployer,
+      addresses: [creator.address, user1.address, user2.address, deployer.address],
+    })
     const NengajoFactory = await ethers.getContractFactory('Nengajo')
     NengajoContract = await NengajoFactory.deploy(
       'Henkaku Nengajo',
       'HNJ',
       open_blockTimestamp,
       close_blockTimestamp,
-      '0x0000000000000000000000000000000000000000',
-      '0x0000000000000000000000000000000000000000'
+      HenkakuTokenContract.address,
+      deployer.address
     )
     await NengajoContract.deployed()
+    HenkakuTokenContract = await deployAndDistributeHenkakuV2({
+      deployer,
+      addresses: [creator.address, user1.address, user2.address],
+    })
   })
 
   it('initial mintable flag is false', async () => {
@@ -196,6 +241,7 @@ describe('CheckMintable', () => {
 
 describe('check timestamp', () => {
   let NengajoContract: Nengajo
+  let HenkakuTokenContract: HenkakuToken
   let deployer: SignerWithAddress
   let creator: SignerWithAddress
   let user1: SignerWithAddress
@@ -220,14 +266,18 @@ describe('check timestamp', () => {
 
   before(async () => {
     ;[deployer, creator, user1, user2] = await ethers.getSigners()
+    HenkakuTokenContract = await deployAndDistributeHenkakuV2({
+      deployer,
+      addresses: [creator.address, user1.address, user2.address, deployer.address],
+    })
     const NengajoFactory = await ethers.getContractFactory('Nengajo')
     NengajoContract = await NengajoFactory.deploy(
       'Henkaku Nengajo',
       'HNJ',
       open_blockTimestamp,
       close_blockTimestamp,
-      '0x0000000000000000000000000000000000000000',
-      '0x0000000000000000000000000000000000000000'
+      HenkakuTokenContract.address,
+      deployer.address
     )
     await NengajoContract.deployed()
   })
@@ -245,6 +295,7 @@ describe('check timestamp', () => {
 
 describe('after minting term', () => {
   let NengajoContract: Nengajo
+  let HenkakuTokenContract: HenkakuToken
   let deployer: SignerWithAddress
   let creator: SignerWithAddress
   let user1: SignerWithAddress
@@ -269,14 +320,18 @@ describe('after minting term', () => {
 
   before(async () => {
     ;[deployer, creator, user1, user2] = await ethers.getSigners()
+    HenkakuTokenContract = await deployAndDistributeHenkakuV2({
+      deployer,
+      addresses: [creator.address, user1.address, user2.address, deployer.address],
+    })
     const NengajoFactory = await ethers.getContractFactory('Nengajo')
     NengajoContract = await NengajoFactory.deploy(
       'Henkaku Nengajo',
       'HNJ',
       946652400,
       946652400,
-      '0x0000000000000000000000000000000000000000',
-      '0x0000000000000000000000000000000000000000'
+      HenkakuTokenContract.address,
+      deployer.address
     )
     await NengajoContract.deployed()
   })
@@ -295,7 +350,7 @@ describe('after minting term', () => {
     const checkRemainingOpenTime = await NengajoContract.callStatic.checkRemainingOpenTime()
 
     const checkRemainingCloseTime = await NengajoContract.callStatic.checkRemainingCloseTime()
-
+    await HenkakuTokenContract.connect(creator).approve(NengajoContract.address, 200)
     await NengajoContract.connect(creator).registerCreative(1, 'ipfs://test1')
     const tokenURI = await NengajoContract.uri(0)
     expect(tokenURI).equal('ipfs://test1')
@@ -305,7 +360,7 @@ describe('after minting term', () => {
     expect(mintable).to.equal(false)
 
     if (checkRemainingOpenTime || (!checkRemainingCloseTime && !mintable)) {
-      await expect(NengajoContract.connect(user1).mint(0)).to.be.revertedWith('not minting time and not mintable')
+      await expect(NengajoContract.connect(user1).mint(0)).to.be.revertedWith('Nengajo: Not mintable')
     }
   })
 })
