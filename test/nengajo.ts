@@ -31,12 +31,13 @@ describe('CreateNengajo', () => {
   let user1: SignerWithAddress
   let user2: SignerWithAddress
   let user3: SignerWithAddress
+  let user4: SignerWithAddress
 
   before(async () => {
-    ;[deployer, creator, user1, user2, user3] = await ethers.getSigners()
+    ;[deployer, creator, user1, user2, user3, user4] = await ethers.getSigners()
     HenkakuTokenContract = await deployAndDistributeHenkakuV2({
       deployer,
-      addresses: [creator.address, user1.address, user2.address, deployer.address],
+      addresses: [creator.address, user1.address, user2.address, user3.address, deployer.address],
     })
     const NengajoFactory = await ethers.getContractFactory('Nengajo')
     NengajoContract = await NengajoFactory.deploy(
@@ -108,15 +109,21 @@ describe('CreateNengajo', () => {
   })
 
   it('failed with unavailable', async () => {
-    await expect(NengajoContract.connect(user2).mint(1)).to.be.revertedWith('not available')
+    await expect(NengajoContract.connect(user2).mint(1)).to.be.revertedWith('Nengajo: not available')
   })
 
   it('failed with already have', async () => {
-    await expect(NengajoContract.connect(user2).mint(0)).to.be.revertedWith('you already have this nengajo')
+    await expect(NengajoContract.connect(user2).mint(0)).to.be.revertedWith('Nengajo: You already have this nengajo')
   })
 
   it('failed with mint limit', async () => {
-    await expect(NengajoContract.connect(user3).mint(0)).to.be.revertedWith('mint limit reached')
+    await expect(NengajoContract.connect(user3).mint(0)).to.be.revertedWith('Nengajo: Mint limit reached')
+  })
+
+  it('failed with insufficient Henkaku Token', async () => {
+    await expect(NengajoContract.connect(user4).mint(1)).to.be.revertedWith(
+      'Nengajo: Insufficient Henkaku Token Balance'
+    )
   })
 })
 
@@ -353,7 +360,7 @@ describe('after minting term', () => {
     expect(mintable).to.equal(false)
 
     if (checkRemainingOpenTime || (!checkRemainingCloseTime && !mintable)) {
-      await expect(NengajoContract.connect(user1).mint(0)).to.be.revertedWith('not minting time and not mintable')
+      await expect(NengajoContract.connect(user1).mint(0)).to.be.revertedWith('Nengajo: Not mintable')
     }
   })
 })
