@@ -7,19 +7,26 @@ import "./MintManager.sol";
 import "./InteractHenkakuToken.sol";
 
 contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
+
+    //登録された年賀状と作成者の情報は、０からカウントアップされて_tokenIdsに保存される
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
     string public name;
     string public symbol;
 
+    // Nengajo Creator's info
     struct NengajoInfo {
-        string uri;
-        address creator;
-        uint256 maxSupply;
+        string uri;         // image address
+        address creator;    // creator's wallet address
+        uint256 maxSupply;  // maxium number of mint
     }
 
     NengajoInfo[] private registeredNengajos;
+
+    // Nengajo Minter's info
+    //addressがkey、uintがvalue、mintedNengajoListは格納する変数
+    mapping(address => uint256[]) public mintedNengajoList;
 
     constructor(
         string memory _name,
@@ -60,6 +67,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         return registeredNengajos[_tokenId];
     }
 
+    // ミントする関数
     function mint(uint256 _tokenId) public {
         require(
             (block.timestamp > open_blockTimestamp &&
@@ -73,6 +81,10 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
             "Nengajo: Mint limit reached"
         );
         _mint(msg.sender, _tokenId, 1, "");
+
+        // ミントした_tokenIdsを保存する
+        mintedNengajoList[msg.sender].push(_tokenId);
+
     }
 
     function uri(uint256 _tokenId)
@@ -82,6 +94,16 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         returns (string memory)
     {
         return getRegisteredNengajo(_tokenId).uri;
+    }
+
+    // msg.sender情報からミントした年賀状の_tokenIdsを配列で返す関数
+    //      作成者 sushi yam
+    function retrieveMintedNengajo()
+        public
+        view
+        returns (uint256[] memory)
+    {
+        return mintedNengajoList[msg.sender];
     }
 
     function _beforeTokenTransfer(
