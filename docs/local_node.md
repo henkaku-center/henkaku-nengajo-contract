@@ -79,7 +79,7 @@ Nengajo  : 0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9
 **フロントエンド**のルートディレクトリで.env.example を.env.local としてコピー
 
 ```
-$ cp ./.env.example ./.env.local
+$ cp ./.env.sample ./.env.local
 ```
 
 **NEXT_PUBLIC_CHAIN_ID**  
