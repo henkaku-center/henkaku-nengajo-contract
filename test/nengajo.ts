@@ -77,39 +77,38 @@ describe('CreateNengajo', () => {
 
   it('mint nengajo', async () => {
     await NengajoContract.connect(deployer).switchMintable()
+    
     await NengajoContract.connect(user1).mint(0)
     let balance = await NengajoContract.connect(user1).balanceOf(user1.address, 0)
     expect(balance).to.equal(1)
-
-    let getAllRegisteredNengajos = await NengajoContract.getAllRegisteredNengajos()
-    expect(getAllRegisteredNengajos.length).to.equal(1)
-    expect(getAllRegisteredNengajos[0].uri).to.equal('ipfs://test1')
-    expect(getAllRegisteredNengajos[0].creator).to.equal(creator.address)
-    expect(getAllRegisteredNengajos[0].maxSupply).to.equal(2)
-
-    let getRegisteredNengajo = await NengajoContract.getRegisteredNengajo(0)
-    expect(getRegisteredNengajo.uri).to.equal('ipfs://test1')
-    expect(getRegisteredNengajo.creator).to.equal(creator.address)
-    expect(getRegisteredNengajo.maxSupply).to.equal(2)
 
     await NengajoContract.connect(user2).mint(0)
     balance = await NengajoContract.connect(user2).balanceOf(user2.address, 0)
     expect(balance).to.equal(1)
 
-    getAllRegisteredNengajos = await NengajoContract.getAllRegisteredNengajos()
-    expect(getAllRegisteredNengajos.length).to.equal(1)
-    expect(getAllRegisteredNengajos[0].uri).to.equal('ipfs://test1')
-    expect(getAllRegisteredNengajos[0].creator).to.equal(creator.address)
-    expect(getAllRegisteredNengajos[0].maxSupply).to.equal(2)
+  })
 
-    getRegisteredNengajo = await NengajoContract.getRegisteredNengajo(0)
-    expect(getRegisteredNengajo.uri).to.equal('ipfs://test1')
-    expect(getRegisteredNengajo.creator).to.equal(creator.address)
-    expect(getRegisteredNengajo.maxSupply).to.equal(2)
+  it('retrieve minted nengajo', async () => {
+
+    // ミントされた年賀状の確認
+    // user1のミントした
+    let mintedNengajo = await NengajoContract.connect(user1).retrieveMintedNengajo()
+    expect(mintedNengajo[0]).to.equal(0)
+    await NengajoContract.connect(creator).registerCreative(2, 'ipfs://test1')
+
+    // user1が年賀状を２枚め(_tokenIdが１)をミント
+    await NengajoContract.connect(user1).mint(1)
+    mintedNengajo = await NengajoContract.connect(user1).retrieveMintedNengajo()
+
+    expect(mintedNengajo[0]).to.equal(0)
+    expect(mintedNengajo[1]).to.equal(1)
+
   })
 
   it('failed with unavailable', async () => {
-    await expect(NengajoContract.connect(user2).mint(1)).to.be.revertedWith('Nengajo: not available')
+
+    // await expect(NengajoContract.connect(user2).mint(1)).to.be.revertedWith('Nengajo: not available')
+    await expect(NengajoContract.connect(user2).mint(5)).to.be.revertedWith('Nengajo: not available')
   })
 
   it('failed with already have', async () => {

@@ -7,12 +7,19 @@ import "./MintManager.sol";
 import "./InteractHenkakuToken.sol";
 
 contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
+
+    //@dev count up tokenId from 0
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
     string public name;
     string public symbol;
 
+    /**
+     * @param uri: metadata uri
+     * @param creator: creator's wallet address
+     * @param maxSupply: max supply number of token
+     */
     struct NengajoInfo {
         string uri;
         address creator;
@@ -20,6 +27,10 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
     }
 
     NengajoInfo[] private registeredNengajos;
+
+    // Nengajo Minter's info
+    //addressがkey、uintがvalue、mintedNengajoListは格納する変数
+    mapping(address => uint256[]) public mintedNengajoList;
 
     constructor(
         string memory _name,
@@ -43,6 +54,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         _tokenIds.increment();
     }
 
+    // @return all registered nangajo
     function getAllRegisteredNengajos()
         external
         view
@@ -51,6 +63,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         return registeredNengajos;
     }
 
+    // @return registered nengajo data
     function getRegisteredNengajo(uint256 _tokenId)
         public
         view
@@ -60,6 +73,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         return registeredNengajos[_tokenId];
     }
 
+    // @dev mint function
     function mint(uint256 _tokenId) public {
         require(
             (block.timestamp > open_blockTimestamp &&
@@ -73,8 +87,12 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
             "Nengajo: Mint limit reached"
         );
         _mint(msg.sender, _tokenId, 1, "");
+
+        // ミントした_tokenIdsを保存する
+        mintedNengajoList[msg.sender].push(_tokenId);
     }
 
+    // @return token metadata uri
     function uri(uint256 _tokenId)
         public
         view
@@ -82,6 +100,15 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         returns (string memory)
     {
         return getRegisteredNengajo(_tokenId).uri;
+    }
+
+    // @return holding tokenIds with address
+    function retrieveMintedNengajo()
+        public
+        view
+        returns (uint256[] memory)
+    {
+        return mintedNengajoList[msg.sender];
     }
 
     function _beforeTokenTransfer(
