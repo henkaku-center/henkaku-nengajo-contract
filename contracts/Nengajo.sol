@@ -8,18 +8,22 @@ import "./InteractHenkakuToken.sol";
 
 contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
 
-    //登録された年賀状と作成者の情報は、０からカウントアップされて_tokenIdsに保存される
+    //@dev count up tokenId from 0
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
     string public name;
     string public symbol;
 
-    // Nengajo Creator's info
+    /**
+     * @param uri: metadata uri
+     * @param creator: creator's wallet address
+     * @param maxSupply: max supply number of token
+     */
     struct NengajoInfo {
-        string uri;         // image address
-        address creator;    // creator's wallet address
-        uint256 maxSupply;  // maxium number of mint
+        string uri;
+        address creator;
+        uint256 maxSupply;
     }
 
     NengajoInfo[] private registeredNengajos;
@@ -50,6 +54,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         _tokenIds.increment();
     }
 
+    // @return all registered nangajo
     function getAllRegisteredNengajos()
         external
         view
@@ -58,6 +63,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         return registeredNengajos;
     }
 
+    // @return registered nengajo data
     function getRegisteredNengajo(uint256 _tokenId)
         public
         view
@@ -67,7 +73,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         return registeredNengajos[_tokenId];
     }
 
-    // ミントする関数
+    // @dev mint function
     function mint(uint256 _tokenId) public {
         require(
             (block.timestamp > open_blockTimestamp &&
@@ -84,9 +90,9 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
 
         // ミントした_tokenIdsを保存する
         mintedNengajoList[msg.sender].push(_tokenId);
-
     }
 
+    // @return token metadata uri
     function uri(uint256 _tokenId)
         public
         view
@@ -96,8 +102,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         return getRegisteredNengajo(_tokenId).uri;
     }
 
-    // msg.sender情報からミントした年賀状の_tokenIdsを配列で返す関数
-    //      作成者 sushi yam
+    // @return holding tokenIds with address
     function retrieveMintedNengajo()
         public
         view
