@@ -91,8 +91,8 @@ describe('CreateNengajo', () => {
   it('retrieve minted nengajo', async () => {
 
     // ミントされた年賀状の確認
-    // user1のミントした
     let mintedNengajo = await NengajoContract.connect(user1).retrieveMintedNengajo()
+    expect(mintedNengajo.length).equal(1)
     expect(mintedNengajo[0]).to.equal(0)
     await NengajoContract.connect(creator).registerCreative(2, 'ipfs://test1')
 
@@ -100,8 +100,14 @@ describe('CreateNengajo', () => {
     await NengajoContract.connect(user1).mint(1)
     mintedNengajo = await NengajoContract.connect(user1).retrieveMintedNengajo()
 
+    expect(mintedNengajo.length).equal(2)
     expect(mintedNengajo[0]).to.equal(0)
     expect(mintedNengajo[1]).to.equal(1)
+
+    mintedNengajo = await NengajoContract.connect(user2).retrieveMintedNengajo()
+
+    expect(mintedNengajo.length).equal(1)
+    expect(mintedNengajo[0]).to.equal(0)
 
   })
 

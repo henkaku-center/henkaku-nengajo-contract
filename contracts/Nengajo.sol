@@ -28,10 +28,6 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
 
     NengajoInfo[] private registeredNengajos;
 
-    // Nengajo Minter's info
-    //addressがkey、uintがvalue、mintedNengajoListは格納する変数
-    mapping(address => uint256[]) public mintedNengajoList;
-
     constructor(
         string memory _name,
         string memory _symbol,
@@ -88,8 +84,6 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         );
         _mint(msg.sender, _tokenId, 1, "");
 
-        // ミントした_tokenIdsを保存する
-        mintedNengajoList[msg.sender].push(_tokenId);
     }
 
     // @return token metadata uri
@@ -108,7 +102,23 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         view
         returns (uint256[] memory)
     {
-        return mintedNengajoList[msg.sender];
+        uint256 totalTokenIds = _tokenIds.current();
+        uint256[] memory mintedNengajo = new uint256[](totalTokenIds);
+        uint256 mintedNengajoLength;
+
+        for (uint256 i = 0; i < totalTokenIds; ++i) {
+            if (balanceOf(msg.sender, i) != 0) {
+                mintedNengajo[mintedNengajoLength] = i;
+                ++mintedNengajoLength;
+            }
+        }
+
+        uint256[] memory mintedNengajo_ = new uint256[](mintedNengajoLength);
+        for (uint256 j = 0; j < mintedNengajoLength; ++j) {
+            mintedNengajo_[j] = mintedNengajo[j];
+        }
+        
+        return mintedNengajo_;
     }
 
     function _beforeTokenTransfer(
