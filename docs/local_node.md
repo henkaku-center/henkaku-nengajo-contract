@@ -1,5 +1,25 @@
 # LocalNode でフロントエンドとつなぐ方法
 
+## コントラクト側の環境変数を設定
+
+コントラクトのルートディレクトリで.env.example を.env としてコピー
+
+```
+$ cp ./.env.example ./.env
+```
+
+**LOCAL_PRIVATE_KEY**  
+ローカルノードを立ち上げたときに出力されたウォレットのどれでも好きなもの。.env.exampleに一番目のアドレスのPrivateKeyをいれてます。
+
+**LOCAL_USERS_ADDRESSES**  
+自分で開発に使いたいウォレットアドレスをカンマ(,)区切りで入れてください。ここに入力したアドレスにローカルチェーン上の HenkakuV2 トークンをミントします。
+
+例
+
+```
+LOCAL_USERS_ADDRESSES=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266,0x70997970C51812dc3A010C7d01b50e0d17dc79C8
+```
+
 ## ローカルノードの立ち上げ
 
 コントラクトのルートディレクトリで
@@ -40,26 +60,6 @@ Polygon などデフォルトで入っていないチェーンを追加する要
 ### 開発用アドレスをインポート
 
 ローカルノードを立ち上げたときに出力されたウォレットのどれでも好きなものの**Private Key**をつかってウォレットインポートしてください。[やり方](https://metamask.zendesk.com/hc/en-us/articles/360015489331-How-to-import-an-account#:~:text=Importing%20using%20a%20private%20key&text=Click%20the%20circle%20icon%20at,key%20and%20click%20%E2%80%9CImport%E2%80%9D.)
-
-## コントラクト側の環境変数を設定
-
-コントラクトのルートディレクトリで.env.example を.env としてコピー
-
-```
-$ cp ./.env.example ./.env
-```
-
-**LOCAL_PRIVATE_KEY**  
-ローカルノードを立ち上げたときに出力されたウォレットのどれでも好きなもの。MetaMask にインポートしたものと同じで大丈夫です。
-
-**LOCAL_USERS_ADDRESSES**  
-自分で開発に使いたいウォレットアドレスをカンマ(,)区切りで入れてください。ここに入力したアドレスにローカルチェーン上の HenkakuV2 トークンをミントします。
-
-例
-
-```
-LOCAL_USERS_ADDRESSES=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266,0x70997970C51812dc3A010C7d01b50e0d17dc79C8
-```
 
 ## コントラクトのデプロイ
 
