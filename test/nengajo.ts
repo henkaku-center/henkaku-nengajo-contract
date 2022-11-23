@@ -53,6 +53,8 @@ describe('CreateNengajo', () => {
 
   it('register creative', async () => {
     await HenkakuTokenContract.connect(creator).approve(NengajoContract.address, 200)
+    // Register the first Nengajo
+    // １つ目の年賀状(_tokenIdが０)を登録
     await NengajoContract.connect(creator).registerCreative(2, 'ipfs://test1')
     const tokenURI = await NengajoContract.uri(0)
     expect(tokenURI).equal('ipfs://test1')
@@ -70,6 +72,8 @@ describe('CreateNengajo', () => {
   })
 
   it('failed register creative with insufficient henkaku token', async () => {
+    // Nengajo registration is reverted.
+    // 年賀状の登録がリバートされる
     await expect(NengajoContract.connect(creator).registerCreative(1000, 'ipfs://test1')).to.be.revertedWith(
       'Nengajo: Insufficient HenkakuV2 token'
     )
@@ -94,6 +98,8 @@ describe('CreateNengajo', () => {
     let mintedNengajo = await NengajoContract.connect(user1).retrieveMintedNengajo()
     expect(mintedNengajo.length).equal(1)
     expect(mintedNengajo[0]).to.equal(0)
+    // Register the second Nengajo
+    // ２つ目(_tokenIdが１)の年賀状を登録
     await NengajoContract.connect(creator).registerCreative(2, 'ipfs://test1')
 
     // user1が年賀状を２枚め(_tokenIdが１)をミント
@@ -108,13 +114,37 @@ describe('CreateNengajo', () => {
 
     expect(mintedNengajo.length).equal(1)
     expect(mintedNengajo[0]).to.equal(0)
+  })
 
+  it('mint batch nengajos', async () => {
+    // Register the third Nengajo
+    // ３つ目(_tokenIdが２)の年賀状を登録
+    await NengajoContract.connect(creator).registerCreative(1, 'ipfs://test4')
+
+    // Register the fourth Nengajo
+    // 4つ目(_tokenIdが３)の年賀状を登録
+    await NengajoContract.connect(creator).registerCreative(1, 'ipfs://test4')
+
+    await NengajoContract.connect(user3).mintBatch([2,3])
+
+    let balance
+    balance = await NengajoContract.connect(user3).balanceOf(user3.address, 2)
+    expect(balance).to.equal(1)
+
+    balance = await NengajoContract.connect(user3).balanceOf(user3.address, 3)
+    expect(balance).to.equal(1)
+
+    let mintedNengajo = await NengajoContract.connect(user3).retrieveMintedNengajo()
+
+    expect(mintedNengajo.length).equal(2)
+    expect(mintedNengajo[0]).to.equal(2)
+    expect(mintedNengajo[1]).to.equal(3)
   })
 
   it('failed with unavailable', async () => {
 
     // await expect(NengajoContract.connect(user2).mint(1)).to.be.revertedWith('Nengajo: not available')
-    await expect(NengajoContract.connect(user2).mint(5)).to.be.revertedWith('Nengajo: not available')
+    await expect(NengajoContract.connect(user2).mint(999)).to.be.revertedWith('Nengajo: not available')
   })
 
   it('failed with already have', async () => {
