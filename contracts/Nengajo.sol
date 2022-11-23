@@ -43,6 +43,15 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         symbol = _symbol;
     }
 
+    modifier whenMintable() {
+        require(
+            (block.timestamp > open_blockTimestamp && close_blockTimestamp > block.timestamp) || mintable,
+            "Nengajo: Not mintable"
+        );
+        require(checkHenkakuV2Balance(1), "Nengajo: Insufficient Henkaku Token Balance");
+        _;
+    }
+
     function registerCreative(uint256 _maxSupply, string memory _metaDataURL) public {
         transferHenkakuV2(_maxSupply * 10);
         registeredNengajos.push(NengajoInfo(_metaDataURL, msg.sender, _maxSupply));
@@ -67,13 +76,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
     }
 
     // @dev mint function
-    function mintBatch(uint256[] memory _tokenIdsList) public {
-        require(
-            (block.timestamp > open_blockTimestamp && close_blockTimestamp > block.timestamp) || mintable,
-            "Nengajo: Not mintable"
-        );
-        require(checkHenkakuV2Balance(1), "Nengajo: Insufficient Henkaku Token Balance");
-
+    function mintBatch(uint256[] memory _tokenIdsList) public whenMintable {
         uint256 tokenIdsLength = _tokenIdsList.length;
         uint256[] memory amountList = new uint256[](tokenIdsLength);
 
@@ -86,12 +89,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
     }
 
     // @dev mint function
-    function mint(uint256 _tokenId) public {
-        require(
-            (block.timestamp > open_blockTimestamp && close_blockTimestamp > block.timestamp) || mintable,
-            "Nengajo: Not mintable"
-        );
-        require(checkHenkakuV2Balance(1), "Nengajo: Insufficient Henkaku Token Balance");
+    function mint(uint256 _tokenId) public whenMintable {
         checkNengajoAmount(_tokenId);
         _mint(msg.sender, _tokenId, 1, "");
     }
