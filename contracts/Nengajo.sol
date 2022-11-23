@@ -60,6 +60,12 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         return registeredNengajos[_tokenId];
     }
 
+    function checkNengajoAmount(uint256 _tokenId) private view {
+        require(balanceOf(msg.sender, _tokenId) == 0, "Nengajo: You already have this nengajo");
+
+        require(getRegisteredNengajo(_tokenId).maxSupply > totalSupply(_tokenId), "Nengajo: Mint limit reached");
+    }
+
     // @dev mint function
     function mintBatch(uint256[] memory _tokenIdsList) public {
         require(
@@ -72,12 +78,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         uint256[] memory amountList = new uint256[](tokenIdsLength);
 
         for (uint256 i = 0; i < tokenIdsLength; ++i) {
-            require(balanceOf(msg.sender, _tokenIdsList[i]) == 0, "Nengajo: You already have this nengajo");
-
-            require(
-                getRegisteredNengajo(_tokenIdsList[i]).maxSupply > totalSupply(_tokenIdsList[i]),
-                "Nengajo: Mint limit reached"
-            );
+            checkNengajoAmount(_tokenIdsList[i]);
             amountList[i] = 1;
         }
 
@@ -91,8 +92,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
             "Nengajo: Not mintable"
         );
         require(checkHenkakuV2Balance(1), "Nengajo: Insufficient Henkaku Token Balance");
-        require(balanceOf(msg.sender, _tokenId) == 0, "Nengajo: You already have this nengajo");
-        require(getRegisteredNengajo(_tokenId).maxSupply > totalSupply(_tokenId), "Nengajo: Mint limit reached");
+        checkNengajoAmount(_tokenId);
         _mint(msg.sender, _tokenId, 1, "");
     }
 
