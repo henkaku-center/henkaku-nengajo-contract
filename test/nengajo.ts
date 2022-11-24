@@ -81,7 +81,7 @@ describe('CreateNengajo', () => {
 
   it('mint nengajo', async () => {
     await NengajoContract.connect(deployer).switchMintable()
-    
+
     await NengajoContract.connect(user1).mint(0)
     let balance = await NengajoContract.connect(user1).balanceOf(user1.address, 0)
     expect(balance).to.equal(1)
@@ -89,13 +89,11 @@ describe('CreateNengajo', () => {
     await NengajoContract.connect(user2).mint(0)
     balance = await NengajoContract.connect(user2).balanceOf(user2.address, 0)
     expect(balance).to.equal(1)
-
   })
 
   it('retrieve minted nengajo', async () => {
-
     // ミントされた年賀状の確認
-    let mintedNengajo = await NengajoContract.connect(user1).retrieveMintedNengajo()
+    let mintedNengajo = await NengajoContract.connect(user1).retrieveMintedNengajoIds()
     expect(mintedNengajo.length).equal(1)
     expect(mintedNengajo[0]).to.equal(0)
     // Register the second Nengajo
@@ -104,13 +102,13 @@ describe('CreateNengajo', () => {
 
     // user1が年賀状を２枚め(_tokenIdが１)をミント
     await NengajoContract.connect(user1).mint(1)
-    mintedNengajo = await NengajoContract.connect(user1).retrieveMintedNengajo()
+    mintedNengajo = await NengajoContract.connect(user1).retrieveMintedNengajoIds()
 
     expect(mintedNengajo.length).equal(2)
     expect(mintedNengajo[0]).to.equal(0)
     expect(mintedNengajo[1]).to.equal(1)
 
-    mintedNengajo = await NengajoContract.connect(user2).retrieveMintedNengajo()
+    mintedNengajo = await NengajoContract.connect(user2).retrieveMintedNengajoIds()
 
     expect(mintedNengajo.length).equal(1)
     expect(mintedNengajo[0]).to.equal(0)
@@ -125,7 +123,7 @@ describe('CreateNengajo', () => {
     // 4つ目(_tokenIdが３)の年賀状を登録
     await NengajoContract.connect(creator).registerCreative(2, 'ipfs://test4')
 
-    await NengajoContract.connect(user3).mintBatch([2,3])
+    await NengajoContract.connect(user3).mintBatch([2, 3])
 
     let balance
     balance = await NengajoContract.connect(user3).balanceOf(user3.address, 2)
@@ -134,7 +132,7 @@ describe('CreateNengajo', () => {
     balance = await NengajoContract.connect(user3).balanceOf(user3.address, 3)
     expect(balance).to.equal(1)
 
-    let mintedNengajo = await NengajoContract.connect(user3).retrieveMintedNengajo()
+    let mintedNengajo = await NengajoContract.connect(user3).retrieveMintedNengajoIds()
 
     expect(mintedNengajo.length).equal(2)
     expect(mintedNengajo[0]).to.equal(2)
@@ -144,8 +142,10 @@ describe('CreateNengajo', () => {
   it('mint batch failed with already have', async () => {
     // Confirmed that even with the mintBatch function, it is not possible to mint more than two Nengajos.
     // mintBatch関数でも同じ年賀状を2つ以上ミント出来ないことを確認
-    await expect(NengajoContract.connect(user3).mintBatch([2,3])).to.be.revertedWith('Nengajo: You already have this nengajo')
-    
+    await expect(NengajoContract.connect(user3).mintBatch([2, 3])).to.be.revertedWith(
+      'Nengajo: You already have this nengajo'
+    )
+
     // Confirm that balance, etc. has not changed.
     // balance等が変わっていないことを確認
     let balance
@@ -155,7 +155,7 @@ describe('CreateNengajo', () => {
     balance = await NengajoContract.connect(user3).balanceOf(user3.address, 3)
     expect(balance).to.equal(1)
 
-    let mintedNengajo = await NengajoContract.connect(user3).retrieveMintedNengajo()
+    let mintedNengajo = await NengajoContract.connect(user3).retrieveMintedNengajoIds()
 
     expect(mintedNengajo.length).equal(2)
     expect(mintedNengajo[0]).to.equal(2)
@@ -163,7 +163,6 @@ describe('CreateNengajo', () => {
   })
 
   it('failed with unavailable', async () => {
-
     // await expect(NengajoContract.connect(user2).mint(1)).to.be.revertedWith('Nengajo: not available')
     await expect(NengajoContract.connect(user2).mint(999)).to.be.revertedWith('Nengajo: not available')
   })

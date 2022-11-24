@@ -100,7 +100,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
     }
 
     // @return holding tokenIds with address
-    function retrieveMintedNengajo() public view returns (uint256[] memory) {
+    function retrieveMintedNengajoIds() public view returns (uint256[] memory) {
         uint256 totalTokenIds = _tokenIds.current();
         uint256[] memory mintedNengajo = new uint256[](totalTokenIds);
         uint256 mintedNengajoLength;
@@ -112,12 +112,12 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
             }
         }
 
-        uint256[] memory mintedNengajo_ = new uint256[](mintedNengajoLength);
+        uint256[] memory mintedNengajoIds_ = new uint256[](mintedNengajoLength);
         for (uint256 j = 0; j < mintedNengajoLength; ++j) {
-            mintedNengajo_[j] = mintedNengajo[j];
+            mintedNengajoIds_[j] = mintedNengajo[j];
         }
 
-        return mintedNengajo_;
+        return mintedNengajoIds_;
     }
 
     function _beforeTokenTransfer(
