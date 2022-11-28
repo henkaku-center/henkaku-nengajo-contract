@@ -41,6 +41,9 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
     {
         name = _name;
         symbol = _symbol;
+
+        registeredNengajos.push(NengajoInfo("", address(0), 0));
+        _tokenIds.increment();
     }
 
     modifier whenMintable() {
