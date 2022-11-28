@@ -59,16 +59,20 @@ describe('CreateNengajo', () => {
     const tokenURI = await NengajoContract.uri(0)
     expect(tokenURI).equal('ipfs://test1')
 
-    const getAllRegisteredNengajos = await NengajoContract.getAllRegisteredNengajos()
-    expect(getAllRegisteredNengajos.length).to.equal(1)
-    expect(getAllRegisteredNengajos[0].uri).to.equal('ipfs://test1')
-    expect(getAllRegisteredNengajos[0].creator).to.equal(creator.address)
-    expect(getAllRegisteredNengajos[0].maxSupply).to.equal(2)
+    const getAllregisteredNengajoes = await NengajoContract.getAllregisteredNengajoes()
+    expect(getAllregisteredNengajoes.length).to.equal(1)
+    expect(getAllregisteredNengajoes[0].uri).to.equal('ipfs://test1')
+    expect(getAllregisteredNengajoes[0].creator).to.equal(creator.address)
+    expect(getAllregisteredNengajoes[0].maxSupply).to.equal(2)
 
     const getRegisteredNengajo = await NengajoContract.getRegisteredNengajo(0)
     expect(getRegisteredNengajo.uri).to.equal('ipfs://test1')
     expect(getRegisteredNengajo.creator).to.equal(creator.address)
     expect(getRegisteredNengajo.maxSupply).to.equal(2)
+    const registeredNengajoes = await NengajoContract.retriveRegisteredNengajoes(creator.address)
+    expect(registeredNengajoes[0].uri).to.equal('ipfs://test1')
+    expect(registeredNengajoes[0].creator).to.equal(creator.address)
+    expect(registeredNengajoes[0].maxSupply).to.equal(2)
   })
 
   it('failed register creative with insufficient henkaku token', async () => {

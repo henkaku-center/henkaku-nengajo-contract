@@ -25,7 +25,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         uint256 maxSupply;
     }
 
-    NengajoInfo[] private registeredNengajos;
+    NengajoInfo[] private registeredNengajoes;
 
     constructor(
         string memory _name,
@@ -54,19 +54,19 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
 
     function registerCreative(uint256 _maxSupply, string memory _metaDataURL) public {
         transferHenkakuV2(_maxSupply * 10);
-        registeredNengajos.push(NengajoInfo(_metaDataURL, msg.sender, _maxSupply));
+        registeredNengajoes.push(NengajoInfo(_metaDataURL, msg.sender, _maxSupply));
         _tokenIds.increment();
     }
 
     // @return all registered nangajo
-    function getAllRegisteredNengajos() external view returns (NengajoInfo[] memory) {
-        return registeredNengajos;
+    function getAllregisteredNengajoes() external view returns (NengajoInfo[] memory) {
+        return registeredNengajoes;
     }
 
     // @return registered nengajo data
     function getRegisteredNengajo(uint256 _tokenId) public view returns (NengajoInfo memory) {
-        require(registeredNengajos.length > _tokenId, "Nengajo: not available");
-        return registeredNengajos[_tokenId];
+        require(registeredNengajoes.length > _tokenId, "Nengajo: not available");
+        return registeredNengajoes[_tokenId];
     }
 
     function checkNengajoAmount(uint256 _tokenId) private view {
@@ -118,6 +118,23 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         }
 
         return mintedNengajoIds_;
+    }
+
+    //@return retriving registered Nengajo 
+    function retriveRegisteredNengajoes (address _address) public view returns (NengajoInfo[] memory) {
+        uint256 length = 0;
+        for (uint256 i = 0; i < registeredNengajoes.length; i++){
+            if (registeredNengajoes[i].creator == _address) {
+                length++;
+            }
+        }
+        NengajoInfo[] memory registeredNengajoes_ = new NengajoInfo[](length);
+        for (uint256 i = 0; i < registeredNengajoes.length; i++){
+            if (registeredNengajoes[i].creator == _address) {
+                registeredNengajoes_[i] = registeredNengajoes[i];
+            }
+        }
+        return registeredNengajoes_;
     }
 
     function _beforeTokenTransfer(
