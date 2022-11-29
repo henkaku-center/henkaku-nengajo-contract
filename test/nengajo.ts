@@ -52,7 +52,6 @@ describe('CreateNengajo', () => {
   })
 
   it('register creative', async () => {
-
     // Check the contents of tokenId #0, which is the default missing value.
     // デフォルト値の欠番としたtokenId #0の内容を確認
     let tokenURI
@@ -60,7 +59,7 @@ describe('CreateNengajo', () => {
     expect(tokenURI).equal('')
 
     let getAllRegisteredNengajos
-    getAllRegisteredNengajos = await NengajoContract.getAllRegisteredNengajos()
+    getAllRegisteredNengajos = await NengajoContract.getAllregisteredNengajoes()
     expect(getAllRegisteredNengajos.length).to.equal(1)
     expect(getAllRegisteredNengajos[0].uri).to.equal('')
     expect(getAllRegisteredNengajos[0].creator).to.equal(ethers.constants.AddressZero)
@@ -79,7 +78,7 @@ describe('CreateNengajo', () => {
     tokenURI = await NengajoContract.uri(1)
     expect(tokenURI).equal('ipfs://test1')
 
-    getAllRegisteredNengajos = await NengajoContract.getAllRegisteredNengajos()
+    getAllRegisteredNengajos = await NengajoContract.getAllregisteredNengajoes()
     expect(getAllRegisteredNengajos.length).to.equal(2)
     expect(getAllRegisteredNengajos[1].uri).to.equal('ipfs://test1')
     expect(getAllRegisteredNengajos[1].creator).to.equal(creator.address)
@@ -89,6 +88,11 @@ describe('CreateNengajo', () => {
     expect(getRegisteredNengajo.uri).to.equal('ipfs://test1')
     expect(getRegisteredNengajo.creator).to.equal(creator.address)
     expect(getRegisteredNengajo.maxSupply).to.equal(2)
+
+    const registeredNengajoes = await NengajoContract.retriveRegisteredNengajoes(creator.address)
+    // expect(registeredNengajoes[0].uri).to.equal('ipfs://test1')
+    // expect(registeredNengajoes[0].creator).to.equal(creator.address)
+    // expect(registeredNengajoes[0].maxSupply).to.equal(2)
   })
 
   it('failed register creative with insufficient henkaku token', async () => {
