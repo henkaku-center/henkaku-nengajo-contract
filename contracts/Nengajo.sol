@@ -120,6 +120,18 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         return mintedNengajoIds_;
     }
 
+    //@retrun holding nengajo's metadata URIs
+    function retrieveMintedNengajoURIs() public view returns (string[] memory) {
+        uint256[] memory mintedNengajoIds = retrieveMintedNengajoIds();
+        string[] memory mintedNengajoURIs_ = new string[](mintedNengajoIds.length);
+
+        for (uint256 i = 0; i < mintedNengajoIds.length; ++i) {
+            mintedNengajoURIs_[i] = uri(mintedNengajoIds[i]);
+        }
+
+        return mintedNengajoURIs_;
+    }
+
     //@return retriving registered Nengajo 
     function retriveRegisteredNengajoes (address _address) public view returns (NengajoInfo[] memory) {
         uint256 length = 0;
