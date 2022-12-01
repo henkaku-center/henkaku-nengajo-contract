@@ -42,6 +42,9 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
     {
         name = _name;
         symbol = _symbol;
+
+        registeredNengajoes.push(NengajoInfo("", address(0), 0));
+        _tokenIds.increment();
     }
 
     modifier whenMintable() {
@@ -64,7 +67,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         if (registeredCount > 5) {
             amount = _maxSupply * 10;
         } else if (registeredCount + _maxSupply > 5) {
-            amount = (_maxSupply - 5) * 10;
+            amount = (registeredCount + _maxSupply - 5) * 10;
         }
 
         transferHenkakuV2(amount);
@@ -73,7 +76,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
     }
 
     // @return all registered nangajo
-    function getAllRegisteredNengajos() external view returns (NengajoInfo[] memory) {
+    function getAllregisteredNengajoes() external view returns (NengajoInfo[] memory) {
         return registeredNengajoes;
     }
 
@@ -122,9 +125,11 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
             }
         }
         NengajoInfo[] memory registeredNengajoes_ = new NengajoInfo[](length);
-        for (uint256 i = 0; i < registeredNengajoes.length; i++) {
-            if (registeredNengajoes[i].creator == _address) {
-                registeredNengajoes_[i] = registeredNengajoes[i];
+        uint256 index = 0;
+        for (uint256 j = 0; j < registeredNengajoes.length; j++) {
+            if (registeredNengajoes[j].creator == _address) {
+                registeredNengajoes_[index] = registeredNengajoes[j];
+                index++;
             }
         }
         return registeredNengajoes_;
@@ -134,7 +139,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
     function retrieveMintedNengajoIds() public view returns (uint256[] memory) {
         uint256 totalTokenIds = _tokenIds.current();
         uint256[] memory mintedNengajo = new uint256[](totalTokenIds);
-        uint256 mintedNengajoLength;
+        uint256 mintedNengajoLength = 0;
 
         for (uint256 i = 0; i < totalTokenIds; ++i) {
             if (balanceOf(msg.sender, i) != 0) {
@@ -149,6 +154,37 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         }
 
         return mintedNengajoIds_;
+    }
+
+    //@retrun holding nengajo's metadata URIs
+    function retrieveMintedNengajoURIs() public view returns (string[] memory) {
+        uint256[] memory mintedNengajoIds = retrieveMintedNengajoIds();
+        string[] memory mintedNengajoURIs_ = new string[](mintedNengajoIds.length);
+
+        for (uint256 i = 0; i < mintedNengajoIds.length; ++i) {
+            mintedNengajoURIs_[i] = uri(mintedNengajoIds[i]);
+        }
+
+        return mintedNengajoURIs_;
+    }
+
+    //@return retriving registered Nengajo 
+    function retriveRegisteredNengajoes(address _address) public view returns (NengajoInfo[] memory) {
+        uint256 length = 0;
+        for (uint256 i = 0; i < registeredNengajoes.length; i++) {
+            if (registeredNengajoes[i].creator == _address) {
+                length++;
+            }
+        }
+        NengajoInfo[] memory registeredNengajoes_ = new NengajoInfo[](length);
+        uint256 j = 0;
+        for (uint256 i = 0; i < registeredNengajoes.length; i++) {
+            if (registeredNengajoes[i].creator == _address) {
+                registeredNengajoes_[j] = registeredNengajoes[i];
+                ++j;
+            }
+        }
+        return registeredNengajoes_;
     }
 
     function _beforeTokenTransfer(

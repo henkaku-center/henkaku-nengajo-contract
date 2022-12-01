@@ -38,8 +38,8 @@ const calcRequiredHenkakuForRegister: (params: {
   let amount = 1
   if (registeredCount > 5) {
     amount = maxSupply * 10
-  } else {
-    amount = (maxSupply - 5) * 10
+  } else if (registeredCount + maxSupply > 5) {
+    amount = (registeredCount + maxSupply - 5) * 10
   }
   return amount
 }
@@ -52,10 +52,9 @@ describe('RegisterNengajo', () => {
   let user1: SignerWithAddress
   let user2: SignerWithAddress
   let user3: SignerWithAddress
-  let user4: SignerWithAddress
 
   before(async () => {
-    ;[deployer, creator, user1, user2, user3, user4] = await ethers.getSigners()
+    ;[deployer, creator, user1, user2, user3] = await ethers.getSigners()
     HenkakuTokenContract = await deployAndDistributeHenkakuV2({
       deployer,
       addresses: [creator.address, user1.address, user2.address, user3.address, deployer.address],
@@ -74,23 +73,47 @@ describe('RegisterNengajo', () => {
   })
 
   it('register creative', async () => {
-    await HenkakuTokenContract.connect(creator).approve(NengajoContract.address, 100)
+    // Check the contents of tokenId #0, which is the default missing value.
+    // デフォルト値の欠番としたtokenId #0の内容を確認
+    let tokenURI
+    tokenURI = await NengajoContract.uri(0)
+    expect(tokenURI).equal('')
+
+    let getAllRegisteredNengajos
+    getAllRegisteredNengajos = await NengajoContract.getAllregisteredNengajoes()
+    expect(getAllRegisteredNengajos.length).to.equal(1)
+    expect(getAllRegisteredNengajos[0].uri).to.equal('')
+    expect(getAllRegisteredNengajos[0].creator).to.equal(ethers.constants.AddressZero)
+    expect(getAllRegisteredNengajos[0].maxSupply).to.equal(0)
+
+    let getRegisteredNengajo
+    getRegisteredNengajo = await NengajoContract.getRegisteredNengajo(0)
+    expect(getRegisteredNengajo.uri).to.equal('')
+    expect(getRegisteredNengajo.creator).to.equal(ethers.constants.AddressZero)
+    expect(getRegisteredNengajo.maxSupply).to.equal(0)
+
+    await HenkakuTokenContract.connect(creator).approve(NengajoContract.address, 200)
     // Register the first Nengajo
-    // １つ目の年賀状(_tokenIdが０)を登録
+    // １つ目の年賀状(_tokenIdが１)を登録
     await NengajoContract.connect(creator).registerNengajo(2, 'ipfs://test1')
-    const tokenURI = await NengajoContract.uri(0)
+    tokenURI = await NengajoContract.uri(1)
     expect(tokenURI).equal('ipfs://test1')
 
-    const getAllRegisteredNengajos = await NengajoContract.getAllRegisteredNengajos()
-    expect(getAllRegisteredNengajos.length).to.equal(1)
-    expect(getAllRegisteredNengajos[0].uri).to.equal('ipfs://test1')
-    expect(getAllRegisteredNengajos[0].creator).to.equal(creator.address)
-    expect(getAllRegisteredNengajos[0].maxSupply).to.equal(2)
+    getAllRegisteredNengajos = await NengajoContract.getAllregisteredNengajoes()
+    expect(getAllRegisteredNengajos.length).to.equal(2)
+    expect(getAllRegisteredNengajos[1].uri).to.equal('ipfs://test1')
+    expect(getAllRegisteredNengajos[1].creator).to.equal(creator.address)
+    expect(getAllRegisteredNengajos[1].maxSupply).to.equal(2)
 
-    const getRegisteredNengajo = await NengajoContract.getRegisteredNengajo(0)
+    getRegisteredNengajo = await NengajoContract.getRegisteredNengajo(1)
     expect(getRegisteredNengajo.uri).to.equal('ipfs://test1')
     expect(getRegisteredNengajo.creator).to.equal(creator.address)
     expect(getRegisteredNengajo.maxSupply).to.equal(2)
+
+    const registeredNengajoes = await NengajoContract.retriveRegisteredNengajoes(creator.address)
+    expect(registeredNengajoes[0].uri).to.equal('ipfs://test1')
+    expect(registeredNengajoes[0].creator).to.equal(creator.address)
+    expect(registeredNengajoes[0].maxSupply).to.equal(2)
   })
 
   it('check 1Henkaku transfered', async () => {
@@ -110,14 +133,15 @@ describe('RegisterNengajo', () => {
   })
 
   it('Check expected henkaku token amount is transfered', async () => {
-    await NengajoContract.connect(creator).registerNengajo(13, 'ipfs://test1')
+    const henkakuBalanceBefore = await HenkakuTokenContract.balanceOf(creator.address)
     const expectedHenkakuAmount = await calcRequiredHenkakuForRegister({
       NengajoContract,
       address: creator,
-      maxSupply: 13,
+      maxSupply: 10,
     })
-    const henkakuBalance = await HenkakuTokenContract.balanceOf(creator.address)
-    expect(henkakuBalance).to.equal(expectedHenkakuAmount)
+    await NengajoContract.connect(creator).registerNengajo(10, 'ipfs://test1')
+    const henkakuBalanceAfter = await HenkakuTokenContract.balanceOf(creator.address)
+    expect(henkakuBalanceAfter).to.equal(henkakuBalanceBefore.toNumber() - expectedHenkakuAmount)
   })
 })
 
@@ -155,12 +179,12 @@ describe('MintNengajo', () => {
   it('mint nengajo', async () => {
     await NengajoContract.connect(deployer).switchMintable()
 
-    await NengajoContract.connect(user1).mint(0)
-    let balance = await NengajoContract.connect(user1).balanceOf(user1.address, 0)
+    await NengajoContract.connect(user1).mint(1)
+    let balance = await NengajoContract.connect(user1).balanceOf(user1.address, 1)
     expect(balance).to.equal(1)
 
-    await NengajoContract.connect(user2).mint(0)
-    balance = await NengajoContract.connect(user2).balanceOf(user2.address, 0)
+    await NengajoContract.connect(user2).mint(1)
+    balance = await NengajoContract.connect(user2).balanceOf(user2.address, 1)
     expect(balance).to.equal(1)
   })
 
@@ -168,71 +192,96 @@ describe('MintNengajo', () => {
     // ミントされた年賀状の確認
     let mintedNengajo = await NengajoContract.connect(user1).retrieveMintedNengajoIds()
     expect(mintedNengajo.length).equal(1)
-    expect(mintedNengajo[0]).to.equal(0)
+    expect(mintedNengajo[0]).to.equal(1)
+    // URIs
+    let mintedNengajoURI = await NengajoContract.connect(user1).retrieveMintedNengajoURIs()
+    expect(mintedNengajoURI.length).equal(1)
+    expect(mintedNengajoURI[0]).to.equal('ipfs://test1')
     // Register the second Nengajo
     // ２つ目(_tokenIdが１)の年賀状を登録
     await NengajoContract.connect(creator).registerNengajo(2, 'ipfs://test1')
 
-    // user1が年賀状を２枚め(_tokenIdが１)をミント
-    await NengajoContract.connect(user1).mint(1)
+    // // user1が年賀状を２枚め(_tokenIdが２)をミント
+    await NengajoContract.connect(user1).mint(2)
     mintedNengajo = await NengajoContract.connect(user1).retrieveMintedNengajoIds()
 
     expect(mintedNengajo.length).equal(2)
-    expect(mintedNengajo[0]).to.equal(0)
-    expect(mintedNengajo[1]).to.equal(1)
+    expect(mintedNengajo[0]).to.equal(1)
+    expect(mintedNengajo[1]).to.equal(2)
+    //URIs
+    mintedNengajoURI = await NengajoContract.connect(user1).retrieveMintedNengajoURIs()
+
+    expect(mintedNengajoURI.length).equal(2)
+    expect(mintedNengajoURI[0]).to.equal('ipfs://test1')
+    expect(mintedNengajoURI[1]).to.equal('ipfs://test1')
 
     mintedNengajo = await NengajoContract.connect(user2).retrieveMintedNengajoIds()
 
     expect(mintedNengajo.length).equal(1)
-    expect(mintedNengajo[0]).to.equal(0)
+    expect(mintedNengajo[0]).to.equal(1)
+    //URIs
+    mintedNengajoURI = await NengajoContract.connect(user2).retrieveMintedNengajoURIs()
+
+    expect(mintedNengajoURI.length).equal(1)
+    expect(mintedNengajoURI[0]).to.equal('ipfs://test1')
   })
 
   it('mint batch nengajos', async () => {
     // Register the third Nengajo
     // ３つ目(_tokenIdが２)の年賀状を登録
     await NengajoContract.connect(creator).registerNengajo(2, 'ipfs://test4')
-
     // Register the fourth Nengajo
     // 4つ目(_tokenIdが３)の年賀状を登録
     await NengajoContract.connect(creator).registerNengajo(2, 'ipfs://test4')
 
-    await NengajoContract.connect(user3).mintBatch([2, 3])
-
+    await NengajoContract.connect(user3).mintBatch([3, 4])
     let balance
-    balance = await NengajoContract.connect(user3).balanceOf(user3.address, 2)
+    balance = await NengajoContract.connect(user3).balanceOf(user3.address, 3)
     expect(balance).to.equal(1)
 
-    balance = await NengajoContract.connect(user3).balanceOf(user3.address, 3)
+    balance = await NengajoContract.connect(user3).balanceOf(user3.address, 4)
     expect(balance).to.equal(1)
 
     let mintedNengajo = await NengajoContract.connect(user3).retrieveMintedNengajoIds()
 
     expect(mintedNengajo.length).equal(2)
-    expect(mintedNengajo[0]).to.equal(2)
-    expect(mintedNengajo[1]).to.equal(3)
+    expect(mintedNengajo[0]).to.equal(3)
+    expect(mintedNengajo[1]).to.equal(4)
+    //URIs
+    let mintedNengajoURI = await NengajoContract.connect(user3).retrieveMintedNengajoURIs()
+
+    expect(mintedNengajoURI.length).equal(2)
+    expect(mintedNengajoURI[0]).to.equal('ipfs://test4')
+    expect(mintedNengajoURI[1]).to.equal('ipfs://test4')
   })
 
   it('mint batch failed with already have', async () => {
     // Confirmed that even with the mintBatch function, it is not possible to mint more than two Nengajos.
     // mintBatch関数でも同じ年賀状を2つ以上ミント出来ないことを確認
-    await expect(NengajoContract.connect(user3).mintBatch([2, 3])).to.be.revertedWith(
+    await expect(NengajoContract.connect(user3).mintBatch([3, 4])).to.be.revertedWith(
       'Nengajo: You already have this nengajo'
     )
 
     // Confirm that balance, etc. has not changed.
     // balance等が変わっていないことを確認
     let balance
-    balance = await NengajoContract.connect(user3).balanceOf(user3.address, 2)
+    balance = await NengajoContract.connect(user3).balanceOf(user3.address, 3)
     expect(balance).to.equal(1)
 
-    balance = await NengajoContract.connect(user3).balanceOf(user3.address, 3)
+    balance = await NengajoContract.connect(user3).balanceOf(user3.address, 4)
     expect(balance).to.equal(1)
 
     let mintedNengajo = await NengajoContract.connect(user3).retrieveMintedNengajoIds()
 
     expect(mintedNengajo.length).equal(2)
-    expect(mintedNengajo[0]).to.equal(2)
-    expect(mintedNengajo[1]).to.equal(3)
+    expect(mintedNengajo[0]).to.equal(3)
+    expect(mintedNengajo[1]).to.equal(4)
+    //URIs
+    let mintedNengajoURI = await NengajoContract.connect(user3).retrieveMintedNengajoURIs()
+
+    expect(mintedNengajoURI.length).equal(2)
+    expect(mintedNengajoURI[0]).to.equal('ipfs://test4')
+    expect(mintedNengajoURI[1]).to.equal('ipfs://test4')
   })
 
   it('failed with unavailable', async () => {
@@ -241,15 +290,19 @@ describe('MintNengajo', () => {
   })
 
   it('failed with already have', async () => {
-    await expect(NengajoContract.connect(user2).mint(0)).to.be.revertedWith('Nengajo: You already have this nengajo')
+    await expect(NengajoContract.connect(user2).mint(1)).to.be.revertedWith('Nengajo: You already have this nengajo')
   })
 
   it('failed with mint limit', async () => {
+    await expect(NengajoContract.connect(user3).mint(1)).to.be.revertedWith('Nengajo: Mint limit reached')
+  })
+
+  it('failed with mint tokenId #0', async () => {
     await expect(NengajoContract.connect(user3).mint(0)).to.be.revertedWith('Nengajo: Mint limit reached')
   })
 
   it('failed with insufficient Henkaku Token', async () => {
-    await expect(NengajoContract.connect(user4).mint(1)).to.be.revertedWith(
+    await expect(NengajoContract.connect(user4).mint(2)).to.be.revertedWith(
       'Nengajo: Insufficient Henkaku Token Balance'
     )
   })
@@ -484,7 +537,7 @@ describe('after minting term', () => {
     const checkRemainingCloseTime = await NengajoContract.callStatic.checkRemainingCloseTime()
     await HenkakuTokenContract.connect(creator).approve(NengajoContract.address, 200)
     await NengajoContract.connect(creator).registerNengajo(1, 'ipfs://test1')
-    const tokenURI = await NengajoContract.uri(0)
+    const tokenURI = await NengajoContract.uri(1)
     expect(tokenURI).equal('ipfs://test1')
 
     let mintable
@@ -492,7 +545,7 @@ describe('after minting term', () => {
     expect(mintable).to.equal(false)
 
     if (checkRemainingOpenTime || (!checkRemainingCloseTime && !mintable)) {
-      await expect(NengajoContract.connect(user1).mint(0)).to.be.revertedWith('Nengajo: Not mintable')
+      await expect(NengajoContract.connect(user1).mint(1)).to.be.revertedWith('Nengajo: Not mintable')
     }
   })
 })
