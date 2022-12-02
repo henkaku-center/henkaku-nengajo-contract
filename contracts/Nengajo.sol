@@ -14,6 +14,11 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
     string public name;
     string public symbol;
 
+    //@dev Declare Event to emit
+    event Mint(address indexed minter, uint256 indexed tokenId);
+    event RegisterCreative(address indexed creator, string metaDataURL, uint256 maxSupply);
+    event MintBatch(address indexed minter, uint256[] tokenIds);
+
     /**
      * @param uri: metadata uri
      * @param creator: creator's wallet address
@@ -59,6 +64,11 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         transferHenkakuV2(_maxSupply * 10);
         registeredNengajoes.push(NengajoInfo(_metaDataURL, msg.sender, _maxSupply));
         _tokenIds.increment();
+
+        // @dev Emit register creative (address, URL of NFT image, max supply of the image)
+        // アドレスと年賀状のURLと最大ミント数をEmitする
+        emit RegisterCreative(msg.sender,_metaDataURL, _maxSupply);        
+
     }
 
     // @return all registered nangajo
@@ -78,7 +88,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         require(getRegisteredNengajo(_tokenId).maxSupply > totalSupply(_tokenId), "Nengajo: Mint limit reached");
     }
 
-    // @dev mint function
+    // @dev mint batch function
     function mintBatch(uint256[] memory _tokenIdsList) public whenMintable {
         uint256 tokenIdsLength = _tokenIdsList.length;
         uint256[] memory amountList = new uint256[](tokenIdsLength);
@@ -89,12 +99,20 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         }
 
         _mintBatch(msg.sender, _tokenIdsList, amountList, "");
+
+        // @dev Emit mint batch event (address and token id list)
+        // バッチでのアドレスとトークンIDのリストをEmitする
+        emit MintBatch(msg.sender, _tokenIdsList);        
     }
 
     // @dev mint function
     function mint(uint256 _tokenId) public whenMintable {
         checkNengajoAmount(_tokenId);
         _mint(msg.sender, _tokenId, 1, "");
+
+        // @dev Emit mint event (address and token id)
+        // アドレスとトークンIDをEmitする
+        emit Mint(msg.sender, _tokenId);
     }
 
     // @return token metadata uri
