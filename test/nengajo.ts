@@ -110,7 +110,7 @@ describe('RegisterNengajo', () => {
     expect(getRegisteredNengajo.creator).to.equal(creator.address)
     expect(getRegisteredNengajo.maxSupply).to.equal(2)
 
-    const registeredNengajoes = await NengajoContract.retriveRegisteredNengajoes(creator.address)
+    const registeredNengajoes = await NengajoContract.retrieveRegisteredNengajoes(creator.address)
     expect(registeredNengajoes[0].uri).to.equal('ipfs://test1')
     expect(registeredNengajoes[0].creator).to.equal(creator.address)
     expect(registeredNengajoes[0].maxSupply).to.equal(2)
