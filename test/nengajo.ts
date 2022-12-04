@@ -80,14 +80,14 @@ describe('RegisterNengajo', () => {
     expect(tokenURI).equal('')
 
     let getAllRegisteredNengajos
-    getAllRegisteredNengajos = await NengajoContract.getAllregisteredNengajoes()
+    getAllRegisteredNengajos = await NengajoContract.retrieveAllNengajoes()
     expect(getAllRegisteredNengajos.length).to.equal(1)
     expect(getAllRegisteredNengajos[0].uri).to.equal('')
     expect(getAllRegisteredNengajos[0].creator).to.equal(ethers.constants.AddressZero)
     expect(getAllRegisteredNengajos[0].maxSupply).to.equal(0)
 
     let getRegisteredNengajo
-    getRegisteredNengajo = await NengajoContract.getRegisteredNengajo(0)
+    getRegisteredNengajo = await NengajoContract.retrieveRegisteredNengajo(0)
     expect(getRegisteredNengajo.uri).to.equal('')
     expect(getRegisteredNengajo.creator).to.equal(ethers.constants.AddressZero)
     expect(getRegisteredNengajo.maxSupply).to.equal(0)
@@ -98,19 +98,19 @@ describe('RegisterNengajo', () => {
 
     // @dev test emit register creative
     await expect(NengajoContract.connect(creator).registerNengajo(2, 'ipfs://test1'))
-      .to.emit(NengajoContract, 'RegisterCreative')
-      .withArgs(creator.address, 'ipfs://test1', 2)
+      .to.emit(NengajoContract, 'RegisterNengajo')
+      .withArgs(creator.address, 1, 'ipfs://test1', 2)
 
     tokenURI = await NengajoContract.uri(1)
     expect(tokenURI).equal('ipfs://test1')
 
-    getAllRegisteredNengajos = await NengajoContract.getAllregisteredNengajoes()
+    getAllRegisteredNengajos = await NengajoContract.retrieveAllNengajoes()
     expect(getAllRegisteredNengajos.length).to.equal(2)
     expect(getAllRegisteredNengajos[1].uri).to.equal('ipfs://test1')
     expect(getAllRegisteredNengajos[1].creator).to.equal(creator.address)
     expect(getAllRegisteredNengajos[1].maxSupply).to.equal(2)
 
-    getRegisteredNengajo = await NengajoContract.getRegisteredNengajo(1)
+    getRegisteredNengajo = await NengajoContract.retrieveRegisteredNengajo(1)
     expect(getRegisteredNengajo.uri).to.equal('ipfs://test1')
     expect(getRegisteredNengajo.creator).to.equal(creator.address)
     expect(getRegisteredNengajo.maxSupply).to.equal(2)
@@ -197,41 +197,29 @@ describe('MintNengajo', () => {
   })
 
   it('retrieve minted nengajo', async () => {
-    // ミントされた年賀状の確認
-    let mintedNengajo = await NengajoContract.connect(user1).retrieveMintedNengajoIds()
-    expect(mintedNengajo.length).equal(1)
-    expect(mintedNengajo[0]).to.equal(1)
     // URIs
-    let mintedNengajoURI = await NengajoContract.connect(user1).retrieveMintedNengajoURIs()
-    expect(mintedNengajoURI.length).equal(1)
-    expect(mintedNengajoURI[0]).to.equal('ipfs://test1')
+    let mintedNengajoInfo = await NengajoContract.connect(user1).retrieveMintedNengajoes()
+    expect(mintedNengajoInfo.length).equal(1)
+    expect(mintedNengajoInfo[0].uri).to.equal('ipfs://test1')
     // Register the second Nengajo
     // ２つ目(_tokenIdが１)の年賀状を登録
     await NengajoContract.connect(creator).registerNengajo(2, 'ipfs://test1')
 
     // // user1が年賀状を２枚め(_tokenIdが２)をミント
     await NengajoContract.connect(user1).mint(2)
-    mintedNengajo = await NengajoContract.connect(user1).retrieveMintedNengajoIds()
+    mintedNengajoInfo = await NengajoContract.connect(user1).retrieveMintedNengajoes()
 
-    expect(mintedNengajo.length).equal(2)
-    expect(mintedNengajo[0]).to.equal(1)
-    expect(mintedNengajo[1]).to.equal(2)
-    //URIs
-    mintedNengajoURI = await NengajoContract.connect(user1).retrieveMintedNengajoURIs()
+    expect(mintedNengajoInfo.length).equal(2)
+    expect(mintedNengajoInfo[0].id).to.equal(1)
+    expect(mintedNengajoInfo[1].id).to.equal(2)
+    expect(mintedNengajoInfo[0].uri).to.equal('ipfs://test1')
+    expect(mintedNengajoInfo[1].uri).to.equal('ipfs://test1')
 
-    expect(mintedNengajoURI.length).equal(2)
-    expect(mintedNengajoURI[0]).to.equal('ipfs://test1')
-    expect(mintedNengajoURI[1]).to.equal('ipfs://test1')
+    mintedNengajoInfo = await NengajoContract.connect(user2).retrieveMintedNengajoes()
 
-    mintedNengajo = await NengajoContract.connect(user2).retrieveMintedNengajoIds()
-
-    expect(mintedNengajo.length).equal(1)
-    expect(mintedNengajo[0]).to.equal(1)
-    //URIs
-    mintedNengajoURI = await NengajoContract.connect(user2).retrieveMintedNengajoURIs()
-
-    expect(mintedNengajoURI.length).equal(1)
-    expect(mintedNengajoURI[0]).to.equal('ipfs://test1')
+    expect(mintedNengajoInfo.length).equal(1)
+    expect(mintedNengajoInfo[0].id).to.equal(1)
+    expect(mintedNengajoInfo[0].uri).to.equal('ipfs://test1')
   })
 
   it('mint batch nengajos', async () => {
@@ -255,17 +243,13 @@ describe('MintNengajo', () => {
     balance = await NengajoContract.connect(user3).balanceOf(user3.address, 4)
     expect(balance).to.equal(1)
 
-    let mintedNengajo = await NengajoContract.connect(user3).retrieveMintedNengajoIds()
+    let mintedNengajoInfo = await NengajoContract.connect(user3).retrieveMintedNengajoes()
 
-    expect(mintedNengajo.length).equal(2)
-    expect(mintedNengajo[0]).to.equal(3)
-    expect(mintedNengajo[1]).to.equal(4)
-    //URIs
-    let mintedNengajoURI = await NengajoContract.connect(user3).retrieveMintedNengajoURIs()
-
-    expect(mintedNengajoURI.length).equal(2)
-    expect(mintedNengajoURI[0]).to.equal('ipfs://test4')
-    expect(mintedNengajoURI[1]).to.equal('ipfs://test4')
+    expect(mintedNengajoInfo.length).equal(2)
+    expect(mintedNengajoInfo[0].id).to.equal(3)
+    expect(mintedNengajoInfo[1].id).to.equal(4)
+    expect(mintedNengajoInfo[0].uri).to.equal('ipfs://test4')
+    expect(mintedNengajoInfo[1].uri).to.equal('ipfs://test4')
   })
 
   it('mint batch failed with already have', async () => {
@@ -284,17 +268,13 @@ describe('MintNengajo', () => {
     balance = await NengajoContract.connect(user3).balanceOf(user3.address, 4)
     expect(balance).to.equal(1)
 
-    let mintedNengajo = await NengajoContract.connect(user3).retrieveMintedNengajoIds()
+    let mintedNengajoInfo = await NengajoContract.connect(user3).retrieveMintedNengajoes()
 
-    expect(mintedNengajo.length).equal(2)
-    expect(mintedNengajo[0]).to.equal(3)
-    expect(mintedNengajo[1]).to.equal(4)
-    //URIs
-    let mintedNengajoURI = await NengajoContract.connect(user3).retrieveMintedNengajoURIs()
-
-    expect(mintedNengajoURI.length).equal(2)
-    expect(mintedNengajoURI[0]).to.equal('ipfs://test4')
-    expect(mintedNengajoURI[1]).to.equal('ipfs://test4')
+    expect(mintedNengajoInfo.length).equal(2)
+    expect(mintedNengajoInfo[0].id).to.equal(3)
+    expect(mintedNengajoInfo[1].id).to.equal(4)
+    expect(mintedNengajoInfo[0].uri).to.equal('ipfs://test4')
+    expect(mintedNengajoInfo[1].uri).to.equal('ipfs://test4')
   })
 
   it('failed with unavailable', async () => {
