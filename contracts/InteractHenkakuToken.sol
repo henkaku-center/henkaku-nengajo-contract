@@ -18,7 +18,7 @@ abstract contract InteractHenakuToken {
     }
 
     function checkHenkakuV2Balance(uint256 _requiredAmount) internal view returns (bool) {
-        if (IHenkakuToken(henkakuV2).balanceOf(msg.sender) > _requiredAmount) {
+        if (IHenkakuToken(henkakuV2).balanceOf(msg.sender) >= _requiredAmount) {
             return true;
         } else {
             return false;
