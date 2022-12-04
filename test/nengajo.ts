@@ -95,7 +95,12 @@ describe('RegisterNengajo', () => {
     await HenkakuTokenContract.connect(creator).approve(NengajoContract.address, 200)
     // Register the first Nengajo
     // １つ目の年賀状(_tokenIdが１)を登録
-    await NengajoContract.connect(creator).registerNengajo(2, 'ipfs://test1')
+
+    // @dev test emit register creative
+    await expect(NengajoContract.connect(creator).registerNengajo(2, 'ipfs://test1'))
+      .to.emit(NengajoContract, 'RegisterCreative')
+      .withArgs(creator.address, 'ipfs://test1', 2)
+
     tokenURI = await NengajoContract.uri(1)
     expect(tokenURI).equal('ipfs://test1')
 
@@ -183,7 +188,10 @@ describe('MintNengajo', () => {
     let balance = await NengajoContract.connect(user1).balanceOf(user1.address, 1)
     expect(balance).to.equal(1)
 
-    await NengajoContract.connect(user2).mint(1)
+    // @dev test emit mint
+    await expect(NengajoContract.connect(user2).mint(1)).to.emit(NengajoContract, 'Mint').withArgs(user2.address, 1)
+
+    //await NengajoContract.connect(user2).mint(1)
     balance = await NengajoContract.connect(user2).balanceOf(user2.address, 1)
     expect(balance).to.equal(1)
   })
@@ -234,7 +242,12 @@ describe('MintNengajo', () => {
     // 4つ目(_tokenIdが３)の年賀状を登録
     await NengajoContract.connect(creator).registerNengajo(2, 'ipfs://test4')
 
-    await NengajoContract.connect(user3).mintBatch([3, 4])
+    // @dev test emit mint batch
+    await expect(await NengajoContract.connect(user3).mintBatch([3, 4]))
+      .to.emit(NengajoContract, 'MintBatch')
+      .withArgs(user3.address, [3, 4])
+    //await NengajoContract.connect(user3).mintBatch([3, 4])
+
     let balance
     balance = await NengajoContract.connect(user3).balanceOf(user3.address, 3)
     expect(balance).to.equal(1)
