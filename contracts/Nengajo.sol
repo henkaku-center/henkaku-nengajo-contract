@@ -16,8 +16,8 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
     string public symbol;
 
     //@dev Declare Event to emit
+    event RegisterNengajo(address indexed creator, uint256 tokenId, string metaDataURL, uint256 maxSupply);
     event Mint(address indexed minter, uint256 indexed tokenId);
-    event RegisterCreative(address indexed creator, string metaDataURL, uint256 maxSupply);
     event MintBatch(address indexed minter, uint256[] tokenIds);
 
     /**
@@ -26,6 +26,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
      * @param maxSupply: max supply number of token
      */
     struct NengajoInfo {
+        uint256 id;
         string uri;
         address creator;
         uint256 maxSupply;
@@ -48,7 +49,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         name = _name;
         symbol = _symbol;
 
-        registeredNengajoes.push(NengajoInfo("", address(0), 0));
+        registeredNengajoes.push(NengajoInfo(0, "", address(0), 0));
         _tokenIds.increment();
     }
 
@@ -76,29 +77,58 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         }
 
         transferHenkakuV2(amount);
-        registeredNengajoes.push(NengajoInfo(_metaDataURL, msg.sender, _maxSupply));
+        uint256 tokenId = _tokenIds.current();
+        registeredNengajoes.push(NengajoInfo(tokenId, _metaDataURL, msg.sender, _maxSupply));
         _tokenIds.increment();
 
         // @dev Emit registeredNengajo
-        // @param address, URL of meta data, max supply
-        emit RegisterCreative(msg.sender,_metaDataURL, _maxSupply);
+        // @param address, tokenId, URL of meta data, max supply
+        emit RegisterNengajo(msg.sender, tokenId, _metaDataURL, _maxSupply);
     }
 
-    // @return all registered nangajo
-    function getAllregisteredNengajoes() external view returns (NengajoInfo[] memory) {
+    // @return all registered NengajoInfo
+    function retrieveAllNengajoes() external view returns (NengajoInfo[] memory) {
         return registeredNengajoes;
     }
 
-    // @return registered nengajo data
-    function getRegisteredNengajo(uint256 _tokenId) public view returns (NengajoInfo memory) {
+    // @return registered NengajoInfo by tokenId
+    function retrieveRegisteredNengajo(uint256 _tokenId) public view returns (NengajoInfo memory) {
         require(registeredNengajoes.length > _tokenId, "Nengajo: not available");
         return registeredNengajoes[_tokenId];
     }
 
+    // @return registered NengajoInfo by address
+    function retrieveRegisteredNengajoes(address _address) public view returns (NengajoInfo[] memory) {
+        uint256 length = 0;
+        for (uint256 i = 0; i < registeredNengajoes.length; i++) {
+            if (registeredNengajoes[i].creator == _address) {
+                length++;
+            }
+        }
+        NengajoInfo[] memory registeredNengajoes_ = new NengajoInfo[](length);
+        uint256 index = 0;
+        for (uint256 j = 0; j < registeredNengajoes.length; j++) {
+            if (registeredNengajoes[j].creator == _address) {
+                registeredNengajoes_[index] = registeredNengajoes[j];
+                index++;
+            }
+        }
+        return registeredNengajoes_;
+    }
+
     function checkNengajoAmount(uint256 _tokenId) private view {
         require(balanceOf(msg.sender, _tokenId) == 0, "Nengajo: You already have this nengajo");
+        require(retrieveRegisteredNengajo(_tokenId).maxSupply > totalSupply(_tokenId), "Nengajo: Mint limit reached");
+    }
 
-        require(getRegisteredNengajo(_tokenId).maxSupply > totalSupply(_tokenId), "Nengajo: Mint limit reached");
+    // @dev mint function
+    function mint(uint256 _tokenId) public whenMintable {
+        checkNengajoAmount(_tokenId);
+        _mint(msg.sender, _tokenId, 1, "");
+
+        // @dev Emit mint event
+        // @param address, tokenId
+        emit Mint(msg.sender, _tokenId);
     }
 
     // @dev mint batch function
@@ -118,71 +148,30 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         emit MintBatch(msg.sender, _tokenIdsList);        
     }
 
-    // @dev mint function
-    function mint(uint256 _tokenId) public whenMintable {
-        checkNengajoAmount(_tokenId);
-        _mint(msg.sender, _tokenId, 1, "");
-
-        // @dev Emit mint event
-        // @param address, tokenId
-        emit Mint(msg.sender, _tokenId);
-    }
-
-    // @return token metadata uri
-    function uri(uint256 _tokenId) public view override(ERC1155) returns (string memory) {
-        return getRegisteredNengajo(_tokenId).uri;
-    }
-
-    // @return registered NengajoInfo with address
-    function retrieveRegisteredNengajoes(address _address) public view returns (NengajoInfo[] memory) {
-        uint256 length = 0;
-        for (uint256 i = 0; i < registeredNengajoes.length; i++) {
-            if (registeredNengajoes[i].creator == _address) {
-                length++;
-            }
-        }
-        NengajoInfo[] memory registeredNengajoes_ = new NengajoInfo[](length);
-        uint256 index = 0;
-        for (uint256 j = 0; j < registeredNengajoes.length; j++) {
-            if (registeredNengajoes[j].creator == _address) {
-                registeredNengajoes_[index] = registeredNengajoes[j];
-                index++;
-            }
-        }
-        return registeredNengajoes_;
-    }
-
     // @return holding tokenIds with address
-    function retrieveMintedNengajoIds() public view returns (uint256[] memory) {
-        uint256 totalTokenIds = _tokenIds.current();
-        uint256[] memory mintedNengajo = new uint256[](totalTokenIds);
+    function retrieveMintedNengajoes() public view returns (NengajoInfo[] memory) {
+        uint256 currentTokenId = _tokenIds.current();
+        uint256[] memory mintedNengajo = new uint256[](currentTokenId);
         uint256 mintedNengajoLength = 0;
 
-        for (uint256 i = 0; i < totalTokenIds; ++i) {
+        for (uint256 i = 0; i < currentTokenId; ++i) {
             if (balanceOf(msg.sender, i) != 0) {
                 mintedNengajo[mintedNengajoLength] = i;
                 ++mintedNengajoLength;
             }
         }
 
-        uint256[] memory mintedNengajoIds_ = new uint256[](mintedNengajoLength);
+        NengajoInfo[] memory mintedNengajoesInfo_ = new NengajoInfo[](mintedNengajoLength);
         for (uint256 j = 0; j < mintedNengajoLength; ++j) {
-            mintedNengajoIds_[j] = mintedNengajo[j];
+            mintedNengajoesInfo_[j] = retrieveRegisteredNengajo(mintedNengajo[j]);
         }
 
-        return mintedNengajoIds_;
+        return mintedNengajoesInfo_;
     }
 
-    //@retrun holding nengajo's metadata URIs
-    function retrieveMintedNengajoURIs() public view returns (string[] memory) {
-        uint256[] memory mintedNengajoIds = retrieveMintedNengajoIds();
-        string[] memory mintedNengajoURIs_ = new string[](mintedNengajoIds.length);
-
-        for (uint256 i = 0; i < mintedNengajoIds.length; ++i) {
-            mintedNengajoURIs_[i] = uri(mintedNengajoIds[i]);
-        }
-
-        return mintedNengajoURIs_;
+    // @return token metadata uri
+    function uri(uint256 _tokenId) public view override(ERC1155) returns (string memory) {
+        return retrieveRegisteredNengajo(_tokenId).uri;
     }
 
     function _beforeTokenTransfer(
