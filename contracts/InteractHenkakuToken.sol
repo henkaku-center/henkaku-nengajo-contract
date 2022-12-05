@@ -15,7 +15,7 @@ abstract contract InteractHenakuToken {
     function transferHenkakuV2(uint256 _amount) internal {
         require(checkHenkakuV2Balance(_amount), "Nengajo: Insufficient HenkakuV2 token");
         bool sent = IHenkakuToken(henkakuV2).transferFrom(msg.sender, henkakuPoolWallet, _amount);
-        require(sent, "transferFrom failed");
+        require(sent, "Nengajo: Henkaku transfer failed");
     }
 
     function checkHenkakuV2Balance(uint256 _requiredAmount) internal view returns (bool) {
