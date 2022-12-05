@@ -63,6 +63,7 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
     }
 
     function registerNengajo(uint256 _maxSupply, string memory _metaDataURL) public {
+        require(_maxSupply != 0 || keccak256(bytes(_metaDataURL)) != keccak256(bytes("")), "Nengajo: invalid params");
         uint256 registeredCount = 0;
         NengajoInfo[] memory _registeredNengajoes = retrieveRegisteredNengajoes(msg.sender);
         for (uint256 i = 0; i < _registeredNengajoes.length; ) {
