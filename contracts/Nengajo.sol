@@ -63,10 +63,14 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
     }
 
     function registerNengajo(uint256 _maxSupply, string memory _metaDataURL) public {
+        require(_maxSupply != 0 || keccak256(bytes(_metaDataURL)) != keccak256(bytes("")), "Nengajo: invalid params");
         uint256 registeredCount = 0;
         NengajoInfo[] memory _registeredNengajoes = retrieveRegisteredNengajoes(msg.sender);
-        for (uint i = 0; i < _registeredNengajoes.length; i++) {
-            registeredCount = registeredCount + _registeredNengajoes[i].maxSupply;
+        for (uint256 i = 0; i < _registeredNengajoes.length; ) {
+            registeredCount += _registeredNengajoes[i].maxSupply;
+            unchecked {
+                ++i;
+            }
         }
 
         uint256 amount = 1;
@@ -93,24 +97,33 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
 
     // @return registered NengajoInfo by tokenId
     function retrieveRegisteredNengajo(uint256 _tokenId) public view returns (NengajoInfo memory) {
-        require(registeredNengajoes.length > _tokenId, "Nengajo: not available");
-        return registeredNengajoes[_tokenId];
+        NengajoInfo[] memory _registeredNengajoes = registeredNengajoes;
+        require(_registeredNengajoes.length > _tokenId, "Nengajo: not available");
+        return _registeredNengajoes[_tokenId];
     }
 
     // @return registered NengajoInfo by address
     function retrieveRegisteredNengajoes(address _address) public view returns (NengajoInfo[] memory) {
         uint256 length = 0;
-        for (uint256 i = 0; i < registeredNengajoes.length; i++) {
-            if (registeredNengajoes[i].creator == _address) {
-                length++;
+        NengajoInfo[] memory _registeredNengajoes = registeredNengajoes;
+        for (uint256 i = 0; i < _registeredNengajoes.length; ) {
+            if (_registeredNengajoes[i].creator == _address) {
+                ++length;
+            }
+            unchecked {
+                ++i;
             }
         }
         NengajoInfo[] memory registeredNengajoes_ = new NengajoInfo[](length);
         uint256 index = 0;
-        for (uint256 j = 0; j < registeredNengajoes.length; j++) {
-            if (registeredNengajoes[j].creator == _address) {
-                registeredNengajoes_[index] = registeredNengajoes[j];
-                index++;
+        for (uint256 j = 0; j < _registeredNengajoes.length; ) {
+            NengajoInfo memory _registeredNengajo = _registeredNengajoes[j];
+            if (_registeredNengajo.creator == _address) {
+                registeredNengajoes_[index] = _registeredNengajo;
+                ++index;
+            }
+            unchecked {
+                ++j;
             }
         }
         return registeredNengajoes_;
@@ -136,16 +149,19 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         uint256 tokenIdsLength = _tokenIdsList.length;
         uint256[] memory amountList = new uint256[](tokenIdsLength);
 
-        for (uint256 i = 0; i < tokenIdsLength; ++i) {
+        for (uint256 i = 0; i < tokenIdsLength; ) {
             checkNengajoAmount(_tokenIdsList[i]);
             amountList[i] = 1;
+            unchecked {
+                ++i;
+            }
         }
 
         _mintBatch(msg.sender, _tokenIdsList, amountList, "");
 
         // @dev Emit mint batch event
         // @param address,tokenId list
-        emit MintBatch(msg.sender, _tokenIdsList);        
+        emit MintBatch(msg.sender, _tokenIdsList);
     }
 
     // @return holding tokenIds with address
@@ -154,16 +170,22 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         uint256[] memory mintedNengajo = new uint256[](currentTokenId);
         uint256 mintedNengajoLength = 0;
 
-        for (uint256 i = 0; i < currentTokenId; ++i) {
+        for (uint256 i = 0; i < currentTokenId; ) {
             if (balanceOf(msg.sender, i) != 0) {
                 mintedNengajo[mintedNengajoLength] = i;
                 ++mintedNengajoLength;
             }
+            unchecked {
+                ++i;
+            }
         }
 
         NengajoInfo[] memory mintedNengajoesInfo_ = new NengajoInfo[](mintedNengajoLength);
-        for (uint256 j = 0; j < mintedNengajoLength; ++j) {
+        for (uint256 j = 0; j < mintedNengajoLength; ) {
             mintedNengajoesInfo_[j] = retrieveRegisteredNengajo(mintedNengajo[j]);
+            unchecked {
+                ++j;
+            }
         }
 
         return mintedNengajoesInfo_;

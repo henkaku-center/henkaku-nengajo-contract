@@ -23,13 +23,13 @@ abstract contract MintManager {
         uint256 _newAdminsLength = _newAdmins.length;
         require(_newAdminsLength > 0, "Need one or more new admins");
 
-        if (_newAdminsLength == 1 && !admins[_newAdmins[0]]) {
-            admins[_newAdmins[0]] = true;
-        } else {
-            for (uint256 i = 0; i < _newAdminsLength; ++i) {
-                if (!admins[_newAdmins[i]]) {
-                    admins[_newAdmins[i]] = true;
-                }
+        for (uint256 i = 0; i < _newAdminsLength; ) {
+            address _newAdmin = _newAdmins[i];
+            if (!admins[_newAdmin]) {
+                admins[_newAdmin] = true;
+            }
+            unchecked {
+                ++i;
             }
         }
     }
@@ -39,16 +39,18 @@ abstract contract MintManager {
     }
 
     function checkRemainingOpenTime() external view returns (uint256) {
-        if (open_blockTimestamp > block.timestamp) {
-            return open_blockTimestamp - block.timestamp;
+        uint256 _open_blockTimestamp = open_blockTimestamp;
+        if (_open_blockTimestamp > block.timestamp) {
+            return _open_blockTimestamp - block.timestamp;
         } else {
             return 0;
         }
     }
 
     function checkRemainingCloseTime() external view returns (uint256) {
-        if (close_blockTimestamp > block.timestamp) {
-            return close_blockTimestamp - block.timestamp;
+        uint256 _close_blockTimestamp = close_blockTimestamp;
+        if (_close_blockTimestamp > block.timestamp) {
+            return _close_blockTimestamp - block.timestamp;
         } else {
             return 0;
         }
