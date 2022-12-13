@@ -4,7 +4,8 @@
     "test": "yarn hardhat test",
     "compile": "yarn hardhat compile",
     "localnode": "yarn hardhat node",
-    "deploy:local": "yarn hardhat run scripts/deploy_local.ts --network local"
+    "deploy:local": "yarn hardhat run scripts/deploy_local.ts --network local",
+    "deploy:mumbai": "yarn hardhat run scripts/deploy_testnet.ts --network mumbai"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",

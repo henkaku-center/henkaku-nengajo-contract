@@ -1,14 +1,10 @@
 import * as dotenv from 'dotenv'
-import { setBalance } from '@nomicfoundation/hardhat-network-helpers'
 import { ethers } from 'hardhat'
 
 dotenv.config()
 
 const main = async () => {
-  const localUserAddresses = String(process.env.LOCAL_USERS_ADDRESSES).split(',')
-  for (const address of localUserAddresses) {
-    await setBalance(address, 100n ** 9n)
-  }
+  const localUserAddresses = String(process.env.TESTNET_USERS_ADDRESSES).split(',')
 
   const HenkakuV2Factory = await ethers.getContractFactory('HenkakuToken')
   const HenkakuV2Contract = await HenkakuV2Factory.deploy()
@@ -16,7 +12,7 @@ const main = async () => {
 
   await HenkakuV2Contract.addWhitelistUsers(localUserAddresses)
   for (const address of localUserAddresses) {
-    await HenkakuV2Contract.mint(address, 100n ** 13n)
+    await HenkakuV2Contract.mint(address, 100n ** 10n)
   }
 
   const open_blockTimestamp: number = 0
