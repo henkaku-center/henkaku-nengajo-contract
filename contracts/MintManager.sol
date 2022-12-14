@@ -34,6 +34,10 @@ abstract contract MintManager {
         }
     }
 
+    function deleteAdmin(address _deleteAdmin) external onlyAdmins {
+        admins[_deleteAdmin] = false;
+    }
+
     function switchMintable() external onlyAdmins {
         mintable = !mintable;
     }
