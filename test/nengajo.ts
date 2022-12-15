@@ -386,6 +386,18 @@ describe('CheckMintable', () => {
     expect(isAdmin).to.equal(true)
   })
 
+  it('delete an admin', async () => {
+    let isAdmin
+    isAdmin = await NengajoContract.admins(user2.address)
+    expect(isAdmin).to.equal(true)
+
+    const deleteAdmin = await NengajoContract.connect(deployer).deleteAdmin(user2.address)
+    await deleteAdmin.wait()
+
+    isAdmin = await NengajoContract.admins(user2.address)
+    expect(isAdmin).to.equal(false)
+  })
+
   it('switch mintable flag', async () => {
     let mintable
     mintable = await NengajoContract.mintable()
