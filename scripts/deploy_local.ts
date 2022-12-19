@@ -16,11 +16,11 @@ const main = async () => {
 
   await HenkakuV2Contract.addWhitelistUsers(localUserAddresses)
   for (const address of localUserAddresses) {
-    await HenkakuV2Contract.mint(address, 100)
+    await HenkakuV2Contract.mint(address, 100n ** 12n)
   }
 
-  const open_blockTimestamp: number = 0
-  const close_blockTimestamp: number = 1000000000
+  const open_blockTimestamp: number = 1671458400
+  const close_blockTimestamp: number = 2671458400
   const NengajoFactory = await ethers.getContractFactory('Nengajo')
   const NengajoContract = await NengajoFactory.deploy(
     'Henkaku Nengajo',
