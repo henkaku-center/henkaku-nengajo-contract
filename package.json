@@ -4,6 +4,7 @@
     "test": "yarn hardhat test",
     "compile": "yarn hardhat compile",
     "localnode": "yarn hardhat node",
+    "clean": "yarn hardhat clean",
     "deploy:local": "yarn hardhat run scripts/deploy_local.ts --network local",
     "deploy:mumbai": "yarn hardhat run scripts/deploy_testnet.ts --network mumbai",
     "verify:mumbai": "yarn hardhat verify --network mumbai"
