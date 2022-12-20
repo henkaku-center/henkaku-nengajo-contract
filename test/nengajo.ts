@@ -198,7 +198,7 @@ describe('MintNengajo', () => {
 
   it('retrieve minted nengajo', async () => {
     // URIs
-    let mintedNengajoInfo = await NengajoContract.connect(user1).retrieveMintedNengajoes()
+    let mintedNengajoInfo = await NengajoContract.connect(user1).retrieveMintedNengajoes(user1.address)
     expect(mintedNengajoInfo.length).equal(1)
     expect(mintedNengajoInfo[0].uri).to.equal('ipfs://test1')
     // Register the second Nengajo
@@ -207,7 +207,7 @@ describe('MintNengajo', () => {
 
     // // user1が年賀状を２枚め(_tokenIdが２)をミント
     await NengajoContract.connect(user1).mint(2)
-    mintedNengajoInfo = await NengajoContract.connect(user1).retrieveMintedNengajoes()
+    mintedNengajoInfo = await NengajoContract.connect(user1).retrieveMintedNengajoes(user1.address)
 
     expect(mintedNengajoInfo.length).equal(2)
     expect(mintedNengajoInfo[0].id).to.equal(1)
@@ -215,7 +215,7 @@ describe('MintNengajo', () => {
     expect(mintedNengajoInfo[0].uri).to.equal('ipfs://test1')
     expect(mintedNengajoInfo[1].uri).to.equal('ipfs://test1')
 
-    mintedNengajoInfo = await NengajoContract.connect(user2).retrieveMintedNengajoes()
+    mintedNengajoInfo = await NengajoContract.connect(user2).retrieveMintedNengajoes(user2.address)
 
     expect(mintedNengajoInfo.length).equal(1)
     expect(mintedNengajoInfo[0].id).to.equal(1)
@@ -243,7 +243,7 @@ describe('MintNengajo', () => {
     balance = await NengajoContract.connect(user3).balanceOf(user3.address, 4)
     expect(balance).to.equal(1)
 
-    let mintedNengajoInfo = await NengajoContract.connect(user3).retrieveMintedNengajoes()
+    let mintedNengajoInfo = await NengajoContract.connect(user3).retrieveMintedNengajoes(user3.address)
 
     expect(mintedNengajoInfo.length).equal(2)
     expect(mintedNengajoInfo[0].id).to.equal(3)
@@ -268,7 +268,7 @@ describe('MintNengajo', () => {
     balance = await NengajoContract.connect(user3).balanceOf(user3.address, 4)
     expect(balance).to.equal(1)
 
-    let mintedNengajoInfo = await NengajoContract.connect(user3).retrieveMintedNengajoes()
+    let mintedNengajoInfo = await NengajoContract.connect(user3).retrieveMintedNengajoes(user3.address)
 
     expect(mintedNengajoInfo.length).equal(2)
     expect(mintedNengajoInfo[0].id).to.equal(3)
