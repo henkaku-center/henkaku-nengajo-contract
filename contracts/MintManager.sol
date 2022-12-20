@@ -44,19 +44,11 @@ abstract contract MintManager {
 
     function checkRemainingOpenTime() external view returns (uint256) {
         uint256 _open_blockTimestamp = open_blockTimestamp;
-        if (_open_blockTimestamp > block.timestamp) {
-            return _open_blockTimestamp - block.timestamp;
-        } else {
-            return 0;
-        }
+        return _open_blockTimestamp > block.timestamp ? _open_blockTimestamp - block.timestamp : 0;
     }
 
     function checkRemainingCloseTime() external view returns (uint256) {
         uint256 _close_blockTimestamp = close_blockTimestamp;
-        if (_close_blockTimestamp > block.timestamp) {
-            return _close_blockTimestamp - block.timestamp;
-        } else {
-            return 0;
-        }
+        return _close_blockTimestamp > block.timestamp ? _close_blockTimestamp - block.timestamp : 0;
     }
 }
