@@ -4,11 +4,12 @@ pragma solidity ^0.8.9;
 import "./interfaces/IHenkakuToken.sol";
 
 abstract contract InteractHenakuToken {
-    address internal henkakuV2;
-    address internal henkakuPoolWallet;
+    address public henkakuV2;
+    address public henkakuPoolWallet;
 
     constructor(address _henkakuV2, address _henkakuPoolWallet) {
         henkakuV2 = _henkakuV2;
+        // @note henkakuPoolWalletは変更の可能性はないか？
         henkakuPoolWallet = _henkakuPoolWallet;
     }
 
@@ -19,10 +20,6 @@ abstract contract InteractHenakuToken {
     }
 
     function checkHenkakuV2Balance(uint256 _requiredAmount) internal view returns (bool) {
-        if (IHenkakuToken(henkakuV2).balanceOf(msg.sender) >= _requiredAmount) {
-            return true;
-        } else {
-            return false;
-        }
+        return IHenkakuToken(henkakuV2).balanceOf(msg.sender) >= _requiredAmount ? true : false;
     }
 }
