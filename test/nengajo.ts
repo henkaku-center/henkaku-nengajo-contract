@@ -425,6 +425,19 @@ describe('CheckMintable', () => {
     mintable = await NengajoContract.mintable()
     expect(mintable).to.equal(false)
   })
+
+  it('check pool address changed', async () => {
+    let pool
+    pool = await NengajoContract.henkakuPoolWallet()
+    // The initial value of Wallet in Pool is set to deployer.
+    // PoolのWalletの初期値はdeployerに設定されている。
+    expect(pool).to.equal(deployer.address)
+
+    await (await NengajoContract.connect(deployer).changeHenkakuPool(user1.address)).wait()
+
+    pool = await NengajoContract.henkakuPoolWallet()
+    expect(pool).to.equal(user1.address)
+  })
 })
 
 describe('check timestamp', () => {

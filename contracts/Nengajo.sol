@@ -179,6 +179,10 @@ contract Nengajo is ERC1155, ERC1155Supply, MintManager, InteractHenakuToken {
         return _ownerOfMintedNengajoes;
     }
 
+    function changeHenkakuPool(address _address) public onlyAdmins {
+        _changeHenkakuPool(_address);
+    }
+
     // @return token metadata uri
     function uri(uint256 _tokenId) public view override(ERC1155) returns (string memory) {
         return retrieveRegisteredNengajo(_tokenId).uri;

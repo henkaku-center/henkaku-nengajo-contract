@@ -22,4 +22,9 @@ abstract contract InteractHenakuToken {
     function checkHenkakuV2Balance(uint256 _requiredAmount) internal view returns (bool) {
         return IHenkakuToken(henkakuV2).balanceOf(msg.sender) >= _requiredAmount ? true : false;
     }
+
+    function _changeHenkakuPool(address _address) internal {
+        require(henkakuPoolWallet != _address, "Henkaku Pool: same address");
+        henkakuPoolWallet = _address;
+    }
 }
