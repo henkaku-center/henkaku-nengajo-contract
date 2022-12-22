@@ -438,6 +438,14 @@ describe('CheckMintable', () => {
     pool = await NengajoContract.henkakuPoolWallet()
     expect(pool).to.equal(user1.address)
   })
+
+  it('check pool address cannot be changed except by admin', async () => {
+    let pool
+    pool = await NengajoContract.henkakuPoolWallet()
+    expect(pool).to.equal(user1.address)
+
+    expect(await NengajoContract.connect(user1).changeHenkakuPool(user2.address)).to.revertedWith("Henkaku Pool: same address")
+  })
 })
 
 describe('check timestamp', () => {
