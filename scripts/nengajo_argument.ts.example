@@ -1,0 +1,11 @@
+const open_blockTimestamp: number = 0
+const close_blockTimestamp: number = 2671458400
+
+export default [
+  'Henkaku Nengajo',
+  'HNJ',
+  open_blockTimestamp,
+  close_blockTimestamp,
+  '0x67C33 HENKAKU TOKEN ADDRESS',
+  '0xdCb93 POOL WALLET ADDRESS',
+]

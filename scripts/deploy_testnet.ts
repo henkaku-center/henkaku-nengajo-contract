@@ -16,7 +16,7 @@ const main = async () => {
   }
 
   const open_blockTimestamp: number = 0
-  const close_blockTimestamp: number = 1000000000
+  const close_blockTimestamp: number = 2671458400
   const NengajoFactory = await ethers.getContractFactory('Nengajo')
   const NengajoContract = await NengajoFactory.deploy(
     'Henkaku Nengajo',

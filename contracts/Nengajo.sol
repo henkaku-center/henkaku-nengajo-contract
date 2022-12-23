@@ -184,6 +184,11 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
         return retrieveRegisteredNengajo(_tokenId).uri;
     }
 
+    // @return token metadata uri
+    function tokenURI(uint256 _tokenId) public view returns (string memory) {
+        return retrieveRegisteredNengajo(_tokenId).uri;
+    }
+
     function _beforeTokenTransfer(
         address _operator,
         address _from,
