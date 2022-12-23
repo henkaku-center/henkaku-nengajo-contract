@@ -340,12 +340,12 @@ describe('CheckMintable', () => {
   })
 
   it('initial admin is deployer', async () => {
-    const admin = await NengajoContract.admins(deployer.address)
+    const admin = await NengajoContract.isAdmin(deployer.address)
     expect(admin).to.equal(true)
   })
 
   it('initial admin is only deployer', async () => {
-    const admin = await NengajoContract.admins(user1.address)
+    const admin = await NengajoContract.isAdmin(user1.address)
     expect(admin).to.equal(false)
   })
 
@@ -358,13 +358,13 @@ describe('CheckMintable', () => {
     const newAdmins = [creator.address]
 
     let isAdmin
-    isAdmin = await NengajoContract.admins(creator.address)
+    isAdmin = await NengajoContract.isAdmin(creator.address)
     expect(isAdmin).to.equal(false)
 
     const addAdmins = await NengajoContract.connect(deployer).addAdmins(newAdmins)
     await addAdmins.wait()
 
-    isAdmin = await NengajoContract.admins(creator.address)
+    isAdmin = await NengajoContract.isAdmin(creator.address)
     expect(isAdmin).to.equal(true)
   })
 
@@ -372,29 +372,29 @@ describe('CheckMintable', () => {
     const newAdmins = [user1.address, user2.address]
 
     let isAdmin
-    isAdmin = await NengajoContract.admins(user1.address)
+    isAdmin = await NengajoContract.isAdmin(user1.address)
     expect(isAdmin).to.equal(false)
-    isAdmin = await NengajoContract.admins(user2.address)
+    isAdmin = await NengajoContract.isAdmin(user2.address)
     expect(isAdmin).to.equal(false)
 
     const addAdmins = await NengajoContract.connect(deployer).addAdmins(newAdmins)
     await addAdmins.wait()
 
-    isAdmin = await NengajoContract.admins(user1.address)
+    isAdmin = await NengajoContract.isAdmin(user1.address)
     expect(isAdmin).to.equal(true)
-    isAdmin = await NengajoContract.admins(user2.address)
+    isAdmin = await NengajoContract.isAdmin(user2.address)
     expect(isAdmin).to.equal(true)
   })
 
   it('delete an admin', async () => {
     let isAdmin
-    isAdmin = await NengajoContract.admins(user2.address)
+    isAdmin = await NengajoContract.isAdmin(user2.address)
     expect(isAdmin).to.equal(true)
 
     const deleteAdmin = await NengajoContract.connect(deployer).deleteAdmin(user2.address)
     await deleteAdmin.wait()
 
-    isAdmin = await NengajoContract.admins(user2.address)
+    isAdmin = await NengajoContract.isAdmin(user2.address)
     expect(isAdmin).to.equal(false)
   })
 
@@ -444,7 +444,9 @@ describe('CheckMintable', () => {
     pool = await NengajoContract.henkakuPoolWallet()
     expect(pool).to.equal(user1.address)
 
-    expect(await NengajoContract.connect(user1).changeHenkakuPool(user2.address)).to.revertedWith("Henkaku Pool: same address")
+    expect(await NengajoContract.connect(user1).changeHenkakuPool(user2.address)).to.revertedWith(
+      'Henkaku Pool: same address'
+    )
   })
 })
 

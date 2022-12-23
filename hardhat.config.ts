@@ -8,9 +8,17 @@ dotenv.config()
 const config: HardhatUserConfig = {
   solidity: '0.8.17',
   networks: {
+    polygon: {
+      url: process.env.POLYGON_ALCHEMY_KEY!,
+      accounts: [process.env.MAIN_PRIVATE_KEY!],
+    },
     mumbai: {
-      url: process.env.STAGING_ALCHEMY_KEY || '',
-      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      url: process.env.MUMBAI_ALCHEMY_KEY!,
+      accounts: [process.env.TEST_PRIVATE_KEY!],
+    },
+    goerli: {
+      url: process.env.GOERLI_ALCHEMY_KEY!,
+      accounts: [process.env.TEST_PRIVATE_KEY!],
     },
     local: {
       url: 'http://localhost:8545',
@@ -20,7 +28,9 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: {
-      polygonMumbai: process.env.ETHERSSCAN_API_KEY!,
+      polygonMumbai: process.env.POLYGON__API_KEY!,
+      polygon: process.env.POLYGON_API_KEY!,
+      goerli: process.env.ETHERSCAN_API_KEY!,
     },
   },
 }
