@@ -3,10 +3,11 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "./Administration.sol";
 import "./InteractHenkakuToken.sol";
-import "hardhat/console.sol";
+import "./MintManager.sol";
 
-contract Nengajo is ERC1155, ERC1155Supply, InteractHenakuToken {
+contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, InteractHenakuToken {
     //@dev count up tokenId from 0
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;

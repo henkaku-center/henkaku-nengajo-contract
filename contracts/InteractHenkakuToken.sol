@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
+import "./Administration.sol";
 import "./MintManager.sol";
 import "./interfaces/IHenkakuToken.sol";
 
-abstract contract InteractHenakuToken is MintManager {
+abstract contract InteractHenakuToken is Administration, MintManager {
     address public henkakuV2;
     address public henkakuPoolWallet;
 

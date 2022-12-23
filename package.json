@@ -7,7 +7,9 @@
     "clean": "yarn hardhat clean",
     "deploy:local": "yarn hardhat run scripts/deploy_local.ts --network local",
     "deploy:mumbai": "yarn hardhat run scripts/deploy_testnet.ts --network mumbai",
-    "verify:mumbai": "yarn hardhat verify --network mumbai"
+    "deploy:goerli": "yarn hardhat run scripts/deploy_testnet.ts --network goerli",
+    "verify:mumbai": "yarn hardhat verify --network mumbai",
+    "verify:goerli": "yarn hardhat verify --network goerli"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",

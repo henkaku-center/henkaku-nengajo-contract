@@ -6,6 +6,6 @@ export default [
   'HNJ',
   open_blockTimestamp,
   close_blockTimestamp,
-  '0x22EcFc47666CE823B57F93ef93494d531dfC67Dc',
+  '0xc9014d5cbA9a1A45DCbeEb596A44fac77FcAFa47',
   '0xdCb93093424447bF4FE9Df869750950922F1E30B',
 ]
