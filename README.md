@@ -1,30 +1,25 @@
 # henkaku-nengajo-contract
 
-## 環境構築
+## 概要
 
-## 1. node.js v16 系をインストール
+これは年賀状の NFT を発行するコントラクトです。
 
-### 1.1 nvm をインストール
+年賀状は通常、書いたものを住所を知っているひとたちに向けて送るものですが、この年賀状 NFT では書いたものをコントラクトに登録し、それを欲しい人が自分で Mint するようになっています。  
+年賀状の登録時には供給量（MaxSupply）を設定できるようになっています。
 
-nvm は複数の node.js バージョンを管理できるマネージャーです。
+## 開発について
 
-[Mac の方はこちら](https://zenn.dev/tet0h/articles/m1mac-nodejs)
-[Win（Ubuntu）の方はこちら](https://zenn.dev/keijiek/articles/4976559b876090)
+### 開発環境
 
-### 1.2 nvm をつかって、node.js をインストール
+- Node.js: v16.x
+- Hardhat
 
-上記、zenn 記事の後半に node.js を install するところがあるので、**バージョンを 16 系（ex: 16.17.0）**にして install
+ローカルノードでの立ち上げ方法　(https://github.com/henkaku-center/henkaku-nengajo-contract/blob/main/docs/local_node.md)
 
-```
-$ nvm install 16.17.0
-```
+## ライセンス
 
-### 1.3 node.js がインストールできるか確認
+本リポジトリは MIT ライセンスの元提供されています。
 
-```
-$ node -v
-```
+## コントリビュート
 
-を実行すると、v16.17.0 みたいな出力が出ると成功しています。
-
-### ローカルノードにデプロイしてフロントエンドと繋いで開発するためには[こちら](https://github.com/henkaku-center/henkaku-nengajo-contract/blob/main/docs/local_node.md)を参考にしてください。
+プルリクエスト歓迎です。まず Issue を作成して、提案内容を議論してください。
