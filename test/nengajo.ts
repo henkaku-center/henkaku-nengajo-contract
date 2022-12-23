@@ -35,11 +35,14 @@ const calcRequiredHenkakuForRegister: (params: {
     },
     0
   )
-  let amount = 1
-  if (registeredCount > 5) {
-    amount = maxSupply * 10
-  } else if (registeredCount + maxSupply > 5) {
-    amount = (registeredCount + maxSupply - 5) * 10
+  let amount
+  let totalMaxSupply = registeredCount + maxSupply
+  if (totalMaxSupply <= 10) {
+    amount = 10
+  } else if (10 < totalMaxSupply || totalMaxSupply < 101) {
+    amount = totalMaxSupply * 5 - 40
+  } else {
+    amount = totalMaxSupply * 10 - 540
   }
   return amount
 }
@@ -58,7 +61,7 @@ describe('RegisterNengajo', () => {
     HenkakuTokenContract = await deployAndDistributeHenkakuV2({
       deployer,
       addresses: [creator.address, user1.address, user2.address, user3.address, deployer.address],
-      amount: 100,
+      amount: 1000,
     })
     const NengajoFactory = await ethers.getContractFactory('Nengajo')
     NengajoContract = await NengajoFactory.deploy(
@@ -123,15 +126,12 @@ describe('RegisterNengajo', () => {
 
   it('check 1Henkaku transfered', async () => {
     const henkakuBalance = await HenkakuTokenContract.balanceOf(creator.address)
-    expect(henkakuBalance).to.equal(99)
+    expect(henkakuBalance).to.equal(990)
   })
 
   it('failed register nengajo with insufficient henkaku token', async () => {
     // Nengajo registration is reverted.
     // 年賀状の登録がリバートされる
-    await expect(NengajoContract.connect(creator).registerNengajo(15, 'ipfs://test1')).to.be.revertedWith(
-      'Nengajo: Insufficient HenkakuV2 token'
-    )
     await expect(NengajoContract.connect(creator).registerNengajo(1000, 'ipfs://test1')).to.be.revertedWith(
       'Nengajo: Insufficient HenkakuV2 token'
     )
