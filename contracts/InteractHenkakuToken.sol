@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
+import "./MintManager.sol";
 import "./interfaces/IHenkakuToken.sol";
 
-abstract contract InteractHenakuToken {
+abstract contract InteractHenakuToken is MintManager {
     address public henkakuV2;
     address public henkakuPoolWallet;
 
@@ -21,5 +22,10 @@ abstract contract InteractHenakuToken {
 
     function checkHenkakuV2Balance(uint256 _requiredAmount) internal view returns (bool) {
         return IHenkakuToken(henkakuV2).balanceOf(msg.sender) >= _requiredAmount ? true : false;
+    }
+
+    function changeHenkakuPool(address _address) external onlyAdmins {
+        require(henkakuPoolWallet != _address, "Henkaku Pool: same address");
+        henkakuPoolWallet = _address;
     }
 }
