@@ -2,15 +2,19 @@
 pragma solidity ^0.8.9;
 
 abstract contract Administration {
-    mapping(address => bool) public admins;
+    mapping(address => bool) private _admins;
 
     constructor() {
-        admins[msg.sender] = true;
+        _admins[msg.sender] = true;
     }
 
     modifier onlyAdmins() {
-        require(admins[msg.sender], "Admins only");
+        require(_admins[msg.sender], "Admins only");
         _;
+    }
+
+    function isAdmin(address _address) public view returns (bool) {
+        return _admins[_address];
     }
 
     function addAdmins(address[] memory _newAdmins) external onlyAdmins {
@@ -19,8 +23,8 @@ abstract contract Administration {
 
         for (uint256 i = 0; i < _newAdminsLength; ) {
             address _newAdmin = _newAdmins[i];
-            if (!admins[_newAdmin]) {
-                admins[_newAdmin] = true;
+            if (!_admins[_newAdmin]) {
+                _admins[_newAdmin] = true;
             }
             unchecked {
                 ++i;
@@ -29,6 +33,6 @@ abstract contract Administration {
     }
 
     function deleteAdmin(address _deleteAdmin) external onlyAdmins {
-        admins[_deleteAdmin] = false;
+        _admins[_deleteAdmin] = false;
     }
 }
