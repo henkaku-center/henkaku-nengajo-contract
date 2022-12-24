@@ -6,8 +6,10 @@
     "localnode": "yarn hardhat node",
     "clean": "yarn hardhat clean",
     "deploy:local": "yarn hardhat run scripts/deploy_local.ts --network local",
+    "deploy:polygon": "yarn hardhat run scripts/deploy_mainnet.ts --network polygon",
     "deploy:mumbai": "yarn hardhat run scripts/deploy_testnet.ts --network mumbai",
     "deploy:goerli": "yarn hardhat run scripts/deploy_testnet.ts --network goerli",
+    "verify:polygon": "yarn hardhat verify --network polygon",
     "verify:mumbai": "yarn hardhat verify --network mumbai",
     "verify:goerli": "yarn hardhat verify --network goerli"
   },
