@@ -94,11 +94,11 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
         uint256 amount;
         uint256 totalMaxSupply = registeredCount + _maxSupply;
         if (totalMaxSupply <= 10) {
-            amount = 10;
+            amount = 10 * 10 ** 18;
         } else if (10 < totalMaxSupply || totalMaxSupply < 101) {
-            amount = totalMaxSupply * 5 - 40;
+            amount = (totalMaxSupply * 5 - 40) * 10 ** 18;
         } else {
-            amount = totalMaxSupply * 10 - 540;
+            amount = (totalMaxSupply * 10 - 540) * 10 ** 18;
         }
         return amount;
     }
