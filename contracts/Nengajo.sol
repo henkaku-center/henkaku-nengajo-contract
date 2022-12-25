@@ -67,22 +67,7 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
 
     function registerNengajo(uint256 _maxSupply, string memory _metaDataURL) public {
         require(_maxSupply != 0 || keccak256(bytes(_metaDataURL)) != keccak256(bytes("")), "Nengajo: invalid params");
-        NengajoInfo[] memory _registeredNengajoes = registeredNengajoes;
-        uint256[] memory _ownerOfRegisteredIds = ownerOfRegisteredIds[msg.sender];
-        uint256 registeredCount;
-        for (uint256 i = 0; i < _ownerOfRegisteredIds.length; ) {
-            registeredCount += _registeredNengajoes[_ownerOfRegisteredIds[i]].maxSupply;
-            unchecked {
-                ++i;
-            }
-        }
-
-        uint256 amount = 1;
-        if (registeredCount > 5) {
-            amount = _maxSupply * 10;
-        } else if (registeredCount + _maxSupply > 5) {
-            amount = (registeredCount + _maxSupply - 5) * 10;
-        }
+        uint256 amount = calcPrice(_maxSupply);
 
         uint256 tokenId = _tokenIds.current();
         ownerOfRegisteredIds[msg.sender].push(tokenId);
@@ -94,6 +79,28 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
         // @dev Emit registeredNengajo
         // @param address, tokenId, URL of meta data, max supply
         emit RegisterNengajo(msg.sender, tokenId, _metaDataURL, _maxSupply);
+    }
+
+    function calcPrice(uint256 _maxSupply) public view returns (uint256) {
+        NengajoInfo[] memory _registeredNengajoes = registeredNengajoes;
+        uint256[] memory _ownerOfRegisteredIds = ownerOfRegisteredIds[msg.sender];
+        uint256 registeredCount;
+        for (uint256 i = 0; i < _ownerOfRegisteredIds.length; ) {
+            registeredCount += _registeredNengajoes[_ownerOfRegisteredIds[i]].maxSupply;
+            unchecked {
+                ++i;
+            }
+        }
+        uint256 amount;
+        uint256 totalMaxSupply = registeredCount + _maxSupply;
+        if (totalMaxSupply <= 10) {
+            amount = 10 * 10 ** 18;
+        } else if (10 < totalMaxSupply || totalMaxSupply < 101) {
+            amount = (totalMaxSupply * 5 - 40) * 10 ** 18;
+        } else {
+            amount = (totalMaxSupply * 10 - 540) * 10 ** 18;
+        }
+        return amount;
     }
 
     // @return all registered NengajoInfo
