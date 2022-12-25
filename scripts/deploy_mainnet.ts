@@ -11,9 +11,7 @@ const main = async () => {
     'HENKAKU Nengajo',
     'HNJ',
     open_blockTimestamp,
-    close_blockTimestamp,
-    process.env.HENKAKU_V2_ADDRESS!,
-    process.env.POOL_WALLET_ADDRESS!
+    close_blockTimestamp
   )
   await NengajoContract.deployed()
 

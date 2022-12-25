@@ -5,7 +5,5 @@ export default [
   'Henkaku Nengajo',
   'HNJ',
   open_blockTimestamp,
-  close_blockTimestamp,
-  '0x67C33 HENKAKU TOKEN ADDRESS',
-  '0xdCb93 POOL WALLET ADDRESS',
+  close_blockTimestamp
 ]

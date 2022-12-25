@@ -10,15 +10,6 @@ const main = async () => {
     await setBalance(address, 100n ** 9n)
   }
 
-  const HenkakuV2Factory = await ethers.getContractFactory('HenkakuToken')
-  const HenkakuV2Contract = await HenkakuV2Factory.deploy()
-  await HenkakuV2Contract.deployed()
-
-  await HenkakuV2Contract.addWhitelistUsers(localUserAddresses)
-  for (const address of localUserAddresses) {
-    await HenkakuV2Contract.mint(address, 100n ** 12n)
-  }
-
   const open_blockTimestamp: number = 1671458400
   const close_blockTimestamp: number = 2671458400
   const NengajoFactory = await ethers.getContractFactory('Nengajo')
@@ -26,13 +17,9 @@ const main = async () => {
     'Henkaku Nengajo',
     'HNJ',
     open_blockTimestamp,
-    close_blockTimestamp,
-    HenkakuV2Contract.address,
-    localUserAddresses[0]
+    close_blockTimestamp
   )
   await NengajoContract.deployed()
-
-  console.log(`HenkakuV2: ${HenkakuV2Contract.address}`)
   console.log(`Nengajo  : ${NengajoContract.address}`)
 }
 

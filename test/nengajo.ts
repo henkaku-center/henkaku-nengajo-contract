@@ -2,55 +2,12 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
 import { HenkakuToken, Nengajo } from '../typechain-types'
-import { BigNumber } from 'ethers'
 
 const open_blockTimestamp: number = 1672498800
 const close_blockTimestamp: number = 1704034800
 
-const deployAndDistributeHenkakuV2: (params: {
-  deployer: SignerWithAddress
-  addresses: string[]
-  amount: BigNumber
-}) => Promise<HenkakuToken> = async ({ deployer, addresses, amount }) => {
-  const HenkakuV2Factory = await ethers.getContractFactory('HenkakuToken')
-  const HenkakuV2Contract = await HenkakuV2Factory.connect(deployer).deploy()
-  await HenkakuV2Contract.deployed()
-
-  await HenkakuV2Contract.addWhitelistUsers(addresses)
-
-  for (const address of addresses) {
-    await HenkakuV2Contract.mint(address, amount)
-  }
-
-  return HenkakuV2Contract
-}
-
-const calcRequiredHenkakuForRegister: (params: {
-  NengajoContract: Nengajo
-  address: SignerWithAddress
-  maxSupply: number
-}) => Promise<BigNumber> = async ({ NengajoContract, address, maxSupply }) => {
-  const registeredCount = (await NengajoContract.retrieveRegisteredNengajoes(address.address)).reduce(
-    (sum, current) => {
-      return sum + current.maxSupply.toNumber()
-    },
-    0
-  )
-  let amount
-  let totalMaxSupply = registeredCount + maxSupply
-  if (totalMaxSupply <= 10) {
-    amount = ethers.utils.parseEther('10')
-  } else if (10 < totalMaxSupply || totalMaxSupply < 101) {
-    amount = ethers.utils.parseEther(`${totalMaxSupply * 5 - 40}`)
-  } else {
-    amount = ethers.utils.parseEther(`${totalMaxSupply * 10 - 540}`)
-  }
-  return amount
-}
-
 describe('RegisterNengajo', () => {
   let NengajoContract: Nengajo
-  let HenkakuTokenContract: HenkakuToken
   let deployer: SignerWithAddress
   let creator: SignerWithAddress
   let user1: SignerWithAddress
@@ -59,20 +16,8 @@ describe('RegisterNengajo', () => {
 
   before(async () => {
     ;[deployer, creator, user1, user2, user3] = await ethers.getSigners()
-    HenkakuTokenContract = await deployAndDistributeHenkakuV2({
-      deployer,
-      addresses: [creator.address, user1.address, user2.address, user3.address, deployer.address],
-      amount: ethers.utils.parseEther('1000'),
-    })
     const NengajoFactory = await ethers.getContractFactory('Nengajo')
-    NengajoContract = await NengajoFactory.deploy(
-      'Henkaku Nengajo',
-      'HNJ',
-      open_blockTimestamp,
-      close_blockTimestamp,
-      HenkakuTokenContract.address,
-      deployer.address
-    )
+    NengajoContract = await NengajoFactory.deploy('Henkaku Nengajo', 'HNJ', open_blockTimestamp, close_blockTimestamp)
     await NengajoContract.deployed()
   })
 
@@ -95,10 +40,6 @@ describe('RegisterNengajo', () => {
     expect(getRegisteredNengajo.uri).to.equal('')
     expect(getRegisteredNengajo.creator).to.equal(ethers.constants.AddressZero)
     expect(getRegisteredNengajo.maxSupply).to.equal(0)
-
-    await HenkakuTokenContract.connect(creator).approve(NengajoContract.address, ethers.utils.parseEther('200'))
-    // Register the first Nengajo
-    // １つ目の年賀状(_tokenIdが１)を登録
 
     // @dev test emit register creative
     await expect(NengajoContract.connect(creator).registerNengajo(2, 'ipfs://test1'))
@@ -124,36 +65,10 @@ describe('RegisterNengajo', () => {
     expect(registeredNengajoes[0].creator).to.equal(creator.address)
     expect(registeredNengajoes[0].maxSupply).to.equal(2)
   })
-
-  it('check 1Henkaku transfered', async () => {
-    const henkakuBalance = await HenkakuTokenContract.balanceOf(creator.address)
-    expect(henkakuBalance).to.equal(ethers.utils.parseEther('990'))
-  })
-
-  it('failed register nengajo with insufficient henkaku token', async () => {
-    // Nengajo registration is reverted.
-    // 年賀状の登録がリバートされる
-    await expect(NengajoContract.connect(creator).registerNengajo(1000, 'ipfs://test1')).to.be.revertedWith(
-      'Nengajo: Insufficient HenkakuV2 token'
-    )
-  })
-
-  it('Check expected henkaku token amount is transfered', async () => {
-    const henkakuBalanceBefore = await HenkakuTokenContract.balanceOf(creator.address)
-    const expectedHenkakuAmount = await calcRequiredHenkakuForRegister({
-      NengajoContract,
-      address: creator,
-      maxSupply: 10,
-    })
-    await NengajoContract.connect(creator).registerNengajo(10, 'ipfs://test1')
-    const henkakuBalanceAfter = await HenkakuTokenContract.balanceOf(creator.address)
-    expect(henkakuBalanceAfter).to.equal(henkakuBalanceBefore.sub(expectedHenkakuAmount))
-  })
 })
 
 describe('MintNengajo', () => {
   let NengajoContract: Nengajo
-  let HenkakuTokenContract: HenkakuToken
   let deployer: SignerWithAddress
   let creator: SignerWithAddress
   let user1: SignerWithAddress
@@ -163,22 +78,10 @@ describe('MintNengajo', () => {
 
   before(async () => {
     ;[deployer, creator, user1, user2, user3, user4] = await ethers.getSigners()
-    HenkakuTokenContract = await deployAndDistributeHenkakuV2({
-      deployer,
-      addresses: [creator.address, user1.address, user2.address, user3.address, deployer.address],
-      amount: ethers.utils.parseEther('1000'),
-    })
+
     const NengajoFactory = await ethers.getContractFactory('Nengajo')
-    NengajoContract = await NengajoFactory.deploy(
-      'Henkaku Nengajo',
-      'HNJ',
-      open_blockTimestamp,
-      close_blockTimestamp,
-      HenkakuTokenContract.address,
-      deployer.address
-    )
+    NengajoContract = await NengajoFactory.deploy('Henkaku Nengajo', 'HNJ', open_blockTimestamp, close_blockTimestamp)
     await NengajoContract.deployed()
-    await HenkakuTokenContract.connect(creator).approve(NengajoContract.address, ethers.utils.parseEther('1000'))
     await NengajoContract.connect(creator).registerNengajo(2, 'ipfs://test1')
   })
 
@@ -294,17 +197,10 @@ describe('MintNengajo', () => {
   it('failed with mint tokenId #0', async () => {
     await expect(NengajoContract.connect(user3).mint(0)).to.be.revertedWith('Nengajo: Mint limit reached')
   })
-
-  it('failed with insufficient Henkaku Token', async () => {
-    await expect(NengajoContract.connect(user4).mint(2)).to.be.revertedWith(
-      'Nengajo: Insufficient Henkaku Token Balance'
-    )
-  })
 })
 
 describe('CheckMintable', () => {
   let NengajoContract: Nengajo
-  let HenkakuTokenContract: HenkakuToken
   let deployer: SignerWithAddress
   let creator: SignerWithAddress
   let user1: SignerWithAddress
@@ -313,26 +209,9 @@ describe('CheckMintable', () => {
 
   before(async () => {
     ;[deployer, creator, user1, user2, user3] = await ethers.getSigners()
-    HenkakuTokenContract = await deployAndDistributeHenkakuV2({
-      deployer,
-      addresses: [creator.address, user1.address, user2.address, deployer.address],
-      amount: ethers.utils.parseEther('100'),
-    })
     const NengajoFactory = await ethers.getContractFactory('Nengajo')
-    NengajoContract = await NengajoFactory.deploy(
-      'Henkaku Nengajo',
-      'HNJ',
-      open_blockTimestamp,
-      close_blockTimestamp,
-      HenkakuTokenContract.address,
-      deployer.address
-    )
+    NengajoContract = await NengajoFactory.deploy('Henkaku Nengajo', 'HNJ', open_blockTimestamp, close_blockTimestamp)
     await NengajoContract.deployed()
-    HenkakuTokenContract = await deployAndDistributeHenkakuV2({
-      deployer,
-      addresses: [creator.address, user1.address, user2.address],
-      amount: ethers.utils.parseEther('100'),
-    })
   })
 
   it('initial mintable flag is false', async () => {
@@ -426,34 +305,10 @@ describe('CheckMintable', () => {
     mintable = await NengajoContract.mintable()
     expect(mintable).to.equal(false)
   })
-
-  it('check pool address changed', async () => {
-    let pool
-    pool = await NengajoContract.henkakuPoolWallet()
-    // The initial value of Wallet in Pool is set to deployer.
-    // PoolのWalletの初期値はdeployerに設定されている。
-    expect(pool).to.equal(deployer.address)
-
-    await (await NengajoContract.connect(deployer).changeHenkakuPool(user1.address)).wait()
-
-    pool = await NengajoContract.henkakuPoolWallet()
-    expect(pool).to.equal(user1.address)
-  })
-
-  it('check pool address cannot be changed except by admin', async () => {
-    let pool
-    pool = await NengajoContract.henkakuPoolWallet()
-    expect(pool).to.equal(user1.address)
-
-    expect(await NengajoContract.connect(user1).changeHenkakuPool(user2.address)).to.revertedWith(
-      'Henkaku Pool: same address'
-    )
-  })
 })
 
 describe('check timestamp', () => {
   let NengajoContract: Nengajo
-  let HenkakuTokenContract: HenkakuToken
   let deployer: SignerWithAddress
   let creator: SignerWithAddress
   let user1: SignerWithAddress
@@ -478,20 +333,8 @@ describe('check timestamp', () => {
 
   before(async () => {
     ;[deployer, creator, user1, user2] = await ethers.getSigners()
-    HenkakuTokenContract = await deployAndDistributeHenkakuV2({
-      deployer,
-      addresses: [creator.address, user1.address, user2.address, deployer.address],
-      amount: ethers.utils.parseEther('100'),
-    })
     const NengajoFactory = await ethers.getContractFactory('Nengajo')
-    NengajoContract = await NengajoFactory.deploy(
-      'Henkaku Nengajo',
-      'HNJ',
-      open_blockTimestamp,
-      close_blockTimestamp,
-      HenkakuTokenContract.address,
-      deployer.address
-    )
+    NengajoContract = await NengajoFactory.deploy('Henkaku Nengajo', 'HNJ', open_blockTimestamp, close_blockTimestamp)
     await NengajoContract.deployed()
   })
 
@@ -508,7 +351,6 @@ describe('check timestamp', () => {
 
 describe('after minting term', () => {
   let NengajoContract: Nengajo
-  let HenkakuTokenContract: HenkakuToken
   let deployer: SignerWithAddress
   let creator: SignerWithAddress
   let user1: SignerWithAddress
@@ -533,20 +375,8 @@ describe('after minting term', () => {
 
   before(async () => {
     ;[deployer, creator, user1, user2] = await ethers.getSigners()
-    HenkakuTokenContract = await deployAndDistributeHenkakuV2({
-      deployer,
-      addresses: [creator.address, user1.address, user2.address, deployer.address],
-      amount: ethers.utils.parseEther('100'),
-    })
     const NengajoFactory = await ethers.getContractFactory('Nengajo')
-    NengajoContract = await NengajoFactory.deploy(
-      'Henkaku Nengajo',
-      'HNJ',
-      946652400,
-      946652400,
-      HenkakuTokenContract.address,
-      deployer.address
-    )
+    NengajoContract = await NengajoFactory.deploy('Henkaku Nengajo', 'HNJ', 946652400, 946652400)
     await NengajoContract.deployed()
   })
 
@@ -564,7 +394,6 @@ describe('after minting term', () => {
     const checkRemainingOpenTime = await NengajoContract.callStatic.checkRemainingOpenTime()
 
     const checkRemainingCloseTime = await NengajoContract.callStatic.checkRemainingCloseTime()
-    await HenkakuTokenContract.connect(creator).approve(NengajoContract.address, ethers.utils.parseEther('200'))
     await NengajoContract.connect(creator).registerNengajo(1, 'ipfs://test1')
     const tokenURI = await NengajoContract.uri(1)
     expect(tokenURI).equal('ipfs://test1')

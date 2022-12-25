@@ -6,15 +6,6 @@ dotenv.config()
 const main = async () => {
   const localUserAddresses = String(process.env.TESTNET_USERS_ADDRESSES).split(',')
 
-  const HenkakuV2Factory = await ethers.getContractFactory('HenkakuToken')
-  const HenkakuV2Contract = await HenkakuV2Factory.deploy()
-  await HenkakuV2Contract.deployed()
-
-  await HenkakuV2Contract.addWhitelistUsers(localUserAddresses)
-  for (const address of localUserAddresses) {
-    await HenkakuV2Contract.mint(address, ethers.utils.parseEther('1000'))
-  }
-
   const open_blockTimestamp: number = 0
   const close_blockTimestamp: number = 2671458400
   const NengajoFactory = await ethers.getContractFactory('Nengajo')
@@ -22,13 +13,10 @@ const main = async () => {
     'Henkaku Nengajo',
     'HNJ',
     open_blockTimestamp,
-    close_blockTimestamp,
-    HenkakuV2Contract.address,
-    localUserAddresses[0]
+    close_blockTimestamp
   )
   await NengajoContract.deployed()
 
-  console.log(`HenkakuV2: ${HenkakuV2Contract.address}`)
   console.log(`Nengajo  : ${NengajoContract.address}`)
 }
 

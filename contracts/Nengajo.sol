@@ -4,10 +4,9 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./Administration.sol";
-import "./InteractHenkakuToken.sol";
 import "./MintManager.sol";
 
-contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, InteractHenakuToken {
+contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager {
     //@dev count up tokenId from 0
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
@@ -41,13 +40,10 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
         string memory _name,
         string memory _symbol,
         uint256 _open_blockTimestamp,
-        uint256 _close_blockTimestamp,
-        address _henkakuTokenV2,
-        address _henkakuPoolWallet
+        uint256 _close_blockTimestamp
     )
         ERC1155("")
         MintManager(_open_blockTimestamp, _close_blockTimestamp)
-        InteractHenakuToken(_henkakuTokenV2, _henkakuPoolWallet)
     {
         name = _name;
         symbol = _symbol;
@@ -61,46 +57,20 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
             (block.timestamp > open_blockTimestamp && close_blockTimestamp > block.timestamp) || mintable,
             "Nengajo: Not mintable"
         );
-        require(checkHenkakuV2Balance(1), "Nengajo: Insufficient Henkaku Token Balance");
         _;
     }
 
     function registerNengajo(uint256 _maxSupply, string memory _metaDataURL) public {
         require(_maxSupply != 0 || keccak256(bytes(_metaDataURL)) != keccak256(bytes("")), "Nengajo: invalid params");
-        uint256 amount = calcPrice(_maxSupply);
 
         uint256 tokenId = _tokenIds.current();
         ownerOfRegisteredIds[msg.sender].push(tokenId);
         registeredNengajoes.push(NengajoInfo(tokenId, _metaDataURL, msg.sender, _maxSupply));
         _tokenIds.increment();
 
-        transferHenkakuV2(amount);
-
         // @dev Emit registeredNengajo
         // @param address, tokenId, URL of meta data, max supply
         emit RegisterNengajo(msg.sender, tokenId, _metaDataURL, _maxSupply);
-    }
-
-    function calcPrice(uint256 _maxSupply) public view returns (uint256) {
-        NengajoInfo[] memory _registeredNengajoes = registeredNengajoes;
-        uint256[] memory _ownerOfRegisteredIds = ownerOfRegisteredIds[msg.sender];
-        uint256 registeredCount;
-        for (uint256 i = 0; i < _ownerOfRegisteredIds.length; ) {
-            registeredCount += _registeredNengajoes[_ownerOfRegisteredIds[i]].maxSupply;
-            unchecked {
-                ++i;
-            }
-        }
-        uint256 amount;
-        uint256 totalMaxSupply = registeredCount + _maxSupply;
-        if (totalMaxSupply <= 10) {
-            amount = 10 * 10 ** 18;
-        } else if (10 < totalMaxSupply || totalMaxSupply < 101) {
-            amount = (totalMaxSupply * 5 - 40) * 10 ** 18;
-        } else {
-            amount = (totalMaxSupply * 10 - 540) * 10 ** 18;
-        }
-        return amount;
     }
 
     // @return all registered NengajoInfo
