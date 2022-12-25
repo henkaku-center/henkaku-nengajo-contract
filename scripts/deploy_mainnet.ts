@@ -8,7 +8,7 @@ const main = async () => {
   const close_blockTimestamp: number = 1675220400
   const NengajoFactory = await ethers.getContractFactory('Nengajo')
   const NengajoContract = await NengajoFactory.deploy(
-    'Henkaku Nengajo',
+    'HENKAKU Nengajo',
     'HNJ',
     open_blockTimestamp,
     close_blockTimestamp,
