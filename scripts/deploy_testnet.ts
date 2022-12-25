@@ -12,7 +12,7 @@ const main = async () => {
 
   await HenkakuV2Contract.addWhitelistUsers(localUserAddresses)
   for (const address of localUserAddresses) {
-    await HenkakuV2Contract.mint(address, 100n ** 13n)
+    await HenkakuV2Contract.mint(address, ethers.utils.parseEther('1000'))
   }
 
   const open_blockTimestamp: number = 0
