@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "./Administration.sol";
 import "./MintManager.sol";
 
-contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager {
+contract PublicNengajo is ERC1155, ERC1155Supply, Administration, MintManager {
     //@dev count up tokenId from 0
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
