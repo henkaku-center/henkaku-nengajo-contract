@@ -67,13 +67,13 @@ contract PublicNengajo is ERC1155, ERC1155Supply, ERC2771Context, Administration
         require(_maxSupply != 0 || keccak256(bytes(_metaDataURL)) != keccak256(bytes("")), "Nengajo: invalid params");
 
         uint256 tokenId = _tokenIds.current();
-        ownerOfRegisteredIds[msg.sender].push(tokenId);
-        registeredNengajoes.push(NengajoInfo(tokenId, _metaDataURL, msg.sender, _maxSupply));
+        ownerOfRegisteredIds[_msgSender()].push(tokenId);
+        registeredNengajoes.push(NengajoInfo(tokenId, _metaDataURL, _msgSender(), _maxSupply));
         _tokenIds.increment();
 
         // @dev Emit registeredNengajo
         // @param address, tokenId, URL of meta data, max supply
-        emit RegisterNengajo(msg.sender, tokenId, _metaDataURL, _maxSupply);
+        emit RegisterNengajo(_msgSender(), tokenId, _metaDataURL, _maxSupply);
     }
 
     // @return all registered NengajoInfo
@@ -107,19 +107,19 @@ contract PublicNengajo is ERC1155, ERC1155Supply, ERC2771Context, Administration
     }
 
     function checkNengajoAmount(uint256 _tokenId) private view {
-        require(balanceOf(msg.sender, _tokenId) == 0, "Nengajo: You already have this nengajo");
+        require(balanceOf(_msgSender(), _tokenId) == 0, "Nengajo: You already have this nengajo");
         require(retrieveRegisteredNengajo(_tokenId).maxSupply > totalSupply(_tokenId), "Nengajo: Mint limit reached");
     }
 
     // @dev mint function
     function mint(uint256 _tokenId) public whenMintable {
         checkNengajoAmount(_tokenId);
-        _mint(msg.sender, _tokenId, 1, "");
-        ownerOfMintedIds[msg.sender].push(_tokenId);
+        _mint(_msgSender(), _tokenId, 1, "");
+        ownerOfMintedIds[_msgSender()].push(_tokenId);
 
         // @dev Emit mint event
         // @param address, tokenId
-        emit Mint(msg.sender, _tokenId);
+        emit Mint(_msgSender(), _tokenId);
     }
 
     // @dev mint batch function
@@ -130,17 +130,17 @@ contract PublicNengajo is ERC1155, ERC1155Supply, ERC2771Context, Administration
         for (uint256 i = 0; i < tokenIdsLength; ) {
             checkNengajoAmount(_tokenIdsList[i]);
             amountList[i] = 1;
-            ownerOfMintedIds[msg.sender].push(_tokenIdsList[i]);
+            ownerOfMintedIds[_msgSender()].push(_tokenIdsList[i]);
             unchecked {
                 ++i;
             }
         }
 
-        _mintBatch(msg.sender, _tokenIdsList, amountList, "");
+        _mintBatch(_msgSender(), _tokenIdsList, amountList, "");
 
         // @dev Emit mint batch event
         // @param address,tokenId list
-        emit MintBatch(msg.sender, _tokenIdsList);
+        emit MintBatch(_msgSender(), _tokenIdsList);
     }
 
     // @return holding tokenIds with address

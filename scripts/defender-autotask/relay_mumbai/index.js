@@ -19,22 +19,26 @@ async function relay(forwarder, request, signature, whitelist) {
 }
 
 async function handler(event) {
-  if (!event.request || !event.request.body) throw new Error(`Missing payload`)
-  const { request, signature } = event.request.body
+  try {
+    if (!event.request || !event.request.body) throw new Error(`Missing payload`)
+    const { request, signature } = event.request.body
 
-  // Initialize Relayer provider and signer, and forwarder contract
-  // eslint-disable-next-line node/no-unsupported-features/es-syntax
-  const credentials = { ...event }
-  const provider = new DefenderRelayProvider(credentials)
-  const signer = new DefenderRelaySigner(credentials, provider, {
-    speed: 'fast',
-  })
-  const forwarder = new Contract(ForwarderAddress, ForwarderAbi.abi, signer)
+    // Initialize Relayer provider and signer, and forwarder contract
+    // eslint-disable-next-line node/no-unsupported-features/es-syntax
+    const credentials = { ...event }
+    const provider = new DefenderRelayProvider(credentials)
+    const signer = new DefenderRelaySigner(credentials, provider, {
+      speed: 'fast',
+    })
+    const forwarder = new Contract(ForwarderAddress, ForwarderAbi.abi, signer)
 
-  // Relay transaction!
-  const tx = await relay(forwarder, request, signature)
-  console.log(`Sent meta-tx: ${tx.hash}`)
-  return { txHash: tx.hash }
+    // Relay transaction!
+    const tx = await relay(forwarder, request, signature)
+    console.log(`Sent meta-tx: ${tx.hash}`)
+    return { txHash: tx.hash }
+  } catch (error) {
+    return error
+  }
 }
 
 export default {
