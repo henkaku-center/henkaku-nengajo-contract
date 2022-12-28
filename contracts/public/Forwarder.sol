@@ -75,6 +75,8 @@ contract Forwarder is EIP712, Administration {
             abi.encodePacked(req.data, req.from)
         );
 
+        require(success, "Forwarder: failed to forward transaction");
+
         if (gasleft() <= req.gas / 63) {
             assembly {
                 invalid()

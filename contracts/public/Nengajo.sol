@@ -63,7 +63,7 @@ contract PublicNengajo is ERC1155, ERC1155Supply, ERC2771Context, Administration
         _;
     }
 
-    function registerNengajo(uint256 _maxSupply, string memory _metaDataURL) public {
+    function registerNengajo(uint256 _maxSupply, string memory _metaDataURL) public onlyAdmins {
         require(_maxSupply != 0 || keccak256(bytes(_metaDataURL)) != keccak256(bytes("")), "Nengajo: invalid params");
 
         uint256 tokenId = _tokenIds.current();
