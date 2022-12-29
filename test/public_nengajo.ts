@@ -1,7 +1,7 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
-import { PublicNengajo, PublicNengajo__factory } from '../typechain-types'
+import { HenkakuToken, Nengajo, PublicNengajo } from '../typechain-types'
 
 const open_blockTimestamp: number = 1672498800
 const close_blockTimestamp: number = 1704034800
@@ -16,14 +16,8 @@ describe('RegisterNengajo', () => {
 
   before(async () => {
     ;[deployer, creator, user1, user2, user3] = await ethers.getSigners()
-    const NengajoFactory = (await ethers.getContractFactory('PublicNengajo')) as PublicNengajo__factory
-    NengajoContract = await NengajoFactory.deploy(
-      'Henkaku Nengajo',
-      'HNJ',
-      open_blockTimestamp,
-      close_blockTimestamp,
-      deployer.address
-    )
+    const NengajoFactory = await ethers.getContractFactory('PublicNengajo')
+    NengajoContract = await NengajoFactory.deploy('Henkaku Nengajo', 'HNJ', open_blockTimestamp, close_blockTimestamp)
     await NengajoContract.deployed()
   })
 
@@ -85,14 +79,8 @@ describe('MintNengajo', () => {
   before(async () => {
     ;[deployer, creator, user1, user2, user3, user4] = await ethers.getSigners()
 
-    const NengajoFactory = (await ethers.getContractFactory('PublicNengajo')) as PublicNengajo__factory
-    NengajoContract = await NengajoFactory.deploy(
-      'Henkaku Nengajo',
-      'HNJ',
-      open_blockTimestamp,
-      close_blockTimestamp,
-      deployer.address
-    )
+    const NengajoFactory = await ethers.getContractFactory('PublicNengajo')
+    NengajoContract = await NengajoFactory.deploy('Henkaku Nengajo', 'HNJ', open_blockTimestamp, close_blockTimestamp)
     await NengajoContract.deployed()
     await NengajoContract.connect(creator).registerNengajo(2, 'ipfs://test1')
   })
@@ -221,14 +209,8 @@ describe('CheckMintable', () => {
 
   before(async () => {
     ;[deployer, creator, user1, user2, user3] = await ethers.getSigners()
-    const NengajoFactory = (await ethers.getContractFactory('PublicNengajo')) as PublicNengajo__factory
-    NengajoContract = await NengajoFactory.deploy(
-      'Henkaku Nengajo',
-      'HNJ',
-      open_blockTimestamp,
-      close_blockTimestamp,
-      deployer.address
-    )
+    const NengajoFactory = await ethers.getContractFactory('PublicNengajo')
+    NengajoContract = await NengajoFactory.deploy('Henkaku Nengajo', 'HNJ', open_blockTimestamp, close_blockTimestamp)
     await NengajoContract.deployed()
   })
 
@@ -351,14 +333,8 @@ describe('check timestamp', () => {
 
   before(async () => {
     ;[deployer, creator, user1, user2] = await ethers.getSigners()
-    const NengajoFactory = (await ethers.getContractFactory('PublicNengajo')) as PublicNengajo__factory
-    NengajoContract = await NengajoFactory.deploy(
-      'Henkaku Nengajo',
-      'HNJ',
-      open_blockTimestamp,
-      close_blockTimestamp,
-      deployer.address
-    )
+    const NengajoFactory = await ethers.getContractFactory('PublicNengajo')
+    NengajoContract = await NengajoFactory.deploy('Henkaku Nengajo', 'HNJ', open_blockTimestamp, close_blockTimestamp)
     await NengajoContract.deployed()
   })
 
@@ -399,8 +375,8 @@ describe('after minting term', () => {
 
   before(async () => {
     ;[deployer, creator, user1, user2] = await ethers.getSigners()
-    const NengajoFactory = (await ethers.getContractFactory('PublicNengajo')) as PublicNengajo__factory
-    NengajoContract = await NengajoFactory.deploy('Henkaku Nengajo', 'HNJ', 946652400, 946652400, deployer.address)
+    const NengajoFactory = await ethers.getContractFactory('PublicNengajo')
+    NengajoContract = await NengajoFactory.deploy('Henkaku Nengajo', 'HNJ', 946652400, 946652400)
     await NengajoContract.deployed()
   })
 

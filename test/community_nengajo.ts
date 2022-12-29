@@ -1,7 +1,7 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
-import { HenkakuToken, HenkakuToken__factory, Nengajo, Nengajo__factory } from '../typechain-types'
+import { HenkakuToken, Nengajo } from '../typechain-types'
 import { BigNumber } from 'ethers'
 
 const open_blockTimestamp: number = 1672498800
@@ -12,7 +12,7 @@ const deployAndDistributeHenkakuV2: (params: {
   addresses: string[]
   amount: BigNumber
 }) => Promise<HenkakuToken> = async ({ deployer, addresses, amount }) => {
-  const HenkakuV2Factory = (await ethers.getContractFactory('HenkakuToken')) as HenkakuToken__factory
+  const HenkakuV2Factory = await ethers.getContractFactory('HenkakuToken')
   const HenkakuV2Contract = await HenkakuV2Factory.connect(deployer).deploy()
   await HenkakuV2Contract.deployed()
 
@@ -64,7 +64,7 @@ describe('RegisterNengajo', () => {
       addresses: [creator.address, user1.address, user2.address, user3.address, deployer.address],
       amount: ethers.utils.parseEther('1000'),
     })
-    const NengajoFactory = (await ethers.getContractFactory('Nengajo')) as Nengajo__factory
+    const NengajoFactory = await ethers.getContractFactory('Nengajo')
     NengajoContract = await NengajoFactory.deploy(
       'Henkaku Nengajo',
       'HNJ',
@@ -168,7 +168,7 @@ describe('MintNengajo', () => {
       addresses: [creator.address, user1.address, user2.address, user3.address, deployer.address],
       amount: ethers.utils.parseEther('1000'),
     })
-    const NengajoFactory = (await ethers.getContractFactory('Nengajo')) as Nengajo__factory
+    const NengajoFactory = await ethers.getContractFactory('Nengajo')
     NengajoContract = await NengajoFactory.deploy(
       'Henkaku Nengajo',
       'HNJ',
@@ -318,7 +318,7 @@ describe('CheckMintable', () => {
       addresses: [creator.address, user1.address, user2.address, deployer.address],
       amount: ethers.utils.parseEther('100'),
     })
-    const NengajoFactory = (await ethers.getContractFactory('Nengajo')) as Nengajo__factory
+    const NengajoFactory = await ethers.getContractFactory('Nengajo')
     NengajoContract = await NengajoFactory.deploy(
       'Henkaku Nengajo',
       'HNJ',
@@ -483,7 +483,7 @@ describe('check timestamp', () => {
       addresses: [creator.address, user1.address, user2.address, deployer.address],
       amount: ethers.utils.parseEther('100'),
     })
-    const NengajoFactory = (await ethers.getContractFactory('Nengajo')) as Nengajo__factory
+    const NengajoFactory = await ethers.getContractFactory('Nengajo')
     NengajoContract = await NengajoFactory.deploy(
       'Henkaku Nengajo',
       'HNJ',
@@ -538,7 +538,7 @@ describe('after minting term', () => {
       addresses: [creator.address, user1.address, user2.address, deployer.address],
       amount: ethers.utils.parseEther('100'),
     })
-    const NengajoFactory = (await ethers.getContractFactory('Nengajo')) as Nengajo__factory
+    const NengajoFactory = await ethers.getContractFactory('Nengajo')
     NengajoContract = await NengajoFactory.deploy(
       'Henkaku Nengajo',
       'HNJ',

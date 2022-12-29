@@ -2,12 +2,11 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
-import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./Administration.sol";
 import "./MintManager.sol";
 
-contract PublicNengajo is ERC1155, ERC1155Supply, ERC2771Context, Administration, MintManager {
+contract PublicNengajo is ERC1155, ERC1155Supply, Administration, MintManager {
     //@dev count up tokenId from 0
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
@@ -41,11 +40,9 @@ contract PublicNengajo is ERC1155, ERC1155Supply, ERC2771Context, Administration
         string memory _name,
         string memory _symbol,
         uint256 _open_blockTimestamp,
-        uint256 _close_blockTimestamp,
-        address _trustedForwarder
+        uint256 _close_blockTimestamp
     )
         ERC1155("")
-        ERC2771Context(_trustedForwarder)
         MintManager(_open_blockTimestamp, _close_blockTimestamp)
     {
         name = _name;
@@ -63,17 +60,17 @@ contract PublicNengajo is ERC1155, ERC1155Supply, ERC2771Context, Administration
         _;
     }
 
-    function registerNengajo(uint256 _maxSupply, string memory _metaDataURL) public onlyAdmins {
+    function registerNengajo(uint256 _maxSupply, string memory _metaDataURL) public {
         require(_maxSupply != 0 || keccak256(bytes(_metaDataURL)) != keccak256(bytes("")), "Nengajo: invalid params");
 
         uint256 tokenId = _tokenIds.current();
-        ownerOfRegisteredIds[_msgSender()].push(tokenId);
-        registeredNengajoes.push(NengajoInfo(tokenId, _metaDataURL, _msgSender(), _maxSupply));
+        ownerOfRegisteredIds[msg.sender].push(tokenId);
+        registeredNengajoes.push(NengajoInfo(tokenId, _metaDataURL, msg.sender, _maxSupply));
         _tokenIds.increment();
 
         // @dev Emit registeredNengajo
         // @param address, tokenId, URL of meta data, max supply
-        emit RegisterNengajo(_msgSender(), tokenId, _metaDataURL, _maxSupply);
+        emit RegisterNengajo(msg.sender, tokenId, _metaDataURL, _maxSupply);
     }
 
     // @return all registered NengajoInfo
@@ -107,19 +104,19 @@ contract PublicNengajo is ERC1155, ERC1155Supply, ERC2771Context, Administration
     }
 
     function checkNengajoAmount(uint256 _tokenId) private view {
-        require(balanceOf(_msgSender(), _tokenId) == 0, "Nengajo: You already have this nengajo");
+        require(balanceOf(msg.sender, _tokenId) == 0, "Nengajo: You already have this nengajo");
         require(retrieveRegisteredNengajo(_tokenId).maxSupply > totalSupply(_tokenId), "Nengajo: Mint limit reached");
     }
 
     // @dev mint function
     function mint(uint256 _tokenId) public whenMintable {
         checkNengajoAmount(_tokenId);
-        _mint(_msgSender(), _tokenId, 1, "");
-        ownerOfMintedIds[_msgSender()].push(_tokenId);
+        _mint(msg.sender, _tokenId, 1, "");
+        ownerOfMintedIds[msg.sender].push(_tokenId);
 
         // @dev Emit mint event
         // @param address, tokenId
-        emit Mint(_msgSender(), _tokenId);
+        emit Mint(msg.sender, _tokenId);
     }
 
     // @dev mint batch function
@@ -130,17 +127,17 @@ contract PublicNengajo is ERC1155, ERC1155Supply, ERC2771Context, Administration
         for (uint256 i = 0; i < tokenIdsLength; ) {
             checkNengajoAmount(_tokenIdsList[i]);
             amountList[i] = 1;
-            ownerOfMintedIds[_msgSender()].push(_tokenIdsList[i]);
+            ownerOfMintedIds[msg.sender].push(_tokenIdsList[i]);
             unchecked {
                 ++i;
             }
         }
 
-        _mintBatch(_msgSender(), _tokenIdsList, amountList, "");
+        _mintBatch(msg.sender, _tokenIdsList, amountList, "");
 
         // @dev Emit mint batch event
         // @param address,tokenId list
-        emit MintBatch(_msgSender(), _tokenIdsList);
+        emit MintBatch(msg.sender, _tokenIdsList);
     }
 
     // @return holding tokenIds with address
@@ -178,35 +175,5 @@ contract PublicNengajo is ERC1155, ERC1155Supply, ERC2771Context, Administration
         bytes memory _data
     ) internal virtual override(ERC1155, ERC1155Supply) {
         ERC1155Supply._beforeTokenTransfer(_operator, _from, _to, _ids, _amounts, _data);
-    }
-
-    function _msgSender()
-        internal
-        view
-        virtual
-        override(Context, ERC2771Context)
-        returns (address sender)
-    {
-        if (isTrustedForwarder(msg.sender)) {
-            assembly {
-                sender := shr(96, calldataload(sub(calldatasize(), 20)))
-            }
-        } else {
-            return super._msgSender();
-        }
-    }
-
-    function _msgData()
-        internal
-        view
-        virtual
-        override(Context, ERC2771Context)
-        returns (bytes calldata)
-    {
-        if (isTrustedForwarder(msg.sender)) {
-            return msg.data[:msg.data.length - 20];
-        } else {
-            return super._msgData();
-        }
     }
 }
