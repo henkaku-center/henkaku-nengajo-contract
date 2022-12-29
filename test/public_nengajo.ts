@@ -17,7 +17,7 @@ describe('RegisterNengajo', () => {
   before(async () => {
     ;[deployer, creator, user1, user2, user3] = await ethers.getSigners()
     const NengajoFactory = (await ethers.getContractFactory('PublicNengajo')) as PublicNengajo__factory
-    NengajoContract = await NengajoFactory.deploy(
+    NengajoContract = await NengajoFactory.connect(deployer).deploy(
       'Henkaku Nengajo',
       'HNJ',
       open_blockTimestamp,
@@ -25,6 +25,7 @@ describe('RegisterNengajo', () => {
       deployer.address
     )
     await NengajoContract.deployed()
+    await NengajoContract.addAdmins([creator.address])
   })
 
   it('register creative', async () => {
@@ -94,6 +95,7 @@ describe('MintNengajo', () => {
       deployer.address
     )
     await NengajoContract.deployed()
+    await NengajoContract.addAdmins([creator.address])
     await NengajoContract.connect(creator).registerNengajo(2, 'ipfs://test1')
   })
 
@@ -402,6 +404,7 @@ describe('after minting term', () => {
     const NengajoFactory = (await ethers.getContractFactory('PublicNengajo')) as PublicNengajo__factory
     NengajoContract = await NengajoFactory.deploy('Henkaku Nengajo', 'HNJ', 946652400, 946652400, deployer.address)
     await NengajoContract.deployed()
+    await NengajoContract.addAdmins([creator.address])
   })
 
   it('check remaining open time', async () => {

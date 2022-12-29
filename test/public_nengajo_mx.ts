@@ -34,6 +34,7 @@ describe('Mint via Fowarder', () => {
     const x = NengajoContract.interface.encodeFunctionData('mint', [1]).substring(0, 10)
     await ForwarderContract.whitelistMethod(NengajoContract.address, x, true)
 
+    await NengajoContract.addAdmins([creator.address])
     await NengajoContract.connect(creator).registerNengajo(100, 'https://test.com')
   })
 
