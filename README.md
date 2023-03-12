@@ -1,4 +1,4 @@
-# henkaku-nengajo-contract
+# henkaku-ticket-contract
 
 ## 概要
 
@@ -14,7 +14,7 @@
 - Node.js: v16.x
 - Hardhat
 
-ローカルノードでの立ち上げ方法　(https://github.com/henkaku-center/henkaku-nengajo-contract/blob/main/docs/local_node.md)
+ローカルノードでの立ち上げ方法　(https://github.com/henkaku-center/henkaku-ticket-contract/blob/main/docs/local_node.md)
 
 ## ライセンス
 
