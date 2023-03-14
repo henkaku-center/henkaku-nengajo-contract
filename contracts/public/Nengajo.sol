@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "./Administration.sol";
 import "./MintManager.sol";
 
-contract PublicTicket is ERC1155, ERC1155Supply, ERC2771Context, Administration, MintManager {
+contract PublicNengajo is ERC1155, ERC1155Supply, ERC2771Context, Administration, MintManager {
     //@dev count up tokenId from 0
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
@@ -19,7 +19,7 @@ contract PublicTicket is ERC1155, ERC1155Supply, ERC2771Context, Administration,
     mapping(address => uint256[]) private ownerOfMintedIds;
 
     //@dev Declare Event to emit
-    event RegisterTicket(address indexed creator, uint256 tokenId, string metaDataURL, uint256 maxSupply);
+    event RegisterNengajo(address indexed creator, uint256 tokenId, string metaDataURL, uint256 maxSupply);
     event Mint(address indexed minter, uint256 indexed tokenId);
     event MintBatch(address indexed minter, uint256[] tokenIds);
 
@@ -28,14 +28,14 @@ contract PublicTicket is ERC1155, ERC1155Supply, ERC2771Context, Administration,
      * @param creator: creator's wallet address
      * @param maxSupply: max supply number of token
      */
-    struct TicketInfo {
+    struct NengajoInfo {
         uint256 id;
         string uri;
         address creator;
         uint256 maxSupply;
     }
 
-    TicketInfo[] private registeredTickets;
+    NengajoInfo[] private registeredNengajoes;
 
     constructor(
         string memory _name,
@@ -51,69 +51,69 @@ contract PublicTicket is ERC1155, ERC1155Supply, ERC2771Context, Administration,
         name = _name;
         symbol = _symbol;
 
-        registeredTickets.push(TicketInfo(0, "", address(0), 0));
+        registeredNengajoes.push(NengajoInfo(0, "", address(0), 0));
         _tokenIds.increment();
     }
 
     modifier whenMintable() {
         require(
             (block.timestamp > open_blockTimestamp && close_blockTimestamp > block.timestamp) || mintable,
-            "Ticket: Not mintable"
+            "Nengajo: Not mintable"
         );
         _;
     }
 
-    function registerTicket(uint256 _maxSupply, string memory _metaDataURL) public onlyAdmins {
-        require(_maxSupply != 0 || keccak256(bytes(_metaDataURL)) != keccak256(bytes("")), "Ticket: invalid params");
+    function registerNengajo(uint256 _maxSupply, string memory _metaDataURL) public onlyAdmins {
+        require(_maxSupply != 0 || keccak256(bytes(_metaDataURL)) != keccak256(bytes("")), "Nengajo: invalid params");
 
         uint256 tokenId = _tokenIds.current();
         ownerOfRegisteredIds[_msgSender()].push(tokenId);
-        registeredTickets.push(TicketInfo(tokenId, _metaDataURL, _msgSender(), _maxSupply));
+        registeredNengajoes.push(NengajoInfo(tokenId, _metaDataURL, _msgSender(), _maxSupply));
         _tokenIds.increment();
 
-        // @dev Emit registeredTicket
+        // @dev Emit registeredNengajo
         // @param address, tokenId, URL of meta data, max supply
-        emit RegisterTicket(_msgSender(), tokenId, _metaDataURL, _maxSupply);
+        emit RegisterNengajo(_msgSender(), tokenId, _metaDataURL, _maxSupply);
     }
 
-    // @return all registered TicketInfo
-    function retrieveAllTickets() external view returns (TicketInfo[] memory) {
-        return registeredTickets;
+    // @return all registered NengajoInfo
+    function retrieveAllNengajoes() external view returns (NengajoInfo[] memory) {
+        return registeredNengajoes;
     }
 
-    // @return registered TicketInfo by tokenId
-    function retrieveRegisteredTicket(uint256 _tokenId) public view returns (TicketInfo memory) {
-        TicketInfo[] memory _registeredTickets = registeredTickets;
-        require(_registeredTickets.length > _tokenId, "Ticket: not available");
-        return _registeredTickets[_tokenId];
+    // @return registered NengajoInfo by tokenId
+    function retrieveRegisteredNengajo(uint256 _tokenId) public view returns (NengajoInfo memory) {
+        NengajoInfo[] memory _registeredNengajoes = registeredNengajoes;
+        require(_registeredNengajoes.length > _tokenId, "Nengajo: not available");
+        return _registeredNengajoes[_tokenId];
     }
 
-    // @return registered TicketInfo by address
-    function retrieveRegisteredTickets(address _address) public view returns (TicketInfo[] memory) {
-        TicketInfo[] memory _registeredTickets = registeredTickets;
+    // @return registered NengajoInfo by address
+    function retrieveRegisteredNengajoes(address _address) public view returns (NengajoInfo[] memory) {
+        NengajoInfo[] memory _registeredNengajoes = registeredNengajoes;
         uint256[] memory _ownerOfRegisteredIds = ownerOfRegisteredIds[_address];
-        TicketInfo[] memory _ownerOfRegisteredTickets = new TicketInfo[](_ownerOfRegisteredIds.length);
+        NengajoInfo[] memory _ownerOfRegisteredNengajoes = new NengajoInfo[](_ownerOfRegisteredIds.length);
 
         for (uint256 i = 0; i < _ownerOfRegisteredIds.length; ) {
-            TicketInfo memory _registeredTicket = _registeredTickets[_ownerOfRegisteredIds[i]];
-            if (_registeredTicket.creator == _address) {
-                _ownerOfRegisteredTickets[i] = _registeredTicket;
+            NengajoInfo memory _registeredNengajo = _registeredNengajoes[_ownerOfRegisteredIds[i]];
+            if (_registeredNengajo.creator == _address) {
+                _ownerOfRegisteredNengajoes[i] = _registeredNengajo;
             }
             unchecked {
                 ++i;
             }
         }
-        return _ownerOfRegisteredTickets;
+        return _ownerOfRegisteredNengajoes;
     }
 
-    function checkTicketAmount(uint256 _tokenId) private view {
-        require(balanceOf(_msgSender(), _tokenId) == 0, "Ticket: You already have this Ticket");
-        require(retrieveRegisteredTicket(_tokenId).maxSupply > totalSupply(_tokenId), "Ticket: Mint limit reached");
+    function checkNengajoAmount(uint256 _tokenId) private view {
+        require(balanceOf(_msgSender(), _tokenId) == 0, "Nengajo: You already have this nengajo");
+        require(retrieveRegisteredNengajo(_tokenId).maxSupply > totalSupply(_tokenId), "Nengajo: Mint limit reached");
     }
 
     // @dev mint function
     function mint(uint256 _tokenId) public whenMintable {
-        checkTicketAmount(_tokenId);
+        checkNengajoAmount(_tokenId);
         _mint(_msgSender(), _tokenId, 1, "");
         ownerOfMintedIds[_msgSender()].push(_tokenId);
 
@@ -128,7 +128,7 @@ contract PublicTicket is ERC1155, ERC1155Supply, ERC2771Context, Administration,
         uint256[] memory amountList = new uint256[](tokenIdsLength);
 
         for (uint256 i = 0; i < tokenIdsLength; ) {
-            checkTicketAmount(_tokenIdsList[i]);
+            checkNengajoAmount(_tokenIdsList[i]);
             amountList[i] = 1;
             ownerOfMintedIds[_msgSender()].push(_tokenIdsList[i]);
             unchecked {
@@ -144,29 +144,29 @@ contract PublicTicket is ERC1155, ERC1155Supply, ERC2771Context, Administration,
     }
 
     // @return holding tokenIds with address
-    function retrieveMintedTickets(address _address) public view returns (TicketInfo[] memory) {
-        TicketInfo[] memory _registeredTickets = registeredTickets;
+    function retrieveMintedNengajoes(address _address) public view returns (NengajoInfo[] memory) {
+        NengajoInfo[] memory _registeredNengajoes = registeredNengajoes;
         uint256[] memory _ownerOfMintedIds = ownerOfMintedIds[_address];
-        TicketInfo[] memory _ownerOfMintedTickets = new TicketInfo[](_ownerOfMintedIds.length);
+        NengajoInfo[] memory _ownerOfMintedNengajoes = new NengajoInfo[](_ownerOfMintedIds.length);
 
         for (uint256 i = 0; i < _ownerOfMintedIds.length; ) {
-            _ownerOfMintedTickets[i] = _registeredTickets[_ownerOfMintedIds[i]];
+            _ownerOfMintedNengajoes[i] = _registeredNengajoes[_ownerOfMintedIds[i]];
             unchecked {
                 ++i;
             }
         }
 
-        return _ownerOfMintedTickets;
+        return _ownerOfMintedNengajoes;
     }
 
     // @return token metadata uri
     function uri(uint256 _tokenId) public view override(ERC1155) returns (string memory) {
-        return retrieveRegisteredTicket(_tokenId).uri;
+        return retrieveRegisteredNengajo(_tokenId).uri;
     }
 
     // @return token metadata uri
     function tokenURI(uint256 _tokenId) public view returns (string memory) {
-        return retrieveRegisteredTicket(_tokenId).uri;
+        return retrieveRegisteredNengajo(_tokenId).uri;
     }
 
     function _beforeTokenTransfer(
