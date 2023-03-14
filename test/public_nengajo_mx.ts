@@ -1,7 +1,7 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { ethers as hardhatEthers } from 'hardhat'
 import { ethers } from 'ethers'
-import { Forwarder, Forwarder__factory, PublicNengajo, PublicNengajo__factory } from '../typechain-types'
+import { Forwarder, Forwarder__factory, PublicTicket, PublicTicket__factory } from '../typechain-types'
 import ethSignUtil from 'eth-sig-util'
 import { expect } from 'chai'
 
@@ -9,7 +9,7 @@ const open_blockTimestamp: number = 0
 const close_blockTimestamp: number = 2704034800
 
 describe('Mint via Fowarder', () => {
-  let NengajoContract: PublicNengajo
+  let TicketContract: PublicTicket
   let ForwarderContract: Forwarder
   let deployer: SignerWithAddress
   let creator: SignerWithAddress
@@ -20,28 +20,28 @@ describe('Mint via Fowarder', () => {
     const ForwarderFactory = (await hardhatEthers.getContractFactory('Forwarder')) as Forwarder__factory
     ForwarderContract = await ForwarderFactory.connect(deployer).deploy()
     await ForwarderContract.deployed()
-    const NengajoFactory = (await hardhatEthers.getContractFactory('PublicNengajo')) as PublicNengajo__factory
-    NengajoContract = await NengajoFactory.connect(deployer).deploy(
-      'Henkaku Nengajo',
+    const TicketFactory = (await hardhatEthers.getContractFactory('PublicTicket')) as PublicTicket__factory
+    TicketContract = await TicketFactory.connect(deployer).deploy(
+      'Henkaku Ticket',
       'HNJ',
       open_blockTimestamp,
       close_blockTimestamp,
       ForwarderContract.address
     )
-    await NengajoContract.deployed()
+    await TicketContract.deployed()
 
-    await ForwarderContract.whitelistTarget(NengajoContract.address, true)
-    const x = NengajoContract.interface.encodeFunctionData('mint', [1]).substring(0, 10)
-    await ForwarderContract.whitelistMethod(NengajoContract.address, x, true)
+    await ForwarderContract.whitelistTarget(TicketContract.address, true)
+    const x = TicketContract.interface.encodeFunctionData('mint', [1]).substring(0, 10)
+    await ForwarderContract.whitelistMethod(TicketContract.address, x, true)
 
-    await NengajoContract.addAdmins([creator.address])
-    await NengajoContract.connect(creator).registerNengajo(100, 'https://test.com')
+    await TicketContract.addAdmins([creator.address])
+    await TicketContract.connect(creator).registerTicket(100, 'https://test.com')
   })
 
-  it('mint Nengajo', async () => {
+  it('mint Ticket', async () => {
     const from = user1.address
-    const data = NengajoContract.interface.encodeFunctionData('mint', [1])
-    const to = NengajoContract.address
+    const data = TicketContract.interface.encodeFunctionData('mint', [1])
+    const to = TicketContract.address
 
     const { request, signature } = await signMetaTxRequest(user1.provider, ForwarderContract, {
       to,
@@ -51,13 +51,13 @@ describe('Mint via Fowarder', () => {
 
     await ForwarderContract.execute(request, signature)
 
-    const balance = await NengajoContract.balanceOf(user1.address, 1)
+    const balance = await TicketContract.balanceOf(user1.address, 1)
     expect(balance.toNumber()).to.equal(1)
   })
 
   it('tx fail when execute not allowed target', async () => {
     const from = user1.address
-    const data = NengajoContract.interface.encodeFunctionData('mint', [[1]])
+    const data = TicketContract.interface.encodeFunctionData('mint', [[1]])
 
     const { request, signature } = await signMetaTxRequest(user1.provider, ForwarderContract, {
       to: '0xcbEAF3BDe82155F56486Fb5a1072cb8baAf547cc',
@@ -72,8 +72,8 @@ describe('Mint via Fowarder', () => {
 
   it('tx fail when execute not allowed method', async () => {
     const from = user1.address
-    const data = NengajoContract.interface.encodeFunctionData('mintBatch', [[1]])
-    const to = NengajoContract.address
+    const data = TicketContract.interface.encodeFunctionData('mintBatch', [[1]])
+    const to = TicketContract.address
 
     const { request, signature } = await signMetaTxRequest(user1.provider, ForwarderContract, {
       to,
