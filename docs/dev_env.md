@@ -1,4 +1,4 @@
-# henkaku-Ticket-contract
+# henkaku-nengajo-contract
 
 ## 環境構築
 
@@ -27,4 +27,4 @@ $ node -v
 
 を実行すると、v16.17.0 みたいな出力が出ると成功しています。
 
-### ローカルノードにデプロイしてフロントエンドと繋いで開発するためには[こちら](https://github.com/henkaku-center/henkaku-Ticket-contract/blob/main/docs/local_node.md)を参考にしてください。
+### ローカルノードにデプロイしてフロントエンドと繋いで開発するためには[こちら](https://github.com/henkaku-center/henkaku-nengajo-contract/blob/main/docs/local_node.md)を参考にしてください。

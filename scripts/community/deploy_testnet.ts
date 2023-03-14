@@ -17,19 +17,19 @@ const main = async () => {
 
   const open_blockTimestamp: number = 0
   const close_blockTimestamp: number = 2671458400
-  const TicketFactory = await ethers.getContractFactory('Ticket')
-  const TicketContract = await TicketFactory.deploy(
-    'Henkaku Ticket',
+  const NengajoFactory = await ethers.getContractFactory('Nengajo')
+  const NengajoContract = await NengajoFactory.deploy(
+    'Henkaku Nengajo',
     'HNJ',
     open_blockTimestamp,
     close_blockTimestamp,
     HenkakuV2Contract.address,
     localUserAddresses[0]
   )
-  await TicketContract.deployed()
+  await NengajoContract.deployed()
 
   console.log(`HenkakuV2: ${HenkakuV2Contract.address}`)
-  console.log(`Ticket  : ${TicketContract.address}`)
+  console.log(`Nengajo  : ${NengajoContract.address}`)
 }
 
 main().catch((error) => {
