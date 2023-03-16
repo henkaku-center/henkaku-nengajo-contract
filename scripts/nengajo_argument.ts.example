@@ -2,7 +2,7 @@ const open_blockTimestamp: number = 0
 const close_blockTimestamp: number = 2671458400
 
 export default [
-  'Henkaku Ticket',
+  'Henkaku Nengajo',
   'HNJ',
   open_blockTimestamp,
   close_blockTimestamp,
