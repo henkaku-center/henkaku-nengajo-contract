@@ -1,7 +1,7 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
-import { HenkakuToken, HenkakuToken__factory, Nengajo, Nengajo__factory } from '../typechain-types'
+import { HenkakuToken, HenkakuToken__factory, Ticket, Ticket__factory } from '../typechain-types'
 import { BigNumber } from 'ethers'
 
 const open_blockTimestamp: number = 1672498800
@@ -26,11 +26,11 @@ const deployAndDistributeHenkakuV2: (params: {
 }
 
 const calcRequiredHenkakuForRegister: (params: {
-  NengajoContract: Nengajo
+  TicketContract: Ticket
   address: SignerWithAddress
   maxSupply: number
-}) => Promise<BigNumber> = async ({ NengajoContract, address, maxSupply }) => {
-  const registeredCount = (await NengajoContract.retrieveRegisteredNengajoes(address.address)).reduce(
+}) => Promise<BigNumber> = async ({ TicketContract, address, maxSupply }) => {
+  const registeredCount = (await TicketContract.retrieveRegisteredTickets(address.address)).reduce(
     (sum, current) => {
       return sum + current.maxSupply.toNumber()
     },
@@ -48,8 +48,8 @@ const calcRequiredHenkakuForRegister: (params: {
   return amount
 }
 
-describe('RegisterNengajo', () => {
-  let NengajoContract: Nengajo
+describe('RegisterTicket', () => {
+  let TicketContract: Ticket
   let HenkakuTokenContract: HenkakuToken
   let deployer: SignerWithAddress
   let creator: SignerWithAddress
@@ -64,65 +64,65 @@ describe('RegisterNengajo', () => {
       addresses: [creator.address, user1.address, user2.address, user3.address, deployer.address],
       amount: ethers.utils.parseEther('1000'),
     })
-    const NengajoFactory = (await ethers.getContractFactory('Nengajo')) as Nengajo__factory
-    NengajoContract = await NengajoFactory.deploy(
-      'Henkaku Nengajo',
+    const TicketFactory = (await ethers.getContractFactory('Ticket')) as Ticket__factory
+    TicketContract = await TicketFactory.deploy(
+      'Henkaku Ticket',
       'HNJ',
       open_blockTimestamp,
       close_blockTimestamp,
       HenkakuTokenContract.address,
       deployer.address
     )
-    await NengajoContract.deployed()
+    await TicketContract.deployed()
   })
 
   it('register creative', async () => {
     // Check the contents of tokenId #0, which is the default missing value.
     // デフォルト値の欠番としたtokenId #0の内容を確認
     let tokenURI
-    tokenURI = await NengajoContract.uri(0)
+    tokenURI = await TicketContract.uri(0)
     expect(tokenURI).equal('')
 
-    let getAllRegisteredNengajos
-    getAllRegisteredNengajos = await NengajoContract.retrieveAllNengajoes()
-    expect(getAllRegisteredNengajos.length).to.equal(1)
-    expect(getAllRegisteredNengajos[0].uri).to.equal('')
-    expect(getAllRegisteredNengajos[0].creator).to.equal(ethers.constants.AddressZero)
-    expect(getAllRegisteredNengajos[0].maxSupply).to.equal(0)
+    let getAllRegisteredTickets
+    getAllRegisteredTickets = await TicketContract.retrieveAllTickets()
+    expect(getAllRegisteredTickets.length).to.equal(1)
+    expect(getAllRegisteredTickets[0].uri).to.equal('')
+    expect(getAllRegisteredTickets[0].creator).to.equal(ethers.constants.AddressZero)
+    expect(getAllRegisteredTickets[0].maxSupply).to.equal(0)
 
-    let getRegisteredNengajo
-    getRegisteredNengajo = await NengajoContract.retrieveRegisteredNengajo(0)
-    expect(getRegisteredNengajo.uri).to.equal('')
-    expect(getRegisteredNengajo.creator).to.equal(ethers.constants.AddressZero)
-    expect(getRegisteredNengajo.maxSupply).to.equal(0)
+    let getRegisteredTicket
+    getRegisteredTicket = await TicketContract.retrieveRegisteredTicket(0)
+    expect(getRegisteredTicket.uri).to.equal('')
+    expect(getRegisteredTicket.creator).to.equal(ethers.constants.AddressZero)
+    expect(getRegisteredTicket.maxSupply).to.equal(0)
 
-    await HenkakuTokenContract.connect(creator).approve(NengajoContract.address, ethers.utils.parseEther('200'))
-    // Register the first Nengajo
+    await HenkakuTokenContract.connect(creator).approve(TicketContract.address, ethers.utils.parseEther('200'))
+    // Register the first Ticket
     // １つ目の年賀状(_tokenIdが１)を登録
 
     // @dev test emit register creative
-    await expect(NengajoContract.connect(creator).registerNengajo(2, 'ipfs://test1'))
-      .to.emit(NengajoContract, 'RegisterNengajo')
+    await expect(TicketContract.connect(creator).registerTicket(2, 'ipfs://test1'))
+      .to.emit(TicketContract, 'RegisterTicket')
       .withArgs(creator.address, 1, 'ipfs://test1', 2)
 
-    tokenURI = await NengajoContract.uri(1)
+    tokenURI = await TicketContract.uri(1)
     expect(tokenURI).equal('ipfs://test1')
 
-    getAllRegisteredNengajos = await NengajoContract.retrieveAllNengajoes()
-    expect(getAllRegisteredNengajos.length).to.equal(2)
-    expect(getAllRegisteredNengajos[1].uri).to.equal('ipfs://test1')
-    expect(getAllRegisteredNengajos[1].creator).to.equal(creator.address)
-    expect(getAllRegisteredNengajos[1].maxSupply).to.equal(2)
+    getAllRegisteredTickets = await TicketContract.retrieveAllTickets()
+    expect(getAllRegisteredTickets.length).to.equal(2)
+    expect(getAllRegisteredTickets[1].uri).to.equal('ipfs://test1')
+    expect(getAllRegisteredTickets[1].creator).to.equal(creator.address)
+    expect(getAllRegisteredTickets[1].maxSupply).to.equal(2)
 
-    getRegisteredNengajo = await NengajoContract.retrieveRegisteredNengajo(1)
-    expect(getRegisteredNengajo.uri).to.equal('ipfs://test1')
-    expect(getRegisteredNengajo.creator).to.equal(creator.address)
-    expect(getRegisteredNengajo.maxSupply).to.equal(2)
+    getRegisteredTicket = await TicketContract.retrieveRegisteredTicket(1)
+    expect(getRegisteredTicket.uri).to.equal('ipfs://test1')
+    expect(getRegisteredTicket.creator).to.equal(creator.address)
+    expect(getRegisteredTicket.maxSupply).to.equal(2)
 
-    const registeredNengajoes = await NengajoContract.retrieveRegisteredNengajoes(creator.address)
-    expect(registeredNengajoes[0].uri).to.equal('ipfs://test1')
-    expect(registeredNengajoes[0].creator).to.equal(creator.address)
-    expect(registeredNengajoes[0].maxSupply).to.equal(2)
+    const registeredTickets = await TicketContract.retrieveRegisteredTickets(creator.address)
+    expect(registeredTickets[0].uri).to.equal('ipfs://test1')
+    expect(registeredTickets[0].creator).to.equal(creator.address)
+    expect(registeredTickets[0].maxSupply).to.equal(2)
   })
 
   it('check 1Henkaku transfered', async () => {
@@ -130,29 +130,29 @@ describe('RegisterNengajo', () => {
     expect(henkakuBalance).to.equal(ethers.utils.parseEther('990'))
   })
 
-  it('failed register nengajo with insufficient henkaku token', async () => {
-    // Nengajo registration is reverted.
+  it('failed register ticket with insufficient henkaku token', async () => {
+    // Ticket registration is reverted.
     // 年賀状の登録がリバートされる
-    await expect(NengajoContract.connect(creator).registerNengajo(1000, 'ipfs://test1')).to.be.revertedWith(
-      'Nengajo: Insufficient HenkakuV2 token'
+    await expect(TicketContract.connect(creator).registerTicket(1000, 'ipfs://test1')).to.be.revertedWith(
+      'Ticket: Insufficient HenkakuV2 token'
     )
   })
 
   it('Check expected henkaku token amount is transfered', async () => {
     const henkakuBalanceBefore = await HenkakuTokenContract.balanceOf(creator.address)
     const expectedHenkakuAmount = await calcRequiredHenkakuForRegister({
-      NengajoContract,
+      TicketContract,
       address: creator,
       maxSupply: 10,
     })
-    await NengajoContract.connect(creator).registerNengajo(10, 'ipfs://test1')
+    await TicketContract.connect(creator).registerTicket(10, 'ipfs://test1')
     const henkakuBalanceAfter = await HenkakuTokenContract.balanceOf(creator.address)
     expect(henkakuBalanceAfter).to.equal(henkakuBalanceBefore.sub(expectedHenkakuAmount))
   })
 })
 
-describe('MintNengajo', () => {
-  let NengajoContract: Nengajo
+describe('MintTicket', () => {
+  let TicketContract: Ticket
   let HenkakuTokenContract: HenkakuToken
   let deployer: SignerWithAddress
   let creator: SignerWithAddress
@@ -168,142 +168,142 @@ describe('MintNengajo', () => {
       addresses: [creator.address, user1.address, user2.address, user3.address, deployer.address],
       amount: ethers.utils.parseEther('1000'),
     })
-    const NengajoFactory = (await ethers.getContractFactory('Nengajo')) as Nengajo__factory
-    NengajoContract = await NengajoFactory.deploy(
-      'Henkaku Nengajo',
+    const TicketFactory = (await ethers.getContractFactory('Ticket')) as Ticket__factory
+    TicketContract = await TicketFactory.deploy(
+      'Henkaku Ticket',
       'HNJ',
       open_blockTimestamp,
       close_blockTimestamp,
       HenkakuTokenContract.address,
       deployer.address
     )
-    await NengajoContract.deployed()
-    await HenkakuTokenContract.connect(creator).approve(NengajoContract.address, ethers.utils.parseEther('1000'))
-    await NengajoContract.connect(creator).registerNengajo(2, 'ipfs://test1')
+    await TicketContract.deployed()
+    await HenkakuTokenContract.connect(creator).approve(TicketContract.address, ethers.utils.parseEther('1000'))
+    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test1')
   })
 
-  it('mint nengajo', async () => {
-    await NengajoContract.connect(deployer).switchMintable()
+  it('mint ticket', async () => {
+    await TicketContract.connect(deployer).switchMintable()
 
-    await NengajoContract.connect(user1).mint(1)
-    let balance = await NengajoContract.connect(user1).balanceOf(user1.address, 1)
+    await TicketContract.connect(user1).mint(1)
+    let balance = await TicketContract.connect(user1).balanceOf(user1.address, 1)
     expect(balance).to.equal(1)
 
     // @dev test emit mint
-    await expect(NengajoContract.connect(user2).mint(1)).to.emit(NengajoContract, 'Mint').withArgs(user2.address, 1)
+    await expect(TicketContract.connect(user2).mint(1)).to.emit(TicketContract, 'Mint').withArgs(user2.address, 1)
 
-    //await NengajoContract.connect(user2).mint(1)
-    balance = await NengajoContract.connect(user2).balanceOf(user2.address, 1)
+    //await TicketContract.connect(user2).mint(1)
+    balance = await TicketContract.connect(user2).balanceOf(user2.address, 1)
     expect(balance).to.equal(1)
   })
 
-  it('retrieve minted nengajo', async () => {
+  it('retrieve minted ticket', async () => {
     // URIs
-    let mintedNengajoInfo = await NengajoContract.connect(user1).retrieveMintedNengajoes(user1.address)
-    expect(mintedNengajoInfo.length).equal(1)
-    expect(mintedNengajoInfo[0].uri).to.equal('ipfs://test1')
-    // Register the second Nengajo
+    let mintedTicketInfo = await TicketContract.connect(user1).retrieveMintedTickets(user1.address)
+    expect(mintedTicketInfo.length).equal(1)
+    expect(mintedTicketInfo[0].uri).to.equal('ipfs://test1')
+    // Register the second Ticket
     // ２つ目(_tokenIdが１)の年賀状を登録
-    await NengajoContract.connect(creator).registerNengajo(2, 'ipfs://test1')
+    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test1')
 
     // // user1が年賀状を２枚め(_tokenIdが２)をミント
-    await NengajoContract.connect(user1).mint(2)
-    mintedNengajoInfo = await NengajoContract.connect(user1).retrieveMintedNengajoes(user1.address)
+    await TicketContract.connect(user1).mint(2)
+    mintedTicketInfo = await TicketContract.connect(user1).retrieveMintedTickets(user1.address)
 
-    expect(mintedNengajoInfo.length).equal(2)
-    expect(mintedNengajoInfo[0].id).to.equal(1)
-    expect(mintedNengajoInfo[1].id).to.equal(2)
-    expect(mintedNengajoInfo[0].uri).to.equal('ipfs://test1')
-    expect(mintedNengajoInfo[1].uri).to.equal('ipfs://test1')
+    expect(mintedTicketInfo.length).equal(2)
+    expect(mintedTicketInfo[0].id).to.equal(1)
+    expect(mintedTicketInfo[1].id).to.equal(2)
+    expect(mintedTicketInfo[0].uri).to.equal('ipfs://test1')
+    expect(mintedTicketInfo[1].uri).to.equal('ipfs://test1')
 
-    mintedNengajoInfo = await NengajoContract.connect(user2).retrieveMintedNengajoes(user2.address)
+    mintedTicketInfo = await TicketContract.connect(user2).retrieveMintedTickets(user2.address)
 
-    expect(mintedNengajoInfo.length).equal(1)
-    expect(mintedNengajoInfo[0].id).to.equal(1)
-    expect(mintedNengajoInfo[0].uri).to.equal('ipfs://test1')
+    expect(mintedTicketInfo.length).equal(1)
+    expect(mintedTicketInfo[0].id).to.equal(1)
+    expect(mintedTicketInfo[0].uri).to.equal('ipfs://test1')
   })
 
-  it('mint batch nengajos', async () => {
-    // Register the third Nengajo
+  it('mint batch tickets', async () => {
+    // Register the third Ticket
     // ３つ目(_tokenIdが２)の年賀状を登録
-    await NengajoContract.connect(creator).registerNengajo(2, 'ipfs://test4')
-    // Register the fourth Nengajo
+    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test4')
+    // Register the fourth Ticket
     // 4つ目(_tokenIdが３)の年賀状を登録
-    await NengajoContract.connect(creator).registerNengajo(2, 'ipfs://test4')
+    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test4')
 
     // @dev test emit mint batch
-    await expect(await NengajoContract.connect(user3).mintBatch([3, 4]))
-      .to.emit(NengajoContract, 'MintBatch')
+    await expect(await TicketContract.connect(user3).mintBatch([3, 4]))
+      .to.emit(TicketContract, 'MintBatch')
       .withArgs(user3.address, [3, 4])
-    //await NengajoContract.connect(user3).mintBatch([3, 4])
+    //await TicketContract.connect(user3).mintBatch([3, 4])
 
     let balance
-    balance = await NengajoContract.connect(user3).balanceOf(user3.address, 3)
+    balance = await TicketContract.connect(user3).balanceOf(user3.address, 3)
     expect(balance).to.equal(1)
 
-    balance = await NengajoContract.connect(user3).balanceOf(user3.address, 4)
+    balance = await TicketContract.connect(user3).balanceOf(user3.address, 4)
     expect(balance).to.equal(1)
 
-    let mintedNengajoInfo = await NengajoContract.connect(user3).retrieveMintedNengajoes(user3.address)
+    let mintedTicketInfo = await TicketContract.connect(user3).retrieveMintedTickets(user3.address)
 
-    expect(mintedNengajoInfo.length).equal(2)
-    expect(mintedNengajoInfo[0].id).to.equal(3)
-    expect(mintedNengajoInfo[1].id).to.equal(4)
-    expect(mintedNengajoInfo[0].uri).to.equal('ipfs://test4')
-    expect(mintedNengajoInfo[1].uri).to.equal('ipfs://test4')
+    expect(mintedTicketInfo.length).equal(2)
+    expect(mintedTicketInfo[0].id).to.equal(3)
+    expect(mintedTicketInfo[1].id).to.equal(4)
+    expect(mintedTicketInfo[0].uri).to.equal('ipfs://test4')
+    expect(mintedTicketInfo[1].uri).to.equal('ipfs://test4')
   })
 
   it('mint batch failed with already have', async () => {
-    // Confirmed that even with the mintBatch function, it is not possible to mint more than two Nengajos.
+    // Confirmed that even with the mintBatch function, it is not possible to mint more than two Tickets.
     // mintBatch関数でも同じ年賀状を2つ以上ミント出来ないことを確認
-    await expect(NengajoContract.connect(user3).mintBatch([3, 4])).to.be.revertedWith(
-      'Nengajo: You already have this nengajo'
+    await expect(TicketContract.connect(user3).mintBatch([3, 4])).to.be.revertedWith(
+      'Ticket: You already have this ticket'
     )
 
     // Confirm that balance, etc. has not changed.
     // balance等が変わっていないことを確認
     let balance
-    balance = await NengajoContract.connect(user3).balanceOf(user3.address, 3)
+    balance = await TicketContract.connect(user3).balanceOf(user3.address, 3)
     expect(balance).to.equal(1)
 
-    balance = await NengajoContract.connect(user3).balanceOf(user3.address, 4)
+    balance = await TicketContract.connect(user3).balanceOf(user3.address, 4)
     expect(balance).to.equal(1)
 
-    let mintedNengajoInfo = await NengajoContract.connect(user3).retrieveMintedNengajoes(user3.address)
+    let mintedTicketInfo = await TicketContract.connect(user3).retrieveMintedTickets(user3.address)
 
-    expect(mintedNengajoInfo.length).equal(2)
-    expect(mintedNengajoInfo[0].id).to.equal(3)
-    expect(mintedNengajoInfo[1].id).to.equal(4)
-    expect(mintedNengajoInfo[0].uri).to.equal('ipfs://test4')
-    expect(mintedNengajoInfo[1].uri).to.equal('ipfs://test4')
+    expect(mintedTicketInfo.length).equal(2)
+    expect(mintedTicketInfo[0].id).to.equal(3)
+    expect(mintedTicketInfo[1].id).to.equal(4)
+    expect(mintedTicketInfo[0].uri).to.equal('ipfs://test4')
+    expect(mintedTicketInfo[1].uri).to.equal('ipfs://test4')
   })
 
   it('failed with unavailable', async () => {
-    // await expect(NengajoContract.connect(user2).mint(1)).to.be.revertedWith('Nengajo: not available')
-    await expect(NengajoContract.connect(user2).mint(999)).to.be.revertedWith('Nengajo: not available')
+    // await expect(TicketContract.connect(user2).mint(1)).to.be.revertedWith('Ticket: not available')
+    await expect(TicketContract.connect(user2).mint(999)).to.be.revertedWith('Ticket: not available')
   })
 
   it('failed with already have', async () => {
-    await expect(NengajoContract.connect(user2).mint(1)).to.be.revertedWith('Nengajo: You already have this nengajo')
+    await expect(TicketContract.connect(user2).mint(1)).to.be.revertedWith('Ticket: You already have this ticket')
   })
 
   it('failed with mint limit', async () => {
-    await expect(NengajoContract.connect(user3).mint(1)).to.be.revertedWith('Nengajo: Mint limit reached')
+    await expect(TicketContract.connect(user3).mint(1)).to.be.revertedWith('Ticket: Mint limit reached')
   })
 
   it('failed with mint tokenId #0', async () => {
-    await expect(NengajoContract.connect(user3).mint(0)).to.be.revertedWith('Nengajo: Mint limit reached')
+    await expect(TicketContract.connect(user3).mint(0)).to.be.revertedWith('Ticket: Mint limit reached')
   })
 
   it('failed with insufficient Henkaku Token', async () => {
-    await expect(NengajoContract.connect(user4).mint(2)).to.be.revertedWith(
-      'Nengajo: Insufficient Henkaku Token Balance'
+    await expect(TicketContract.connect(user4).mint(2)).to.be.revertedWith(
+      'Ticket: Insufficient Henkaku Token Balance'
     )
   })
 })
 
 describe('CheckMintable', () => {
-  let NengajoContract: Nengajo
+  let TicketContract: Ticket
   let HenkakuTokenContract: HenkakuToken
   let deployer: SignerWithAddress
   let creator: SignerWithAddress
@@ -318,16 +318,16 @@ describe('CheckMintable', () => {
       addresses: [creator.address, user1.address, user2.address, deployer.address],
       amount: ethers.utils.parseEther('100'),
     })
-    const NengajoFactory = (await ethers.getContractFactory('Nengajo')) as Nengajo__factory
-    NengajoContract = await NengajoFactory.deploy(
-      'Henkaku Nengajo',
+    const TicketFactory = (await ethers.getContractFactory('Ticket')) as Ticket__factory
+    TicketContract = await TicketFactory.deploy(
+      'Henkaku Ticket',
       'HNJ',
       open_blockTimestamp,
       close_blockTimestamp,
       HenkakuTokenContract.address,
       deployer.address
     )
-    await NengajoContract.deployed()
+    await TicketContract.deployed()
     HenkakuTokenContract = await deployAndDistributeHenkakuV2({
       deployer,
       addresses: [creator.address, user1.address, user2.address],
@@ -336,36 +336,36 @@ describe('CheckMintable', () => {
   })
 
   it('initial mintable flag is false', async () => {
-    const mintable = await NengajoContract.mintable()
+    const mintable = await TicketContract.mintable()
     expect(mintable).to.equal(false)
   })
 
   it('initial admin is deployer', async () => {
-    const admin = await NengajoContract.isAdmin(deployer.address)
+    const admin = await TicketContract.isAdmin(deployer.address)
     expect(admin).to.equal(true)
   })
 
   it('initial admin is only deployer', async () => {
-    const admin = await NengajoContract.isAdmin(user1.address)
+    const admin = await TicketContract.isAdmin(user1.address)
     expect(admin).to.equal(false)
   })
 
   it('only admins can add new admins', async () => {
     const newAdmins = [user1.address, user2.address]
-    await expect(NengajoContract.connect(creator).addAdmins(newAdmins)).to.be.revertedWith('Admins only')
+    await expect(TicketContract.connect(creator).addAdmins(newAdmins)).to.be.revertedWith('Admins only')
   })
 
   it('add a new admin', async () => {
     const newAdmins = [creator.address]
 
     let isAdmin
-    isAdmin = await NengajoContract.isAdmin(creator.address)
+    isAdmin = await TicketContract.isAdmin(creator.address)
     expect(isAdmin).to.equal(false)
 
-    const addAdmins = await NengajoContract.connect(deployer).addAdmins(newAdmins)
+    const addAdmins = await TicketContract.connect(deployer).addAdmins(newAdmins)
     await addAdmins.wait()
 
-    isAdmin = await NengajoContract.isAdmin(creator.address)
+    isAdmin = await TicketContract.isAdmin(creator.address)
     expect(isAdmin).to.equal(true)
   })
 
@@ -373,86 +373,86 @@ describe('CheckMintable', () => {
     const newAdmins = [user1.address, user2.address]
 
     let isAdmin
-    isAdmin = await NengajoContract.isAdmin(user1.address)
+    isAdmin = await TicketContract.isAdmin(user1.address)
     expect(isAdmin).to.equal(false)
-    isAdmin = await NengajoContract.isAdmin(user2.address)
+    isAdmin = await TicketContract.isAdmin(user2.address)
     expect(isAdmin).to.equal(false)
 
-    const addAdmins = await NengajoContract.connect(deployer).addAdmins(newAdmins)
+    const addAdmins = await TicketContract.connect(deployer).addAdmins(newAdmins)
     await addAdmins.wait()
 
-    isAdmin = await NengajoContract.isAdmin(user1.address)
+    isAdmin = await TicketContract.isAdmin(user1.address)
     expect(isAdmin).to.equal(true)
-    isAdmin = await NengajoContract.isAdmin(user2.address)
+    isAdmin = await TicketContract.isAdmin(user2.address)
     expect(isAdmin).to.equal(true)
   })
 
   it('delete an admin', async () => {
     let isAdmin
-    isAdmin = await NengajoContract.isAdmin(user2.address)
+    isAdmin = await TicketContract.isAdmin(user2.address)
     expect(isAdmin).to.equal(true)
 
-    const deleteAdmin = await NengajoContract.connect(deployer).deleteAdmin(user2.address)
+    const deleteAdmin = await TicketContract.connect(deployer).deleteAdmin(user2.address)
     await deleteAdmin.wait()
 
-    isAdmin = await NengajoContract.isAdmin(user2.address)
+    isAdmin = await TicketContract.isAdmin(user2.address)
     expect(isAdmin).to.equal(false)
   })
 
   it('switch mintable flag', async () => {
     let mintable
-    mintable = await NengajoContract.mintable()
+    mintable = await TicketContract.mintable()
     expect(mintable).to.equal(false)
 
     let switchMintable
-    switchMintable = await NengajoContract.connect(deployer).switchMintable()
+    switchMintable = await TicketContract.connect(deployer).switchMintable()
 
-    mintable = await NengajoContract.mintable()
+    mintable = await TicketContract.mintable()
     expect(mintable).to.equal(true)
 
-    switchMintable = await NengajoContract.connect(deployer).switchMintable()
+    switchMintable = await TicketContract.connect(deployer).switchMintable()
 
-    mintable = await NengajoContract.mintable()
+    mintable = await TicketContract.mintable()
     expect(mintable).to.equal(false)
   })
 
   it('only admins can switch mintable flag', async () => {
     let mintable
-    mintable = await NengajoContract.mintable()
+    mintable = await TicketContract.mintable()
     expect(mintable).to.equal(false)
 
-    await expect(NengajoContract.connect(user3).switchMintable()).to.be.revertedWith('Admins only')
+    await expect(TicketContract.connect(user3).switchMintable()).to.be.revertedWith('Admins only')
 
-    mintable = await NengajoContract.mintable()
+    mintable = await TicketContract.mintable()
     expect(mintable).to.equal(false)
   })
 
   it('check pool address changed', async () => {
     let pool
-    pool = await NengajoContract.henkakuPoolWallet()
+    pool = await TicketContract.henkakuPoolWallet()
     // The initial value of Wallet in Pool is set to deployer.
     // PoolのWalletの初期値はdeployerに設定されている。
     expect(pool).to.equal(deployer.address)
 
-    await (await NengajoContract.connect(deployer).changeHenkakuPool(user1.address)).wait()
+    await (await TicketContract.connect(deployer).changeHenkakuPool(user1.address)).wait()
 
-    pool = await NengajoContract.henkakuPoolWallet()
+    pool = await TicketContract.henkakuPoolWallet()
     expect(pool).to.equal(user1.address)
   })
 
   it('check pool address cannot be changed except by admin', async () => {
     let pool
-    pool = await NengajoContract.henkakuPoolWallet()
+    pool = await TicketContract.henkakuPoolWallet()
     expect(pool).to.equal(user1.address)
 
-    expect(await NengajoContract.connect(user1).changeHenkakuPool(user2.address)).to.revertedWith(
+    expect(await TicketContract.connect(user1).changeHenkakuPool(user2.address)).to.revertedWith(
       'Henkaku Pool: same address'
     )
   })
 })
 
 describe('check timestamp', () => {
-  let NengajoContract: Nengajo
+  let TicketContract: Ticket
   let HenkakuTokenContract: HenkakuToken
   let deployer: SignerWithAddress
   let creator: SignerWithAddress
@@ -483,31 +483,31 @@ describe('check timestamp', () => {
       addresses: [creator.address, user1.address, user2.address, deployer.address],
       amount: ethers.utils.parseEther('100'),
     })
-    const NengajoFactory = (await ethers.getContractFactory('Nengajo')) as Nengajo__factory
-    NengajoContract = await NengajoFactory.deploy(
-      'Henkaku Nengajo',
+    const TicketFactory = (await ethers.getContractFactory('Ticket')) as Ticket__factory
+    TicketContract = await TicketFactory.deploy(
+      'Henkaku Ticket',
       'HNJ',
       open_blockTimestamp,
       close_blockTimestamp,
       HenkakuTokenContract.address,
       deployer.address
     )
-    await NengajoContract.deployed()
+    await TicketContract.deployed()
   })
 
   it('check remaining open time', async () => {
-    const checkRemainingOpenTime = await NengajoContract.callStatic.checkRemainingOpenTime()
+    const checkRemainingOpenTime = await TicketContract.callStatic.checkRemainingOpenTime()
     expect(checkRemainingOpenTime.toNumber()).to.below(4676081)
   })
 
   it('check remaining close time', async () => {
-    const checkRemainingCloseTime = await NengajoContract.callStatic.checkRemainingCloseTime()
+    const checkRemainingCloseTime = await TicketContract.callStatic.checkRemainingCloseTime()
     expect(checkRemainingCloseTime.toNumber()).to.below(36212059)
   })
 })
 
 describe('after minting term', () => {
-  let NengajoContract: Nengajo
+  let TicketContract: Ticket
   let HenkakuTokenContract: HenkakuToken
   let deployer: SignerWithAddress
   let creator: SignerWithAddress
@@ -538,43 +538,43 @@ describe('after minting term', () => {
       addresses: [creator.address, user1.address, user2.address, deployer.address],
       amount: ethers.utils.parseEther('100'),
     })
-    const NengajoFactory = (await ethers.getContractFactory('Nengajo')) as Nengajo__factory
-    NengajoContract = await NengajoFactory.deploy(
-      'Henkaku Nengajo',
+    const TicketFactory = (await ethers.getContractFactory('Ticket')) as Ticket__factory
+    TicketContract = await TicketFactory.deploy(
+      'Henkaku Ticket',
       'HNJ',
       946652400,
       946652400,
       HenkakuTokenContract.address,
       deployer.address
     )
-    await NengajoContract.deployed()
+    await TicketContract.deployed()
   })
 
   it('check remaining open time', async () => {
-    const checkRemainingOpenTime = await NengajoContract.callStatic.checkRemainingOpenTime()
+    const checkRemainingOpenTime = await TicketContract.callStatic.checkRemainingOpenTime()
     expect(checkRemainingOpenTime.toNumber()).to.equal(0)
   })
 
   it('check remaining close time', async () => {
-    const checkRemainingCloseTime = await NengajoContract.callStatic.checkRemainingCloseTime()
+    const checkRemainingCloseTime = await TicketContract.callStatic.checkRemainingCloseTime()
     expect(checkRemainingCloseTime.toNumber()).to.equal(0)
   })
 
   it('failed with minting time', async () => {
-    const checkRemainingOpenTime = await NengajoContract.callStatic.checkRemainingOpenTime()
+    const checkRemainingOpenTime = await TicketContract.callStatic.checkRemainingOpenTime()
 
-    const checkRemainingCloseTime = await NengajoContract.callStatic.checkRemainingCloseTime()
-    await HenkakuTokenContract.connect(creator).approve(NengajoContract.address, ethers.utils.parseEther('200'))
-    await NengajoContract.connect(creator).registerNengajo(1, 'ipfs://test1')
-    const tokenURI = await NengajoContract.uri(1)
+    const checkRemainingCloseTime = await TicketContract.callStatic.checkRemainingCloseTime()
+    await HenkakuTokenContract.connect(creator).approve(TicketContract.address, ethers.utils.parseEther('200'))
+    await TicketContract.connect(creator).registerTicket(1, 'ipfs://test1')
+    const tokenURI = await TicketContract.uri(1)
     expect(tokenURI).equal('ipfs://test1')
 
     let mintable
-    mintable = await NengajoContract.mintable()
+    mintable = await TicketContract.mintable()
     expect(mintable).to.equal(false)
 
     if (checkRemainingOpenTime || (!checkRemainingCloseTime && !mintable)) {
-      await expect(NengajoContract.connect(user1).mint(1)).to.be.revertedWith('Nengajo: Not mintable')
+      await expect(TicketContract.connect(user1).mint(1)).to.be.revertedWith('Ticket: Not mintable')
     }
   })
 })
