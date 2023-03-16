@@ -19,14 +19,10 @@ const main = async () => {
     await HenkakuV2Contract.mint(address, 100n ** 12n)
   }
 
-  const open_blockTimestamp: number = 1671458400
-  const close_blockTimestamp: number = 2671458400
   const TicketFactory = await ethers.getContractFactory('Ticket')
   const TicketContract = await TicketFactory.deploy(
     'Henkaku Ticket',
     'HNJ',
-    open_blockTimestamp,
-    close_blockTimestamp,
     HenkakuV2Contract.address,
     localUserAddresses[0]
   )

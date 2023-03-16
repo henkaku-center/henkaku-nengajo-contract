@@ -40,15 +40,9 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     constructor(
         string memory _name,
         string memory _symbol,
-        uint256 _open_blockTimestamp,
-        uint256 _close_blockTimestamp,
         address _henkakuTokenV2,
         address _henkakuPoolWallet
-    )
-        ERC1155("")
-        MintManager(_open_blockTimestamp, _close_blockTimestamp)
-        InteractHenakuToken(_henkakuTokenV2, _henkakuPoolWallet)
-    {
+    ) ERC1155("") MintManager() InteractHenakuToken(_henkakuTokenV2, _henkakuPoolWallet) {
         name = _name;
         symbol = _symbol;
 
@@ -57,10 +51,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     }
 
     modifier whenMintable() {
-        require(
-            (block.timestamp > open_blockTimestamp && close_blockTimestamp > block.timestamp) || mintable,
-            "Ticket: Not mintable"
-        );
+        require(mintable, "Ticket: Not mintable");
         require(checkHenkakuV2Balance(1), "Ticket: Insufficient Henkaku Token Balance");
         _;
     }

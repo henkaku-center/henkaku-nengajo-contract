@@ -4,9 +4,6 @@ import { ethers } from 'hardhat'
 import { HenkakuToken, HenkakuToken__factory, Ticket, Ticket__factory } from '../typechain-types'
 import { BigNumber } from 'ethers'
 
-const open_blockTimestamp: number = 1672498800
-const close_blockTimestamp: number = 1704034800
-
 const deployAndDistributeHenkakuV2: (params: {
   deployer: SignerWithAddress
   addresses: string[]
@@ -68,8 +65,6 @@ describe('RegisterTicket', () => {
     TicketContract = await TicketFactory.deploy(
       'Henkaku Ticket',
       'HNJ',
-      open_blockTimestamp,
-      close_blockTimestamp,
       HenkakuTokenContract.address,
       deployer.address
     )
@@ -172,8 +167,6 @@ describe('MintTicket', () => {
     TicketContract = await TicketFactory.deploy(
       'Henkaku Ticket',
       'HNJ',
-      open_blockTimestamp,
-      close_blockTimestamp,
       HenkakuTokenContract.address,
       deployer.address
     )
@@ -322,8 +315,6 @@ describe('CheckMintable', () => {
     TicketContract = await TicketFactory.deploy(
       'Henkaku Ticket',
       'HNJ',
-      open_blockTimestamp,
-      close_blockTimestamp,
       HenkakuTokenContract.address,
       deployer.address
     )
@@ -487,22 +478,10 @@ describe('check timestamp', () => {
     TicketContract = await TicketFactory.deploy(
       'Henkaku Ticket',
       'HNJ',
-      open_blockTimestamp,
-      close_blockTimestamp,
       HenkakuTokenContract.address,
       deployer.address
     )
     await TicketContract.deployed()
-  })
-
-  it('check remaining open time', async () => {
-    const checkRemainingOpenTime = await TicketContract.callStatic.checkRemainingOpenTime()
-    expect(checkRemainingOpenTime.toNumber()).to.below(4676081)
-  })
-
-  it('check remaining close time', async () => {
-    const checkRemainingCloseTime = await TicketContract.callStatic.checkRemainingCloseTime()
-    expect(checkRemainingCloseTime.toNumber()).to.below(36212059)
   })
 })
 
@@ -548,33 +527,5 @@ describe('after minting term', () => {
       deployer.address
     )
     await TicketContract.deployed()
-  })
-
-  it('check remaining open time', async () => {
-    const checkRemainingOpenTime = await TicketContract.callStatic.checkRemainingOpenTime()
-    expect(checkRemainingOpenTime.toNumber()).to.equal(0)
-  })
-
-  it('check remaining close time', async () => {
-    const checkRemainingCloseTime = await TicketContract.callStatic.checkRemainingCloseTime()
-    expect(checkRemainingCloseTime.toNumber()).to.equal(0)
-  })
-
-  it('failed with minting time', async () => {
-    const checkRemainingOpenTime = await TicketContract.callStatic.checkRemainingOpenTime()
-
-    const checkRemainingCloseTime = await TicketContract.callStatic.checkRemainingCloseTime()
-    await HenkakuTokenContract.connect(creator).approve(TicketContract.address, ethers.utils.parseEther('200'))
-    await TicketContract.connect(creator).registerTicket(1, 'ipfs://test1')
-    const tokenURI = await TicketContract.uri(1)
-    expect(tokenURI).equal('ipfs://test1')
-
-    let mintable
-    mintable = await TicketContract.mintable()
-    expect(mintable).to.equal(false)
-
-    if (checkRemainingOpenTime || (!checkRemainingCloseTime && !mintable)) {
-      await expect(TicketContract.connect(user1).mint(1)).to.be.revertedWith('Ticket: Not mintable')
-    }
   })
 })
