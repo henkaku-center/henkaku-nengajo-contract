@@ -16,9 +16,9 @@ abstract contract InteractHenakuToken is Administration, MintManager {
     }
 
     function transferHenkakuV2(uint256 _amount) internal {
-        require(checkHenkakuV2Balance(_amount), "Ticket: Insufficient HenkakuV2 token");
+        require(checkHenkakuV2Balance(_amount), "Nengajo: Insufficient HenkakuV2 token");
         bool sent = IHenkakuToken(henkakuV2).transferFrom(msg.sender, henkakuPoolWallet, _amount);
-        require(sent, "Ticket: Henkaku transfer failed");
+        require(sent, "Nengajo: Henkaku transfer failed");
     }
 
     function checkHenkakuV2Balance(uint256 _requiredAmount) internal view returns (bool) {

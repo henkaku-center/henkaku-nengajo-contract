@@ -11,29 +11,29 @@ const main = async () => {
 
   const open_blockTimestamp: number = 1672542000
   const close_blockTimestamp: number = 1688180400
-  const TicketFactory = await ethers.getContractFactory('PublicTicket')
-  const TicketContract = await TicketFactory.deploy(
-    'Henkaku Ticket 2023',
+  const NengajoFactory = await ethers.getContractFactory('PublicNengajo')
+  const NengajoContract = await NengajoFactory.deploy(
+    'Henkaku Nengajo 2023',
     'HNJ23',
     open_blockTimestamp,
     close_blockTimestamp,
     ForwarderContract.address
   )
-  await TicketContract.deployed()
+  await NengajoContract.deployed()
 
-  await ForwarderContract.whitelistTarget(TicketContract.address, true)
-  const x = TicketContract.interface.encodeFunctionData('mint', [1]).substring(0, 10)
-  await ForwarderContract.whitelistMethod(TicketContract.address, x, true)
+  await ForwarderContract.whitelistTarget(NengajoContract.address, true)
+  const x = NengajoContract.interface.encodeFunctionData('mint', [1]).substring(0, 10)
+  await ForwarderContract.whitelistMethod(NengajoContract.address, x, true)
 
   console.log(`Forwarder: ${ForwarderContract.address}`)
-  console.log(`Ticket  : ${TicketContract.address}`)
+  console.log(`Nengajo  : ${NengajoContract.address}`)
 
   writeFileSync(
     './scripts/public/deployed_contract_addr_polygon.json',
     JSON.stringify(
       {
         Fowarder: ForwarderContract.address,
-        Ticket: TicketContract.address,
+        Nengajo: NengajoContract.address,
       },
       null,
       2
