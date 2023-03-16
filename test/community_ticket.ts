@@ -95,10 +95,12 @@ describe('RegisterTicket', () => {
     // Register the first Ticket
     // １つ目の年賀状(_tokenIdが１)を登録
 
+    let now = (await ethers.provider.getBlock("latest")).timestamp;
+
     // @dev test emit register creative
-    await expect(TicketContract.connect(creator).registerTicket(2, 'ipfs://test1'))
+    await expect(TicketContract.connect(creator).registerTicket(2, 'ipfs://test1', now, now + 10000000))
       .to.emit(TicketContract, 'RegisterTicket')
-      .withArgs(creator.address, 1, 'ipfs://test1', 2)
+      .withArgs(creator.address, 1, 'ipfs://test1', 2, now, now + 10000000)
 
     tokenURI = await TicketContract.uri(1)
     expect(tokenURI).equal('ipfs://test1')
@@ -128,7 +130,10 @@ describe('RegisterTicket', () => {
   it('failed register ticket with insufficient henkaku token', async () => {
     // Ticket registration is reverted.
     // 年賀状の登録がリバートされる
-    await expect(TicketContract.connect(creator).registerTicket(1000, 'ipfs://test1')).to.be.revertedWith(
+
+    let now = (await ethers.provider.getBlock("latest")).timestamp;
+
+    await expect(TicketContract.connect(creator).registerTicket(1000, 'ipfs://test1', now, now + 10000000)).to.be.revertedWith(
       'Ticket: Insufficient HenkakuV2 token'
     )
   })
@@ -140,7 +145,10 @@ describe('RegisterTicket', () => {
       address: creator,
       maxSupply: 10,
     })
-    await TicketContract.connect(creator).registerTicket(10, 'ipfs://test1')
+
+    let now = (await ethers.provider.getBlock("latest")).timestamp;
+
+    await TicketContract.connect(creator).registerTicket(10, 'ipfs://test1', now, now + 10000000)
     const henkakuBalanceAfter = await HenkakuTokenContract.balanceOf(creator.address)
     expect(henkakuBalanceAfter).to.equal(henkakuBalanceBefore.sub(expectedHenkakuAmount))
   })
@@ -172,7 +180,10 @@ describe('MintTicket', () => {
     )
     await TicketContract.deployed()
     await HenkakuTokenContract.connect(creator).approve(TicketContract.address, ethers.utils.parseEther('1000'))
-    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test1')
+
+    let now = (await ethers.provider.getBlock("latest")).timestamp;
+    
+    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test1', now, now + 10000000)
   })
 
   it('mint ticket', async () => {
@@ -197,7 +208,10 @@ describe('MintTicket', () => {
     expect(mintedTicketInfo[0].uri).to.equal('ipfs://test1')
     // Register the second Ticket
     // ２つ目(_tokenIdが１)の年賀状を登録
-    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test1')
+
+    let now = (await ethers.provider.getBlock("latest")).timestamp;
+    
+    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test1', now, now + 10000000)
 
     // // user1が年賀状を２枚め(_tokenIdが２)をミント
     await TicketContract.connect(user1).mint(2)
@@ -217,12 +231,15 @@ describe('MintTicket', () => {
   })
 
   it('mint batch tickets', async () => {
+
+    let now = (await ethers.provider.getBlock("latest")).timestamp;
+    
     // Register the third Ticket
     // ３つ目(_tokenIdが２)の年賀状を登録
-    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test4')
+    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test4', now, now + 10000000)
     // Register the fourth Ticket
     // 4つ目(_tokenIdが３)の年賀状を登録
-    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test4')
+    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test4', now, now + 10000000)
 
     // @dev test emit mint batch
     await expect(await TicketContract.connect(user3).mintBatch([3, 4]))

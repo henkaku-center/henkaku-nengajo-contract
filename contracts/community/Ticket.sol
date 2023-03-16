@@ -19,7 +19,14 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     mapping(address => uint256[]) private ownerOfMintedIds;
 
     //@dev Declare Event to emit
-    event RegisterTicket(address indexed creator, uint256 tokenId, string metaDataURL, uint256 maxSupply);
+    event RegisterTicket(
+        address indexed creator,
+        uint256 tokenId,
+        string metaDataURL,
+        uint256 maxSupply,
+        uint256 _open_blockTimestamp,
+        uint256 _close_blockTimestamp
+    );
     event Mint(address indexed minter, uint256 indexed tokenId);
     event MintBatch(address indexed minter, uint256[] tokenIds);
 
@@ -33,6 +40,8 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         string uri;
         address creator;
         uint256 maxSupply;
+        uint256 open_blockTimestamp;
+        uint256 close_blockTimestamp;
     }
 
     TicketInfo[] private registeredTickets;
@@ -46,7 +55,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         name = _name;
         symbol = _symbol;
 
-        registeredTickets.push(TicketInfo(0, "", address(0), 0));
+        registeredTickets.push(TicketInfo(0, "", address(0), 0, 0, 0));
         _tokenIds.increment();
     }
 
@@ -56,20 +65,27 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         _;
     }
 
-    function registerTicket(uint256 _maxSupply, string memory _metaDataURL) public {
+    function registerTicket(
+        uint256 _maxSupply,
+        string memory _metaDataURL,
+        uint256 _open_blockTimestamp,
+        uint256 _close_blockTimestamp
+    ) public {
         require(_maxSupply != 0 || keccak256(bytes(_metaDataURL)) != keccak256(bytes("")), "Ticket: invalid params");
         uint256 amount = calcPrice(_maxSupply);
 
         uint256 tokenId = _tokenIds.current();
         ownerOfRegisteredIds[msg.sender].push(tokenId);
-        registeredTickets.push(TicketInfo(tokenId, _metaDataURL, msg.sender, _maxSupply));
+        registeredTickets.push(
+            TicketInfo(tokenId, _metaDataURL, msg.sender, _maxSupply, _open_blockTimestamp, _close_blockTimestamp)
+        );
         _tokenIds.increment();
 
         transferHenkakuV2(amount);
 
         // @dev Emit registeredTicket
         // @param address, tokenId, URL of meta data, max supply
-        emit RegisterTicket(msg.sender, tokenId, _metaDataURL, _maxSupply);
+        emit RegisterTicket(msg.sender, tokenId, _metaDataURL, _maxSupply, _open_blockTimestamp, _close_blockTimestamp);
     }
 
     function calcPrice(uint256 _maxSupply) public view returns (uint256) {
