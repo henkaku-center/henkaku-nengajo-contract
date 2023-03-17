@@ -98,9 +98,9 @@ describe('RegisterTicket', () => {
     let now = (await ethers.provider.getBlock("latest")).timestamp;
 
     // @dev test emit register creative
-    await expect(TicketContract.connect(creator).registerTicket(2, 'ipfs://test1', now, now + 10000000))
+    await expect(TicketContract.connect(creator).registerTicket(2, 'ipfs://test1', now, now + 1000000000000))
       .to.emit(TicketContract, 'RegisterTicket')
-      .withArgs(creator.address, 1, 'ipfs://test1', 2, now, now + 10000000)
+      .withArgs(creator.address, 1, 'ipfs://test1', 2, now, now + 1000000000000)
 
     tokenURI = await TicketContract.uri(1)
     expect(tokenURI).equal('ipfs://test1')
@@ -133,7 +133,7 @@ describe('RegisterTicket', () => {
 
     let now = (await ethers.provider.getBlock("latest")).timestamp;
 
-    await expect(TicketContract.connect(creator).registerTicket(1000, 'ipfs://test1', now, now + 10000000)).to.be.revertedWith(
+    await expect(TicketContract.connect(creator).registerTicket(1000, 'ipfs://test1', now, now + 1000000000000)).to.be.revertedWith(
       'Ticket: Insufficient HenkakuV2 token'
     )
   })
@@ -148,7 +148,7 @@ describe('RegisterTicket', () => {
 
     let now = (await ethers.provider.getBlock("latest")).timestamp;
 
-    await TicketContract.connect(creator).registerTicket(10, 'ipfs://test1', now, now + 10000000)
+    await TicketContract.connect(creator).registerTicket(10, 'ipfs://test1', now, now + 1000000000000)
     const henkakuBalanceAfter = await HenkakuTokenContract.balanceOf(creator.address)
     expect(henkakuBalanceAfter).to.equal(henkakuBalanceBefore.sub(expectedHenkakuAmount))
   })
@@ -183,7 +183,7 @@ describe('MintTicket', () => {
 
     let now = (await ethers.provider.getBlock("latest")).timestamp;
     
-    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test1', now, now + 10000000)
+    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test1', now, now + 1000000000000)
   })
 
   it('mint ticket', async () => {
@@ -211,7 +211,11 @@ describe('MintTicket', () => {
 
     let now = (await ethers.provider.getBlock("latest")).timestamp;
     
-    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test1', now, now + 10000000)
+    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test1', now, now + 1000000000000)
+    
+    await TicketContract.connect(creator).registerTicket(1, 'ipfs://test1', now + 1000000000000, now + 1000000000000)
+    
+    await TicketContract.connect(creator).registerTicket(1, 'ipfs://test1', now, 0)
 
     // // user1が年賀状を２枚め(_tokenIdが２)をミント
     await TicketContract.connect(user1).mint(2)
@@ -230,64 +234,6 @@ describe('MintTicket', () => {
     expect(mintedTicketInfo[0].uri).to.equal('ipfs://test1')
   })
 
-  it('mint batch tickets', async () => {
-
-    let now = (await ethers.provider.getBlock("latest")).timestamp;
-    
-    // Register the third Ticket
-    // ３つ目(_tokenIdが２)の年賀状を登録
-    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test4', now, now + 10000000)
-    // Register the fourth Ticket
-    // 4つ目(_tokenIdが３)の年賀状を登録
-    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test4', now, now + 10000000)
-
-    // @dev test emit mint batch
-    await expect(await TicketContract.connect(user3).mintBatch([3, 4]))
-      .to.emit(TicketContract, 'MintBatch')
-      .withArgs(user3.address, [3, 4])
-    //await TicketContract.connect(user3).mintBatch([3, 4])
-
-    let balance
-    balance = await TicketContract.connect(user3).balanceOf(user3.address, 3)
-    expect(balance).to.equal(1)
-
-    balance = await TicketContract.connect(user3).balanceOf(user3.address, 4)
-    expect(balance).to.equal(1)
-
-    let mintedTicketInfo = await TicketContract.connect(user3).retrieveMintedTickets(user3.address)
-
-    expect(mintedTicketInfo.length).equal(2)
-    expect(mintedTicketInfo[0].id).to.equal(3)
-    expect(mintedTicketInfo[1].id).to.equal(4)
-    expect(mintedTicketInfo[0].uri).to.equal('ipfs://test4')
-    expect(mintedTicketInfo[1].uri).to.equal('ipfs://test4')
-  })
-
-  it('mint batch failed with already have', async () => {
-    // Confirmed that even with the mintBatch function, it is not possible to mint more than two Tickets.
-    // mintBatch関数でも同じ年賀状を2つ以上ミント出来ないことを確認
-    await expect(TicketContract.connect(user3).mintBatch([3, 4])).to.be.revertedWith(
-      'Ticket: You already have this ticket'
-    )
-
-    // Confirm that balance, etc. has not changed.
-    // balance等が変わっていないことを確認
-    let balance
-    balance = await TicketContract.connect(user3).balanceOf(user3.address, 3)
-    expect(balance).to.equal(1)
-
-    balance = await TicketContract.connect(user3).balanceOf(user3.address, 4)
-    expect(balance).to.equal(1)
-
-    let mintedTicketInfo = await TicketContract.connect(user3).retrieveMintedTickets(user3.address)
-
-    expect(mintedTicketInfo.length).equal(2)
-    expect(mintedTicketInfo[0].id).to.equal(3)
-    expect(mintedTicketInfo[1].id).to.equal(4)
-    expect(mintedTicketInfo[0].uri).to.equal('ipfs://test4')
-    expect(mintedTicketInfo[1].uri).to.equal('ipfs://test4')
-  })
-
   it('failed with unavailable', async () => {
     // await expect(TicketContract.connect(user2).mint(1)).to.be.revertedWith('Ticket: not available')
     await expect(TicketContract.connect(user2).mint(999)).to.be.revertedWith('Ticket: not available')
@@ -301,12 +247,16 @@ describe('MintTicket', () => {
     await expect(TicketContract.connect(user3).mint(1)).to.be.revertedWith('Ticket: Mint limit reached')
   })
 
-  it('failed with mint tokenId #0', async () => {
-    await expect(TicketContract.connect(user3).mint(0)).to.be.revertedWith('Ticket: Mint limit reached')
+  it('failed with mint tokenId #2', async () => {
+    await expect(TicketContract.connect(user3).mint(3)).to.be.revertedWith("Ticket: Not open yet")
+  })
+
+  it('failed with mint tokenId #2', async () => {
+    await expect(TicketContract.connect(user3).mint(4)).to.be.revertedWith("Ticket: Already closed")
   })
 
   it('failed with insufficient Henkaku Token', async () => {
-    await expect(TicketContract.connect(user4).mint(2)).to.be.revertedWith(
+    await expect(TicketContract.connect(user4).mint(1)).to.be.revertedWith(
       'Ticket: Insufficient Henkaku Token Balance'
     )
   })

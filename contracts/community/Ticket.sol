@@ -24,11 +24,10 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         uint256 tokenId,
         string metaDataURL,
         uint256 maxSupply,
-        uint256 _open_blockTimestamp,
-        uint256 _close_blockTimestamp
+        uint256 open_blockTimestamp,
+        uint256 close_blockTimestamp
     );
     event Mint(address indexed minter, uint256 indexed tokenId);
-    event MintBatch(address indexed minter, uint256[] tokenIds);
 
     /**
      * @param uri: metadata uri
@@ -59,9 +58,11 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         _tokenIds.increment();
     }
 
-    modifier whenMintable() {
+    modifier whenMintable(uint256 _tokenId) {
         require(mintable, "Ticket: Not mintable");
         require(checkHenkakuV2Balance(1), "Ticket: Insufficient Henkaku Token Balance");
+        require(retrieveRegisteredTicket(_tokenId).open_blockTimestamp <= block.timestamp, "Ticket: Not open yet");
+        require(retrieveRegisteredTicket(_tokenId).close_blockTimestamp >= block.timestamp, "Ticket: Already closed");
         _;
     }
 
@@ -146,7 +147,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     }
 
     // @dev mint function
-    function mint(uint256 _tokenId) public whenMintable {
+    function mint(uint256 _tokenId) public whenMintable(_tokenId) {
         checkTicketAmount(_tokenId);
         _mint(msg.sender, _tokenId, 1, "");
         ownerOfMintedIds[msg.sender].push(_tokenId);
@@ -154,27 +155,6 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         // @dev Emit mint event
         // @param address, tokenId
         emit Mint(msg.sender, _tokenId);
-    }
-
-    // @dev mint batch function
-    function mintBatch(uint256[] memory _tokenIdsList) public whenMintable {
-        uint256 tokenIdsLength = _tokenIdsList.length;
-        uint256[] memory amountList = new uint256[](tokenIdsLength);
-
-        for (uint256 i = 0; i < tokenIdsLength; ) {
-            checkTicketAmount(_tokenIdsList[i]);
-            amountList[i] = 1;
-            ownerOfMintedIds[msg.sender].push(_tokenIdsList[i]);
-            unchecked {
-                ++i;
-            }
-        }
-
-        _mintBatch(msg.sender, _tokenIdsList, amountList, "");
-
-        // @dev Emit mint batch event
-        // @param address,tokenId list
-        emit MintBatch(msg.sender, _tokenIdsList);
     }
 
     // @return holding tokenIds with address
