@@ -98,7 +98,7 @@ describe('RegisterTicket', () => {
     let now = (await ethers.provider.getBlock("latest")).timestamp;
 
     // @dev test emit register creative
-    await expect(TicketContract.connect(creator).registerTicket(2, 'ipfs://test1', now, now + 1000000000000))
+    await expect(TicketContract.connect(creator).registerTicket(2, 'ipfs://test1', 100, now, now + 1000000000000))
       .to.emit(TicketContract, 'RegisterTicket')
       .withArgs(creator.address, 1, 'ipfs://test1', 2, now, now + 1000000000000)
 
@@ -133,7 +133,7 @@ describe('RegisterTicket', () => {
 
     let now = (await ethers.provider.getBlock("latest")).timestamp;
 
-    await expect(TicketContract.connect(creator).registerTicket(1000, 'ipfs://test1', now, now + 1000000000000)).to.be.revertedWith(
+    await expect(TicketContract.connect(creator).registerTicket(1000, 'ipfs://test1', 100, now, now + 1000000000000)).to.be.revertedWith(
       'Ticket: Insufficient HenkakuV2 token'
     )
   })
@@ -148,7 +148,7 @@ describe('RegisterTicket', () => {
 
     let now = (await ethers.provider.getBlock("latest")).timestamp;
 
-    await TicketContract.connect(creator).registerTicket(10, 'ipfs://test1', now, now + 1000000000000)
+    await TicketContract.connect(creator).registerTicket(10, 'ipfs://test1', 100, now, now + 1000000000000)
     const henkakuBalanceAfter = await HenkakuTokenContract.balanceOf(creator.address)
     expect(henkakuBalanceAfter).to.equal(henkakuBalanceBefore.sub(expectedHenkakuAmount))
   })
@@ -183,7 +183,7 @@ describe('MintTicket', () => {
 
     let now = (await ethers.provider.getBlock("latest")).timestamp;
     
-    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test1', now, now + 1000000000000)
+    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test1', 100, now, now + 1000000000000)
   })
 
   it('mint ticket', async () => {
@@ -211,11 +211,11 @@ describe('MintTicket', () => {
 
     let now = (await ethers.provider.getBlock("latest")).timestamp;
     
-    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test1', now, now + 1000000000000)
+    await TicketContract.connect(creator).registerTicket(2, 'ipfs://test1', 100, now, now + 1000000000000)
     
-    await TicketContract.connect(creator).registerTicket(1, 'ipfs://test1', now + 1000000000000, now + 1000000000000)
+    await TicketContract.connect(creator).registerTicket(1, 'ipfs://test1', 100, now + 1000000000000, now + 1000000000000)
     
-    await TicketContract.connect(creator).registerTicket(1, 'ipfs://test1', now, 0)
+    await TicketContract.connect(creator).registerTicket(1, 'ipfs://test1', 100, now, 0)
 
     // // user1が年賀状を２枚め(_tokenIdが２)をミント
     await TicketContract.connect(user1).mint(2)

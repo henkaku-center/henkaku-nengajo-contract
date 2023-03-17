@@ -38,6 +38,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         uint256 id;
         string uri;
         address creator;
+        uint256 price;
         uint256 maxSupply;
         uint256 open_blockTimestamp;
         uint256 close_blockTimestamp;
@@ -54,7 +55,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         name = _name;
         symbol = _symbol;
 
-        registeredTickets.push(TicketInfo(0, "", address(0), 0, 0, 0));
+        registeredTickets.push(TicketInfo(0, "", address(0), 0, 0, 0, 0));
         _tokenIds.increment();
     }
 
@@ -69,6 +70,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     function registerTicket(
         uint256 _maxSupply,
         string memory _metaDataURL,
+        uint256 _price,
         uint256 _open_blockTimestamp,
         uint256 _close_blockTimestamp
     ) public {
@@ -78,7 +80,15 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         uint256 tokenId = _tokenIds.current();
         ownerOfRegisteredIds[msg.sender].push(tokenId);
         registeredTickets.push(
-            TicketInfo(tokenId, _metaDataURL, msg.sender, _maxSupply, _open_blockTimestamp, _close_blockTimestamp)
+            TicketInfo(
+                tokenId,
+                _metaDataURL,
+                msg.sender,
+                _price,
+                _maxSupply,
+                _open_blockTimestamp,
+                _close_blockTimestamp
+            )
         );
         _tokenIds.increment();
 
