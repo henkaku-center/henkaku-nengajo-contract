@@ -38,6 +38,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         uint256 id;
         string uri;
         address creator;
+        address poolWallet;
         uint256 price;
         uint256 maxSupply;
         uint256 open_blockTimestamp;
@@ -49,13 +50,12 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     constructor(
         string memory _name,
         string memory _symbol,
-        address _henkakuTokenV2,
-        address _henkakuPoolWallet
-    ) ERC1155("") MintManager() InteractHenakuToken(_henkakuTokenV2, _henkakuPoolWallet) {
+        address _henkakuTokenV2
+    ) ERC1155("") MintManager() InteractHenakuToken(_henkakuTokenV2) {
         name = _name;
         symbol = _symbol;
 
-        registeredTickets.push(TicketInfo(0, "", address(0), 0, 0, 0, 0));
+        registeredTickets.push(TicketInfo(0, "", address(0), address(0), 0, 0, 0, 0));
         _tokenIds.increment();
     }
 
@@ -72,10 +72,13 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         string memory _metaDataURL,
         uint256 _price,
         uint256 _open_blockTimestamp,
-        uint256 _close_blockTimestamp
+        uint256 _close_blockTimestamp,
+        address poolWallet
     ) public {
-        require(_maxSupply != 0 || keccak256(bytes(_metaDataURL)) != keccak256(bytes("")), "Ticket: invalid params");
-        uint256 amount = calcPrice(_maxSupply);
+        require(
+            _maxSupply != 0 || poolWallet == address(0) || keccak256(bytes(_metaDataURL)) != keccak256(bytes("")),
+            "Ticket: invalid params"
+        );
 
         uint256 tokenId = _tokenIds.current();
         ownerOfRegisteredIds[msg.sender].push(tokenId);
@@ -84,6 +87,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
                 tokenId,
                 _metaDataURL,
                 msg.sender,
+                poolWallet,
                 _price,
                 _maxSupply,
                 _open_blockTimestamp,
@@ -92,33 +96,9 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         );
         _tokenIds.increment();
 
-        transferHenkakuV2(amount);
-
         // @dev Emit registeredTicket
         // @param address, tokenId, URL of meta data, max supply
         emit RegisterTicket(msg.sender, tokenId, _metaDataURL, _maxSupply, _open_blockTimestamp, _close_blockTimestamp);
-    }
-
-    function calcPrice(uint256 _maxSupply) public view returns (uint256) {
-        TicketInfo[] memory _registeredTickets = registeredTickets;
-        uint256[] memory _ownerOfRegisteredIds = ownerOfRegisteredIds[msg.sender];
-        uint256 registeredCount;
-        for (uint256 i = 0; i < _ownerOfRegisteredIds.length; ) {
-            registeredCount += _registeredTickets[_ownerOfRegisteredIds[i]].maxSupply;
-            unchecked {
-                ++i;
-            }
-        }
-        uint256 amount;
-        uint256 totalMaxSupply = registeredCount + _maxSupply;
-        if (totalMaxSupply <= 10) {
-            amount = 10 * 10 ** 18;
-        } else if (10 < totalMaxSupply || totalMaxSupply < 101) {
-            amount = (totalMaxSupply * 5 - 40) * 10 ** 18;
-        } else {
-            amount = (totalMaxSupply * 10 - 540) * 10 ** 18;
-        }
-        return amount;
     }
 
     // @return all registered TicketInfo
