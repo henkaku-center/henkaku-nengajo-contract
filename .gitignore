@@ -9,6 +9,6 @@ typechain-types
 cache
 artifacts
 
-scripts/nengajo_argument.ts
+scripts/ticket_argument.ts
 
 build

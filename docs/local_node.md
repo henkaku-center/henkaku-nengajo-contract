@@ -71,7 +71,7 @@ $ yarn deploy:local
 
 ```
 HenkakuV2: 0x5FbDB2315678afecb367f032d93F642f64180aa3
-Nengajo  : 0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9
+Ticket  : 0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9
 ```
 
 ## フロントエンド側の環境変数を設定
@@ -88,8 +88,8 @@ Hardhat のローカルチェーンのチェーン ID は**31337**です。
 **NEXT_PUBLIC_CONTRACT_HENKAKUV2_ADDRESS**  
 コントラクトデプロイしたときに出力された HenkakuV2 のアドレス
 
-**NEXT_PUBLIC_CONTRACT_NENGAJO_ADDRESS**  
-コントラクトデプロイしたときに出力された Nengajo のアドレス
+**NEXT_PUBLIC_CONTRACT_TICKET_ADDRESS**  
+コントラクトデプロイしたときに出力された Ticket のアドレス
 
 ## フロントエンド起動
 
@@ -104,7 +104,7 @@ $ yarn dev
 ```
 $ next dev
 ready - started server on 0.0.0.0:3000, url: http://localhost:3000
-info  - Loaded env from /home/yu23ki14/apps/henkaku/henkaku-nengajo-frontend/.env.local
+info  - Loaded env from /home/yu23ki14/apps/henkaku/henkaku-ticket-frontend/.env.local
 event - compiled client and server successfully in 1460 ms (969 modules)
 ```
 
