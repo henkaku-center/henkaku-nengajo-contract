@@ -19,9 +19,15 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     mapping(address => uint256[]) private ownerOfMintedIds;
 
     //@dev Declare Event to emit
-    event RegisterTicket(address indexed creator, uint256 tokenId, string metaDataURL, uint256 maxSupply);
+    event RegisterTicket(
+        address indexed creator,
+        uint256 tokenId,
+        string metaDataURL,
+        uint256 maxSupply,
+        uint256 open_blockTimestamp,
+        uint256 close_blockTimestamp
+    );
     event Mint(address indexed minter, uint256 indexed tokenId);
-    event MintBatch(address indexed minter, uint256[] tokenIds);
 
     /**
      * @param uri: metadata uri
@@ -32,7 +38,10 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         uint256 id;
         string uri;
         address creator;
+        uint256 price;
         uint256 maxSupply;
+        uint256 open_blockTimestamp;
+        uint256 close_blockTimestamp;
     }
 
     TicketInfo[] private registeredTickets;
@@ -40,45 +49,54 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     constructor(
         string memory _name,
         string memory _symbol,
-        uint256 _open_blockTimestamp,
-        uint256 _close_blockTimestamp,
         address _henkakuTokenV2,
         address _henkakuPoolWallet
-    )
-        ERC1155("")
-        MintManager(_open_blockTimestamp, _close_blockTimestamp)
-        InteractHenakuToken(_henkakuTokenV2, _henkakuPoolWallet)
-    {
+    ) ERC1155("") MintManager() InteractHenakuToken(_henkakuTokenV2, _henkakuPoolWallet) {
         name = _name;
         symbol = _symbol;
 
-        registeredTickets.push(TicketInfo(0, "", address(0), 0));
+        registeredTickets.push(TicketInfo(0, "", address(0), 0, 0, 0, 0));
         _tokenIds.increment();
     }
 
-    modifier whenMintable() {
-        require(
-            (block.timestamp > open_blockTimestamp && close_blockTimestamp > block.timestamp) || mintable,
-            "Ticket: Not mintable"
-        );
+    modifier whenMintable(uint256 _tokenId) {
+        require(mintable, "Ticket: Not mintable");
         require(checkHenkakuV2Balance(1), "Ticket: Insufficient Henkaku Token Balance");
+        require(retrieveRegisteredTicket(_tokenId).open_blockTimestamp <= block.timestamp, "Ticket: Not open yet");
+        require(retrieveRegisteredTicket(_tokenId).close_blockTimestamp >= block.timestamp, "Ticket: Already closed");
         _;
     }
 
-    function registerTicket(uint256 _maxSupply, string memory _metaDataURL) public {
+    function registerTicket(
+        uint256 _maxSupply,
+        string memory _metaDataURL,
+        uint256 _price,
+        uint256 _open_blockTimestamp,
+        uint256 _close_blockTimestamp
+    ) public {
         require(_maxSupply != 0 || keccak256(bytes(_metaDataURL)) != keccak256(bytes("")), "Ticket: invalid params");
         uint256 amount = calcPrice(_maxSupply);
 
         uint256 tokenId = _tokenIds.current();
         ownerOfRegisteredIds[msg.sender].push(tokenId);
-        registeredTickets.push(TicketInfo(tokenId, _metaDataURL, msg.sender, _maxSupply));
+        registeredTickets.push(
+            TicketInfo(
+                tokenId,
+                _metaDataURL,
+                msg.sender,
+                _price,
+                _maxSupply,
+                _open_blockTimestamp,
+                _close_blockTimestamp
+            )
+        );
         _tokenIds.increment();
 
         transferHenkakuV2(amount);
 
         // @dev Emit registeredTicket
         // @param address, tokenId, URL of meta data, max supply
-        emit RegisterTicket(msg.sender, tokenId, _metaDataURL, _maxSupply);
+        emit RegisterTicket(msg.sender, tokenId, _metaDataURL, _maxSupply, _open_blockTimestamp, _close_blockTimestamp);
     }
 
     function calcPrice(uint256 _maxSupply) public view returns (uint256) {
@@ -139,7 +157,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     }
 
     // @dev mint function
-    function mint(uint256 _tokenId) public whenMintable {
+    function mint(uint256 _tokenId) public whenMintable(_tokenId) {
         checkTicketAmount(_tokenId);
         _mint(msg.sender, _tokenId, 1, "");
         ownerOfMintedIds[msg.sender].push(_tokenId);
@@ -147,27 +165,6 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         // @dev Emit mint event
         // @param address, tokenId
         emit Mint(msg.sender, _tokenId);
-    }
-
-    // @dev mint batch function
-    function mintBatch(uint256[] memory _tokenIdsList) public whenMintable {
-        uint256 tokenIdsLength = _tokenIdsList.length;
-        uint256[] memory amountList = new uint256[](tokenIdsLength);
-
-        for (uint256 i = 0; i < tokenIdsLength; ) {
-            checkTicketAmount(_tokenIdsList[i]);
-            amountList[i] = 1;
-            ownerOfMintedIds[msg.sender].push(_tokenIdsList[i]);
-            unchecked {
-                ++i;
-            }
-        }
-
-        _mintBatch(msg.sender, _tokenIdsList, amountList, "");
-
-        // @dev Emit mint batch event
-        // @param address,tokenId list
-        emit MintBatch(msg.sender, _tokenIdsList);
     }
 
     // @return holding tokenIds with address
