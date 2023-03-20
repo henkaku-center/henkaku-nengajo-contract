@@ -21,10 +21,11 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     //@dev Declare Event to emit
     event RegisterTicket(
         address indexed creator,
-        uint96 open_blockTimestamp,
-        uint96 close_blockTimestamp,
+        uint64 open_blockTimestamp,
+        uint64 close_blockTimestamp,
+        uint64 maxSupply,
         uint256 tokenId,
-        uint256 maxSupply,
+        uint256 price,
         string metaDataURL
     );
     event Mint(address indexed minter, uint256 indexed tokenId);
@@ -39,11 +40,11 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     struct TicketInfo {
         address creator;
         address poolWallet;
-        uint96 open_blockTimestamp;
-        uint96 close_blockTimestamp;
+        uint64 open_blockTimestamp;
+        uint64 close_blockTimestamp;
+        uint64 maxSupply;
         uint256 id;
         uint256 price;
-        uint256 maxSupply;
         string uri;
     }
 
@@ -67,11 +68,11 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     }
 
     function registerTicket(
-        uint256 _maxSupply,
+        uint64 _maxSupply,
         string memory _metaDataURL,
         uint256 _price,
-        uint96 _open_blockTimestamp,
-        uint96 _close_blockTimestamp,
+        uint64 _open_blockTimestamp,
+        uint64 _close_blockTimestamp,
         address poolWallet
     ) public onlyHenkakuHolders {
         if (_maxSupply == 0 || poolWallet == address(0) || keccak256(bytes(_metaDataURL)) == keccak256(bytes("")))
@@ -85,9 +86,9 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
                 poolWallet,
                 _open_blockTimestamp,
                 _close_blockTimestamp,
+                _maxSupply,
                 tokenId,
                 _price,
-                _maxSupply,
                 _metaDataURL
             )
         );
@@ -95,7 +96,15 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
 
         // @dev Emit registeredTicket
         // @param address, tokenId, URL of meta data, max supply
-        emit RegisterTicket(msg.sender, _open_blockTimestamp, _close_blockTimestamp, tokenId, _maxSupply, _metaDataURL);
+        emit RegisterTicket(
+            msg.sender,
+            _open_blockTimestamp,
+            _close_blockTimestamp,
+            _maxSupply,
+            tokenId,
+            _price,
+            _metaDataURL
+        );
     }
 
     // @return all registered TicketInfo

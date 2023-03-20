@@ -56,7 +56,7 @@ describe('RegisterTicket', () => {
       TicketContract.connect(creator).registerTicket(2, 'ipfs://test1', 100, now, now + 1000000000000, deployer.address)
     )
       .to.emit(TicketContract, 'RegisterTicket')
-      .withArgs(creator.address, now, now + 1000000000000, 1, 2, 'ipfs://test1')
+      .withArgs(creator.address, now, now + 1000000000000, 2, 1, 100, 'ipfs://test1')
 
     tokenURI = await TicketContract.uri(1)
     expect(tokenURI).equal('ipfs://test1')
