@@ -29,6 +29,8 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     );
     event Mint(address indexed minter, uint256 indexed tokenId);
 
+    error InvalidParams(string);
+
     /**
      * @param uri: metadata uri
      * @param creator: creator's wallet address
@@ -72,10 +74,8 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         uint256 _close_blockTimestamp,
         address poolWallet
     ) public onlyHenkakuHolders {
-        require(
-            _maxSupply != 0 || poolWallet == address(0) || keccak256(bytes(_metaDataURL)) != keccak256(bytes("")),
-            "Ticket: invalid params"
-        );
+        if (_maxSupply == 0 || poolWallet == address(0) || keccak256(bytes(_metaDataURL)) == keccak256(bytes("")))
+            revert InvalidParams("Ticket: invalid params");
 
         uint256 tokenId = _tokenIds.current();
         ownerOfRegisteredIds[msg.sender].push(tokenId);
