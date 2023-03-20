@@ -21,13 +21,16 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     //@dev Declare Event to emit
     event RegisterTicket(
         address indexed creator,
+        uint64 open_blockTimestamp,
+        uint64 close_blockTimestamp,
+        uint64 maxSupply,
         uint256 tokenId,
-        string metaDataURL,
-        uint256 maxSupply,
-        uint256 open_blockTimestamp,
-        uint256 close_blockTimestamp
+        uint256 price,
+        string metaDataURL
     );
     event Mint(address indexed minter, uint256 indexed tokenId);
+
+    error InvalidParams(string);
 
     /**
      * @param uri: metadata uri
@@ -35,14 +38,14 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
      * @param maxSupply: max supply number of token
      */
     struct TicketInfo {
-        uint256 id;
-        string uri;
         address creator;
         address poolWallet;
+        uint64 open_blockTimestamp;
+        uint64 close_blockTimestamp;
+        uint64 maxSupply;
+        uint256 id;
         uint256 price;
-        uint256 maxSupply;
-        uint256 open_blockTimestamp;
-        uint256 close_blockTimestamp;
+        string uri;
     }
 
     TicketInfo[] private registeredTickets;
@@ -55,7 +58,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         name = _name;
         symbol = _symbol;
 
-        registeredTickets.push(TicketInfo(0, "", address(0), address(0), 0, 0, 0, 0));
+        registeredTickets.push(TicketInfo(address(0), address(0), 0, 0, 0, 0, 0, ""));
         _tokenIds.increment();
     }
 
@@ -65,37 +68,43 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     }
 
     function registerTicket(
-        uint256 _maxSupply,
-        string memory _metaDataURL,
+        uint64 _maxSupply,
+        string calldata _metaDataURL,
         uint256 _price,
-        uint256 _open_blockTimestamp,
-        uint256 _close_blockTimestamp,
+        uint64 _open_blockTimestamp,
+        uint64 _close_blockTimestamp,
         address poolWallet
     ) public onlyHenkakuHolders {
-        require(
-            _maxSupply != 0 || poolWallet == address(0) || keccak256(bytes(_metaDataURL)) != keccak256(bytes("")),
-            "Ticket: invalid params"
-        );
+        if (_maxSupply == 0 || poolWallet == address(0) || keccak256(bytes(_metaDataURL)) == keccak256(bytes("")))
+            revert InvalidParams("Ticket: invalid params");
 
         uint256 tokenId = _tokenIds.current();
         ownerOfRegisteredIds[msg.sender].push(tokenId);
         registeredTickets.push(
             TicketInfo(
-                tokenId,
-                _metaDataURL,
                 msg.sender,
                 poolWallet,
-                _price,
-                _maxSupply,
                 _open_blockTimestamp,
-                _close_blockTimestamp
+                _close_blockTimestamp,
+                _maxSupply,
+                tokenId,
+                _price,
+                _metaDataURL
             )
         );
         _tokenIds.increment();
 
         // @dev Emit registeredTicket
         // @param address, tokenId, URL of meta data, max supply
-        emit RegisterTicket(msg.sender, tokenId, _metaDataURL, _maxSupply, _open_blockTimestamp, _close_blockTimestamp);
+        emit RegisterTicket(
+            msg.sender,
+            _open_blockTimestamp,
+            _close_blockTimestamp,
+            _maxSupply,
+            tokenId,
+            _price,
+            _metaDataURL
+        );
     }
 
     // @return all registered TicketInfo
@@ -139,10 +148,12 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         require(ticket.maxSupply > totalSupply(_tokenId), "Ticket: Mint limit reached");
 
         require(checkHenkakuV2Balance(ticket.price), "Ticket: Insufficient Henkaku Token Balance");
+
+        ownerOfMintedIds[msg.sender].push(_tokenId);
+
         transferHenkakuV2(ticket.price, ticket.poolWallet);
 
         _mint(msg.sender, _tokenId, 1, "");
-        ownerOfMintedIds[msg.sender].push(_tokenId);
 
         // @dev Emit mint event
         // @param address, tokenId
