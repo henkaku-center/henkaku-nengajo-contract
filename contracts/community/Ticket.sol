@@ -59,6 +59,11 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         _tokenIds.increment();
     }
 
+    modifier onlyHenkakuHolders() {
+        require(checkHenkakuV2Balance(1), "Ticket: Insufficient Henkaku Token Balance");
+        _;
+    }
+
     function registerTicket(
         uint256 _maxSupply,
         string memory _metaDataURL,
@@ -66,7 +71,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         uint256 _open_blockTimestamp,
         uint256 _close_blockTimestamp,
         address poolWallet
-    ) public {
+    ) public onlyHenkakuHolders {
         require(
             _maxSupply != 0 || poolWallet == address(0) || keccak256(bytes(_metaDataURL)) != keccak256(bytes("")),
             "Ticket: invalid params"
@@ -124,7 +129,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     }
 
     // @dev mint function
-    function mint(uint256 _tokenId) public {
+    function mint(uint256 _tokenId) public onlyHenkakuHolders {
         require(mintable, "Ticket: Not mintable");
         require(balanceOf(msg.sender, _tokenId) == 0, "Ticket: You already have this ticket");
 
