@@ -50,9 +50,10 @@ describe('RegisterTicket', () => {
   let user1: SignerWithAddress
   let user2: SignerWithAddress
   let user3: SignerWithAddress
+  let outsider: SignerWithAddress
 
   before(async () => {
-    ;[deployer, creator, user1, user2, user3] = await ethers.getSigners()
+    ;[deployer, creator, user1, user2, user3, outsider] = await ethers.getSigners()
     HenkakuTokenContract = await deployAndDistributeHenkakuV2({
       deployer,
       addresses: [creator.address, user1.address, user2.address, user3.address, deployer.address],
@@ -115,6 +116,12 @@ describe('RegisterTicket', () => {
     expect(registeredTickets[0].creator).to.equal(creator.address)
     expect(registeredTickets[0].maxSupply).to.equal(2)
   })
+
+  // it('revert register creative', async () => {
+  //   // @dev test revert register creative
+  //   await expect(TicketContract.connect(outsider).registerTicket(2, 'ipfs://test1', 100, 0, 0, deployer.address)).to.be.revertedWith('Ticket: Insufficient Henkaku Token Balance')
+  // })
+
 })
 
 describe('MintTicket', () => {
