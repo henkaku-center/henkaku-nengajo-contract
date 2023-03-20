@@ -69,7 +69,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
 
     function registerTicket(
         uint64 _maxSupply,
-        string memory _metaDataURL,
+        string calldata _metaDataURL,
         uint256 _price,
         uint64 _open_blockTimestamp,
         uint64 _close_blockTimestamp,
