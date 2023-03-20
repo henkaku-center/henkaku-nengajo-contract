@@ -7,26 +7,18 @@ import "./interfaces/IHenkakuToken.sol";
 
 abstract contract InteractHenakuToken is Administration, MintManager {
     address public henkakuV2;
-    address public henkakuPoolWallet;
 
-    constructor(address _henkakuV2, address _henkakuPoolWallet) {
+    constructor(address _henkakuV2) {
         henkakuV2 = _henkakuV2;
-        // @note henkakuPoolWalletは変更の可能性はないか？
-        henkakuPoolWallet = _henkakuPoolWallet;
     }
 
-    function transferHenkakuV2(uint256 _amount) internal {
+    function transferHenkakuV2(uint256 _amount, address _to) internal {
         require(checkHenkakuV2Balance(_amount), "Ticket: Insufficient HenkakuV2 token");
-        bool sent = IHenkakuToken(henkakuV2).transferFrom(msg.sender, henkakuPoolWallet, _amount);
+        bool sent = IHenkakuToken(henkakuV2).transferFrom(msg.sender, _to, _amount);
         require(sent, "Ticket: Henkaku transfer failed");
     }
 
     function checkHenkakuV2Balance(uint256 _requiredAmount) internal view returns (bool) {
         return IHenkakuToken(henkakuV2).balanceOf(msg.sender) >= _requiredAmount ? true : false;
-    }
-
-    function changeHenkakuPool(address _address) external onlyAdmins {
-        require(henkakuPoolWallet != _address, "Henkaku Pool: same address");
-        henkakuPoolWallet = _address;
     }
 }
