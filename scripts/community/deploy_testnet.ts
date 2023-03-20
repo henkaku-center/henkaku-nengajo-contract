@@ -1,5 +1,6 @@
 import * as dotenv from 'dotenv'
 import { ethers } from 'hardhat'
+import { Ticket__factory } from '../../typechain-types'
 
 dotenv.config()
 
@@ -15,13 +16,8 @@ const main = async () => {
     await HenkakuV2Contract.mint(address, ethers.utils.parseEther('1000'))
   }
 
-  const TicketFactory = await ethers.getContractFactory('Ticket')
-  const TicketContract = await TicketFactory.deploy(
-    'Henkaku Ticket',
-    'HNJ',
-    HenkakuV2Contract.address,
-    localUserAddresses[0]
-  )
+  const TicketFactory = (await ethers.getContractFactory('Ticket')) as Ticket__factory
+  const TicketContract = await TicketFactory.deploy('Henkaku Ticket', 'HNJ', HenkakuV2Contract.address)
   await TicketContract.deployed()
 
   console.log(`HenkakuV2: ${HenkakuV2Contract.address}`)
