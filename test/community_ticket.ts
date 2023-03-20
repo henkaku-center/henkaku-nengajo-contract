@@ -3,44 +3,7 @@ import { expect } from 'chai'
 import { ethers } from 'hardhat'
 import { HenkakuToken, HenkakuToken__factory, Ticket, Ticket__factory } from '../typechain-types'
 import { BigNumber } from 'ethers'
-
-const deployAndDistributeHenkakuV2: (params: {
-  deployer: SignerWithAddress
-  addresses: string[]
-  amount: BigNumber
-}) => Promise<HenkakuToken> = async ({ deployer, addresses, amount }) => {
-  const HenkakuV2Factory = (await ethers.getContractFactory('HenkakuToken')) as HenkakuToken__factory
-  const HenkakuV2Contract = await HenkakuV2Factory.connect(deployer).deploy()
-  await HenkakuV2Contract.deployed()
-
-  await HenkakuV2Contract.addWhitelistUsers(addresses)
-
-  for (const address of addresses) {
-    await HenkakuV2Contract.mint(address, amount)
-  }
-
-  return HenkakuV2Contract
-}
-
-const calcRequiredHenkakuForRegister: (params: {
-  TicketContract: Ticket
-  address: SignerWithAddress
-  maxSupply: number
-}) => Promise<BigNumber> = async ({ TicketContract, address, maxSupply }) => {
-  const registeredCount = (await TicketContract.retrieveRegisteredTickets(address.address)).reduce((sum, current) => {
-    return sum + current.maxSupply.toNumber()
-  }, 0)
-  let amount
-  let totalMaxSupply = registeredCount + maxSupply
-  if (totalMaxSupply <= 10) {
-    amount = ethers.utils.parseEther('10')
-  } else if (10 < totalMaxSupply || totalMaxSupply < 101) {
-    amount = ethers.utils.parseEther(`${totalMaxSupply * 5 - 40}`)
-  } else {
-    amount = ethers.utils.parseEther(`${totalMaxSupply * 10 - 540}`)
-  }
-  return amount
-}
+import { deployAndDistributeHenkakuV2, deployTicket } from './helper/deploy'
 
 describe('RegisterTicket', () => {
   let TicketContract: Ticket
@@ -58,9 +21,7 @@ describe('RegisterTicket', () => {
       addresses: [creator.address, user1.address, user2.address, user3.address, deployer.address],
       amount: ethers.utils.parseEther('1000'),
     })
-    const TicketFactory = (await ethers.getContractFactory('Ticket')) as Ticket__factory
-    TicketContract = await TicketFactory.deploy('Henkaku Ticket', 'HNJ', HenkakuTokenContract.address)
-    await TicketContract.deployed()
+    TicketContract = await deployTicket(HenkakuTokenContract.address)
   })
 
   it('register creative', async () => {
@@ -134,15 +95,44 @@ describe('MintTicket', () => {
       addresses: [creator.address, user1.address, user2.address, user3.address, deployer.address],
       amount: ethers.utils.parseEther('1000'),
     })
-    const TicketFactory = (await ethers.getContractFactory('Ticket')) as Ticket__factory
-    TicketContract = await TicketFactory.deploy('Henkaku Ticket', 'HNJ', HenkakuTokenContract.address)
-    await TicketContract.deployed()
-    await HenkakuTokenContract.connect(creator).approve(TicketContract.address, ethers.utils.parseEther('1000'))
+
+    TicketContract = await deployTicket(HenkakuTokenContract.address)
+    await HenkakuTokenContract.connect(user1).approve(TicketContract.address, ethers.utils.parseEther('1000'))
+    await HenkakuTokenContract.connect(user2).approve(TicketContract.address, ethers.utils.parseEther('1000'))
 
     let now = (await ethers.provider.getBlock('latest')).timestamp
 
     await TicketContract.connect(creator).registerTicket(
       2,
+      'ipfs://test1',
+      100,
+      now,
+      now + 1000000000000,
+      deployer.address
+    )
+
+    await TicketContract.connect(creator).registerTicket(
+      2,
+      'ipfs://test1',
+      100,
+      now,
+      now + 1000000000000,
+      deployer.address
+    )
+
+    await TicketContract.connect(creator).registerTicket(
+      1,
+      'ipfs://test1',
+      100,
+      now + 1000000000000,
+      now + 1000000000000,
+      deployer.address
+    )
+
+    await TicketContract.connect(creator).registerTicket(1, 'ipfs://test1', 100, now, 0, deployer.address)
+
+    await TicketContract.connect(creator).registerTicket(
+      1,
       'ipfs://test1',
       100,
       now,
@@ -173,28 +163,6 @@ describe('MintTicket', () => {
     expect(mintedTicketInfo[0].uri).to.equal('ipfs://test1')
     // Register the second Ticket
     // ２つ目(_tokenIdが１)の年賀状を登録
-
-    let now = (await ethers.provider.getBlock('latest')).timestamp
-
-    await TicketContract.connect(creator).registerTicket(
-      2,
-      'ipfs://test1',
-      100,
-      now,
-      now + 1000000000000,
-      deployer.address
-    )
-
-    await TicketContract.connect(creator).registerTicket(
-      1,
-      'ipfs://test1',
-      100,
-      now + 1000000000000,
-      now + 1000000000000,
-      deployer.address
-    )
-
-    await TicketContract.connect(creator).registerTicket(1, 'ipfs://test1', 100, now, 0, deployer.address)
 
     // // user1が年賀状を２枚め(_tokenIdが２)をミント
     await TicketContract.connect(user1).mint(2)
@@ -235,7 +203,7 @@ describe('MintTicket', () => {
   })
 
   it('failed with insufficient Henkaku Token', async () => {
-    await expect(TicketContract.connect(user4).mint(1)).to.be.revertedWith('Ticket: Insufficient Henkaku Token Balance')
+    await expect(TicketContract.connect(user4).mint(5)).to.be.revertedWith('Ticket: Insufficient Henkaku Token Balance')
   })
 })
 
@@ -255,14 +223,7 @@ describe('CheckMintable', () => {
       addresses: [creator.address, user1.address, user2.address, deployer.address],
       amount: ethers.utils.parseEther('100'),
     })
-    const TicketFactory = (await ethers.getContractFactory('Ticket')) as Ticket__factory
-    TicketContract = await TicketFactory.deploy('Henkaku Ticket', 'HNJ', HenkakuTokenContract.address)
-    await TicketContract.deployed()
-    HenkakuTokenContract = await deployAndDistributeHenkakuV2({
-      deployer,
-      addresses: [creator.address, user1.address, user2.address],
-      amount: ethers.utils.parseEther('100'),
-    })
+    TicketContract = await deployTicket(HenkakuTokenContract.address)
   })
 
   it('initial mintable flag is false', async () => {
@@ -358,6 +319,56 @@ describe('CheckMintable', () => {
   })
 })
 
+describe('check henkaku token transfer', () => {
+  let TicketContract: Ticket
+  let HenkakuTokenContract: HenkakuToken
+  let deployer: SignerWithAddress
+  let creator: SignerWithAddress
+  let user1: SignerWithAddress
+  let user2: SignerWithAddress
+
+  before(async () => {
+    ;[deployer, creator, user1, user2] = await ethers.getSigners()
+    HenkakuTokenContract = await deployAndDistributeHenkakuV2({
+      deployer,
+      addresses: [creator.address, user1.address, user2.address, deployer.address],
+      amount: ethers.utils.parseEther('1000'),
+    })
+    TicketContract = await deployTicket(HenkakuTokenContract.address)
+
+    await HenkakuTokenContract.connect(user1).approve(TicketContract.address, ethers.utils.parseEther('1000'))
+    await HenkakuTokenContract.connect(user2).approve(TicketContract.address, ethers.utils.parseEther('1000'))
+
+    let now = (await ethers.provider.getBlock('latest')).timestamp
+    await TicketContract.connect(creator).registerTicket(
+      1,
+      'ipfs://test1',
+      ethers.utils.parseEther('100'),
+      now,
+      now + 1000000000000,
+      deployer.address
+    )
+
+    await TicketContract.connect(deployer).switchMintable()
+  })
+
+  it('success to transfer ticket', async () => {
+    expect(await HenkakuTokenContract.balanceOf(user1.address)).to.be.equal(ethers.utils.parseEther('1000'))
+
+    const tx = await TicketContract.connect(user1).mint(1)
+    await tx.wait()
+
+    expect(await HenkakuTokenContract.balanceOf(user1.address)).to.be.equal(ethers.utils.parseEther('900'))
+    expect(await HenkakuTokenContract.balanceOf(deployer.address)).to.be.equal(ethers.utils.parseEther('1100'))
+  })
+
+  it('fail to mint and henkaku token is not transfered', async () => {
+    await expect(TicketContract.connect(user2).mint(1)).revertedWith('Ticket: Mint limit reached')
+    expect(await HenkakuTokenContract.balanceOf(user2.address)).to.be.equal(ethers.utils.parseEther('1000'))
+    expect(await HenkakuTokenContract.balanceOf(deployer.address)).to.be.equal(ethers.utils.parseEther('1100'))
+  })
+})
+
 describe('check timestamp', () => {
   let TicketContract: Ticket
   let HenkakuTokenContract: HenkakuToken
@@ -390,9 +401,8 @@ describe('check timestamp', () => {
       addresses: [creator.address, user1.address, user2.address, deployer.address],
       amount: ethers.utils.parseEther('100'),
     })
-    const TicketFactory = (await ethers.getContractFactory('Ticket')) as Ticket__factory
-    TicketContract = await TicketFactory.deploy('Henkaku Ticket', 'HNJ', HenkakuTokenContract.address)
-    await TicketContract.deployed()
+
+    TicketContract = await deployTicket(HenkakuTokenContract.address)
   })
 })
 
@@ -428,8 +438,6 @@ describe('after minting term', () => {
       addresses: [creator.address, user1.address, user2.address, deployer.address],
       amount: ethers.utils.parseEther('100'),
     })
-    const TicketFactory = (await ethers.getContractFactory('Ticket')) as Ticket__factory
-    TicketContract = await TicketFactory.deploy('Henkaku Ticket', 'HNJ', HenkakuTokenContract.address)
-    await TicketContract.deployed()
+    TicketContract = await deployTicket(HenkakuTokenContract.address)
   })
 })

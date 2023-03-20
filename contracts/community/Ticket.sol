@@ -59,14 +59,6 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         _tokenIds.increment();
     }
 
-    modifier whenMintable(uint256 _tokenId) {
-        require(mintable, "Ticket: Not mintable");
-        require(checkHenkakuV2Balance(1), "Ticket: Insufficient Henkaku Token Balance");
-        require(retrieveRegisteredTicket(_tokenId).open_blockTimestamp <= block.timestamp, "Ticket: Not open yet");
-        require(retrieveRegisteredTicket(_tokenId).close_blockTimestamp >= block.timestamp, "Ticket: Already closed");
-        _;
-    }
-
     function registerTicket(
         uint256 _maxSupply,
         string memory _metaDataURL,
@@ -131,14 +123,19 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         return _ownerOfRegisteredTickets;
     }
 
-    function checkTicketAmount(uint256 _tokenId) private view {
-        require(balanceOf(msg.sender, _tokenId) == 0, "Ticket: You already have this ticket");
-        require(retrieveRegisteredTicket(_tokenId).maxSupply > totalSupply(_tokenId), "Ticket: Mint limit reached");
-    }
-
     // @dev mint function
-    function mint(uint256 _tokenId) public whenMintable(_tokenId) {
-        checkTicketAmount(_tokenId);
+    function mint(uint256 _tokenId) public {
+        require(mintable, "Ticket: Not mintable");
+        require(balanceOf(msg.sender, _tokenId) == 0, "Ticket: You already have this ticket");
+
+        TicketInfo memory ticket = retrieveRegisteredTicket(_tokenId);
+        require(ticket.open_blockTimestamp <= block.timestamp, "Ticket: Not open yet");
+        require(ticket.close_blockTimestamp >= block.timestamp, "Ticket: Already closed");
+        require(ticket.maxSupply > totalSupply(_tokenId), "Ticket: Mint limit reached");
+
+        require(checkHenkakuV2Balance(ticket.price), "Ticket: Insufficient Henkaku Token Balance");
+        transferHenkakuV2(ticket.price, ticket.poolWallet);
+
         _mint(msg.sender, _tokenId, 1, "");
         ownerOfMintedIds[msg.sender].push(_tokenId);
 
