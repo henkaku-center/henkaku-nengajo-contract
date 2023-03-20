@@ -67,6 +67,11 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         _;
     }
 
+    modifier onlyHenkakuHolders() {
+        require(checkHenkakuV2Balance(1), "Ticket: Insufficient Henkaku Token Balance");
+        _;
+    }
+
     function registerTicket(
         uint256 _maxSupply,
         string memory _metaDataURL,
