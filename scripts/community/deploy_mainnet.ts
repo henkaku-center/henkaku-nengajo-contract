@@ -1,16 +1,12 @@
 import * as dotenv from 'dotenv'
 import { ethers } from 'hardhat'
+import { Ticket__factory } from '../../typechain-types'
 
 dotenv.config()
 
 const main = async () => {
-  const TicketFactory = await ethers.getContractFactory('Ticket')
-  const TicketContract = await TicketFactory.deploy(
-    'HENKAKU Ticket',
-    'HNJ',
-    process.env.HENKAKU_V2_ADDRESS!,
-    process.env.POOL_WALLET_ADDRESS!
-  )
+  const TicketFactory = (await ethers.getContractFactory('Ticket')) as Ticket__factory
+  const TicketContract = await TicketFactory.deploy('HENKAKU Ticket', 'HNJ', process.env.HENKAKU_V2_ADDRESS!)
   await TicketContract.deployed()
 
   console.log(`TicketContractAddress: ${TicketContract.address}`)
