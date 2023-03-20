@@ -21,11 +21,11 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     //@dev Declare Event to emit
     event RegisterTicket(
         address indexed creator,
+        uint96 open_blockTimestamp,
+        uint96 close_blockTimestamp,
         uint256 tokenId,
-        string metaDataURL,
         uint256 maxSupply,
-        uint256 open_blockTimestamp,
-        uint256 close_blockTimestamp
+        string metaDataURL
     );
     event Mint(address indexed minter, uint256 indexed tokenId);
 
@@ -37,14 +37,14 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
      * @param maxSupply: max supply number of token
      */
     struct TicketInfo {
-        uint256 id;
-        string uri;
         address creator;
         address poolWallet;
+        uint96 open_blockTimestamp;
+        uint96 close_blockTimestamp;
+        uint256 id;
         uint256 price;
         uint256 maxSupply;
-        uint256 open_blockTimestamp;
-        uint256 close_blockTimestamp;
+        string uri;
     }
 
     TicketInfo[] private registeredTickets;
@@ -57,7 +57,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         name = _name;
         symbol = _symbol;
 
-        registeredTickets.push(TicketInfo(0, "", address(0), address(0), 0, 0, 0, 0));
+        registeredTickets.push(TicketInfo(address(0), address(0), 0, 0, 0, 0, 0, ""));
         _tokenIds.increment();
     }
 
@@ -70,8 +70,8 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         uint256 _maxSupply,
         string memory _metaDataURL,
         uint256 _price,
-        uint256 _open_blockTimestamp,
-        uint256 _close_blockTimestamp,
+        uint96 _open_blockTimestamp,
+        uint96 _close_blockTimestamp,
         address poolWallet
     ) public onlyHenkakuHolders {
         if (_maxSupply == 0 || poolWallet == address(0) || keccak256(bytes(_metaDataURL)) == keccak256(bytes("")))
@@ -81,21 +81,21 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         ownerOfRegisteredIds[msg.sender].push(tokenId);
         registeredTickets.push(
             TicketInfo(
-                tokenId,
-                _metaDataURL,
                 msg.sender,
                 poolWallet,
+                _open_blockTimestamp,
+                _close_blockTimestamp,
+                tokenId,
                 _price,
                 _maxSupply,
-                _open_blockTimestamp,
-                _close_blockTimestamp
+                _metaDataURL
             )
         );
         _tokenIds.increment();
 
         // @dev Emit registeredTicket
         // @param address, tokenId, URL of meta data, max supply
-        emit RegisterTicket(msg.sender, tokenId, _metaDataURL, _maxSupply, _open_blockTimestamp, _close_blockTimestamp);
+        emit RegisterTicket(msg.sender, _open_blockTimestamp, _close_blockTimestamp, tokenId, _maxSupply, _metaDataURL);
     }
 
     // @return all registered TicketInfo
