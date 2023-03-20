@@ -129,7 +129,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     }
 
     // @dev mint function
-    function mint(uint256 _tokenId) public {
+    function mint(uint256 _tokenId) public onlyHenkakuHolders {
         require(mintable, "Ticket: Not mintable");
         require(balanceOf(msg.sender, _tokenId) == 0, "Ticket: You already have this ticket");
 
