@@ -139,14 +139,14 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         require(ticket.maxSupply > totalSupply(_tokenId), "Ticket: Mint limit reached");
 
         require(checkHenkakuV2Balance(ticket.price), "Ticket: Insufficient Henkaku Token Balance");
-        transferHenkakuV2(ticket.price, ticket.poolWallet);
 
-        _mint(msg.sender, _tokenId, 1, "");
         ownerOfMintedIds[msg.sender].push(_tokenId);
+        _mint(msg.sender, _tokenId, 1, "");
 
         // @dev Emit mint event
         // @param address, tokenId
         emit Mint(msg.sender, _tokenId);
+        transferHenkakuV2(ticket.price, ticket.poolWallet);
     }
 
     // @return holding tokenIds with address
