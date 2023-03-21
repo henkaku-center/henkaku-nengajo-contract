@@ -126,9 +126,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
 
         for (uint256 i = 0; i < _ownerOfRegisteredIds.length; ) {
             TicketInfo memory _registeredTicket = _registeredTickets[_ownerOfRegisteredIds[i]];
-            if (_registeredTicket.creator == _address) {
-                _ownerOfRegisteredTickets[i] = _registeredTicket;
-            }
+            _ownerOfRegisteredTickets[i] = _registeredTicket;
             unchecked {
                 ++i;
             }
