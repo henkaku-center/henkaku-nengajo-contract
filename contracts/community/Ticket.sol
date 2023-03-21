@@ -74,7 +74,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         uint64 _open_blockTimestamp,
         uint64 _close_blockTimestamp,
         address poolWallet
-    ) public onlyHenkakuHolders {
+    ) external onlyHenkakuHolders {
         if (_maxSupply == 0 || poolWallet == address(0) || keccak256(bytes(_metaDataURL)) == keccak256(bytes("")))
             revert InvalidParams("Ticket: invalid params");
 
@@ -108,7 +108,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     }
 
     // @return all registered TicketInfo
-    function retrieveAllTickets() external view returns (TicketInfo[] memory) {
+    function retrieveAllTickets() public view returns (TicketInfo[] memory) {
         return registeredTickets;
     }
 
@@ -135,7 +135,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     }
 
     // @dev mint function
-    function mint(uint256 _tokenId) public onlyHenkakuHolders {
+    function mint(uint256 _tokenId) external onlyHenkakuHolders {
         require(mintable, "Ticket: Not mintable");
         require(balanceOf(msg.sender, _tokenId) == 0, "Ticket: You already have this ticket");
 
