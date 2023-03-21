@@ -120,12 +120,12 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
 
     // @return registered TicketInfo by address
     function retrieveRegisteredTickets(address _address) public view returns (TicketInfo[] memory) {
-        TicketInfo[] memory _registeredTickets = registeredTickets;
         uint256[] memory _ownerOfRegisteredIds = ownerOfRegisteredIds[_address];
-        TicketInfo[] memory _ownerOfRegisteredTickets = new TicketInfo[](_ownerOfRegisteredIds.length);
+        uint256 _ownerOfRegisteredIdsLength = _ownerOfRegisteredIds.length;
+        TicketInfo[] memory _ownerOfRegisteredTickets = new TicketInfo[](_ownerOfRegisteredIdsLength);
 
-        for (uint256 i = 0; i < _ownerOfRegisteredIds.length; ) {
-            TicketInfo memory _registeredTicket = _registeredTickets[_ownerOfRegisteredIds[i]];
+        for (uint256 i = 0; i < _ownerOfRegisteredIdsLength; ) {
+            TicketInfo memory _registeredTicket = registeredTickets[_ownerOfRegisteredIds[i]];
             _ownerOfRegisteredTickets[i] = _registeredTicket;
             unchecked {
                 ++i;
@@ -159,12 +159,12 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
 
     // @return holding tokenIds with address
     function retrieveMintedTickets(address _address) public view returns (TicketInfo[] memory) {
-        TicketInfo[] memory _registeredTickets = registeredTickets;
         uint256[] memory _ownerOfMintedIds = ownerOfMintedIds[_address];
-        TicketInfo[] memory _ownerOfMintedTickets = new TicketInfo[](_ownerOfMintedIds.length);
+        uint256 _ownerOfMintedIdsLength = _ownerOfMintedIds.length;
+        TicketInfo[] memory _ownerOfMintedTickets = new TicketInfo[](_ownerOfMintedIdsLength);
 
-        for (uint256 i = 0; i < _ownerOfMintedIds.length; ) {
-            _ownerOfMintedTickets[i] = _registeredTickets[_ownerOfMintedIds[i]];
+        for (uint256 i = 0; i < _ownerOfMintedIdsLength; ) {
+            _ownerOfMintedTickets[i] = registeredTickets[_ownerOfMintedIds[i]];
             unchecked {
                 ++i;
             }
