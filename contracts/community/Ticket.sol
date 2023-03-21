@@ -114,9 +114,8 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
 
     // @return registered TicketInfo by tokenId
     function retrieveRegisteredTicket(uint256 _tokenId) public view returns (TicketInfo memory) {
-        TicketInfo[] memory _registeredTickets = registeredTickets;
-        require(_registeredTickets.length > _tokenId, "Ticket: not available");
-        return _registeredTickets[_tokenId];
+        require(registeredTickets.length > _tokenId, "Ticket: not available");
+        return registeredTickets[_tokenId];
     }
 
     // @return registered TicketInfo by address
