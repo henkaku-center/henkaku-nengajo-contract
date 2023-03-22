@@ -74,7 +74,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         uint64 _open_blockTimestamp,
         uint64 _close_blockTimestamp,
         address poolWallet
-    ) public onlyHenkakuHolders {
+    ) external onlyHenkakuHolders {
         if (_maxSupply == 0 || poolWallet == address(0) || keccak256(bytes(_metaDataURL)) == keccak256(bytes("")))
             revert InvalidParams("Ticket: invalid params");
 
@@ -108,28 +108,25 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     }
 
     // @return all registered TicketInfo
-    function retrieveAllTickets() external view returns (TicketInfo[] memory) {
+    function retrieveAllTickets() public view returns (TicketInfo[] memory) {
         return registeredTickets;
     }
 
     // @return registered TicketInfo by tokenId
     function retrieveRegisteredTicket(uint256 _tokenId) public view returns (TicketInfo memory) {
-        TicketInfo[] memory _registeredTickets = registeredTickets;
-        require(_registeredTickets.length > _tokenId, "Ticket: not available");
-        return _registeredTickets[_tokenId];
+        require(registeredTickets.length > _tokenId, "Ticket: not available");
+        return registeredTickets[_tokenId];
     }
 
     // @return registered TicketInfo by address
     function retrieveRegisteredTickets(address _address) public view returns (TicketInfo[] memory) {
-        TicketInfo[] memory _registeredTickets = registeredTickets;
         uint256[] memory _ownerOfRegisteredIds = ownerOfRegisteredIds[_address];
-        TicketInfo[] memory _ownerOfRegisteredTickets = new TicketInfo[](_ownerOfRegisteredIds.length);
+        uint256 _ownerOfRegisteredIdsLength = _ownerOfRegisteredIds.length;
+        TicketInfo[] memory _ownerOfRegisteredTickets = new TicketInfo[](_ownerOfRegisteredIdsLength);
 
-        for (uint256 i = 0; i < _ownerOfRegisteredIds.length; ) {
-            TicketInfo memory _registeredTicket = _registeredTickets[_ownerOfRegisteredIds[i]];
-            if (_registeredTicket.creator == _address) {
-                _ownerOfRegisteredTickets[i] = _registeredTicket;
-            }
+        for (uint256 i = 0; i < _ownerOfRegisteredIdsLength; ) {
+            TicketInfo memory _registeredTicket = registeredTickets[_ownerOfRegisteredIds[i]];
+            _ownerOfRegisteredTickets[i] = _registeredTicket;
             unchecked {
                 ++i;
             }
@@ -138,7 +135,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     }
 
     // @dev mint function
-    function mint(uint256 _tokenId) public onlyHenkakuHolders {
+    function mint(uint256 _tokenId) external onlyHenkakuHolders {
         require(mintable, "Ticket: Not mintable");
         require(balanceOf(msg.sender, _tokenId) == 0, "Ticket: You already have this ticket");
 
@@ -162,12 +159,12 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
 
     // @return holding tokenIds with address
     function retrieveMintedTickets(address _address) public view returns (TicketInfo[] memory) {
-        TicketInfo[] memory _registeredTickets = registeredTickets;
         uint256[] memory _ownerOfMintedIds = ownerOfMintedIds[_address];
-        TicketInfo[] memory _ownerOfMintedTickets = new TicketInfo[](_ownerOfMintedIds.length);
+        uint256 _ownerOfMintedIdsLength = _ownerOfMintedIds.length;
+        TicketInfo[] memory _ownerOfMintedTickets = new TicketInfo[](_ownerOfMintedIdsLength);
 
-        for (uint256 i = 0; i < _ownerOfMintedIds.length; ) {
-            _ownerOfMintedTickets[i] = _registeredTickets[_ownerOfMintedIds[i]];
+        for (uint256 i = 0; i < _ownerOfMintedIdsLength; ) {
+            _ownerOfMintedTickets[i] = registeredTickets[_ownerOfMintedIds[i]];
             unchecked {
                 ++i;
             }
