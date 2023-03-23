@@ -17,7 +17,7 @@ const main = async () => {
   }
 
   const TicketFactory = (await ethers.getContractFactory('Ticket')) as Ticket__factory
-  const TicketContract = await TicketFactory.deploy('Henkaku Ticket', 'HNJ', HenkakuV2Contract.address)
+  const TicketContract = await TicketFactory.deploy('Henkaku Ticket', 'HT', HenkakuV2Contract.address)
   await TicketContract.deployed()
 
   console.log(`HenkakuV2: ${HenkakuV2Contract.address}`)

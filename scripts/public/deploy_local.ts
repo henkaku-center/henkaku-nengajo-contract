@@ -1,7 +1,6 @@
 import * as dotenv from 'dotenv'
 import { setBalance } from '@nomicfoundation/hardhat-network-helpers'
 import { ethers } from 'hardhat'
-import { Contract } from 'ethers'
 
 dotenv.config()
 

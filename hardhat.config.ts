@@ -11,6 +11,7 @@ const config: HardhatUserConfig = {
     polygon: {
       url: process.env.POLYGON_ALCHEMY_KEY!,
       accounts: [process.env.MAIN_PRIVATE_KEY!],
+      gasPrice: 110000000000,
     },
     mumbai: {
       url: process.env.MUMBAI_ALCHEMY_KEY!,
