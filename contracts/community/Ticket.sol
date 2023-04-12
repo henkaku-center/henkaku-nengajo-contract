@@ -62,7 +62,9 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         name = _name;
         symbol = _symbol;
 
-        registeredTickets.push(TicketInfo(address(0), address(0), 0, 0, 0, 0, 0, ""));
+        registeredTickets.push(
+            TicketInfo(address(0), address(0), 0, 0, 0, 0, 0, "", new uint256[](0), new address[](0))
+        );
         _tokenIds.increment();
     }
 
@@ -77,7 +79,9 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         uint256 _price,
         uint64 _open_blockTimestamp,
         uint64 _close_blockTimestamp,
-        address poolWallet
+        address poolWallet,
+        address[] memory _shareholdersAddresses,
+        uint256[] memory _sharesAmounts
     ) external onlyHenkakuHolders {
         if (_maxSupply == 0 || poolWallet == address(0) || keccak256(bytes(_metaDataURL)) == keccak256(bytes("")))
             revert InvalidParams("Ticket: invalid params");
@@ -93,7 +97,9 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
                 _maxSupply,
                 tokenId,
                 _price,
-                _metaDataURL
+                _metaDataURL,
+                _sharesAmounts,
+                _shareholdersAddresses
             )
         );
         _tokenIds.increment();
@@ -107,7 +113,9 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
             _maxSupply,
             tokenId,
             _price,
-            _metaDataURL
+            _metaDataURL,
+            _sharesAmounts,
+            _shareholdersAddresses
         );
     }
 
