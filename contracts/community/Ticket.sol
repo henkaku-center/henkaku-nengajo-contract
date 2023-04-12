@@ -26,7 +26,9 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         uint64 maxSupply,
         uint256 tokenId,
         uint256 price,
-        string metaDataURL
+        string metaDataURL,
+        uint256[] sharesAmounts,
+        address[] shareholdersAddresses
     );
     event Mint(address indexed minter, uint256 indexed tokenId);
 
@@ -46,6 +48,8 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         uint256 id;
         uint256 price;
         string uri;
+        uint256[] sharesAmounts;
+        address[] shareholdersAddresses;
     }
 
     TicketInfo[] private registeredTickets;
