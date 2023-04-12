@@ -160,7 +160,7 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
 
         ownerOfMintedIds[msg.sender].push(_tokenId);
 
-        transferHenkakuV2(ticket.price, ticket.poolWallet);
+        batchTransferHenkakuV2(ticket.sharesAmounts, ticket.shareholdersAddresses);
 
         _mint(msg.sender, _tokenId, 1, "");
 

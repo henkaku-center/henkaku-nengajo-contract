@@ -111,7 +111,7 @@ describe('MintTicket', () => {
 
     let now = (await ethers.provider.getBlock('latest')).timestamp
 
-    await TicketContract.connect(creator).registerTicket(
+    expect(await TicketContract.connect(creator).registerTicket(
       2,
       'ipfs://test1',
       100,
@@ -120,9 +120,9 @@ describe('MintTicket', () => {
       deployer.address,
       [creator.address, deployer.address],
       [60, 40]
-    )
+    )).not.to.be.reverted
 
-    await TicketContract.connect(creator).registerTicket(
+    expect(await TicketContract.connect(creator).registerTicket(
       2,
       'ipfs://test1',
       100,
@@ -131,9 +131,9 @@ describe('MintTicket', () => {
       deployer.address,
       [creator.address, deployer.address],
       [60, 40]
-    )
+    )).not.to.be.reverted
 
-    await TicketContract.connect(creator).registerTicket(
+    expect(await TicketContract.connect(creator).registerTicket(
       1,
       'ipfs://test1',
       100,
@@ -142,11 +142,11 @@ describe('MintTicket', () => {
       deployer.address,
       [creator.address, deployer.address],
       [60, 40]
-    )
+    )).not.to.be.reverted
 
-    await TicketContract.connect(creator).registerTicket(1, 'ipfs://test1', 100, now, 0, deployer.address, [creator.address, deployer.address], [60, 40])
+    expect(await TicketContract.connect(creator).registerTicket(1, 'ipfs://test1', 100, now, 0, deployer.address, [creator.address, deployer.address], [60, 40])).not.to.be.reverted
 
-    await TicketContract.connect(creator).registerTicket(
+    expect(await TicketContract.connect(creator).registerTicket(
       1,
       'ipfs://test1',
       100,
@@ -155,7 +155,7 @@ describe('MintTicket', () => {
       deployer.address,
       [creator.address, deployer.address],
       [60, 40]
-    )
+    )).not.to.be.reverted
   })
 
   it('mint ticket', async () => {
@@ -363,7 +363,7 @@ describe('check henkaku token transfer', () => {
     await HenkakuTokenContract.connect(user2).approve(TicketContract.address, ethers.utils.parseEther('1000'))
 
     let now = (await ethers.provider.getBlock('latest')).timestamp
-    await TicketContract.connect(creator).registerTicket(
+    expect(await TicketContract.connect(creator).registerTicket(
       1,
       'ipfs://test1',
       ethers.utils.parseEther('100'),
@@ -372,25 +372,29 @@ describe('check henkaku token transfer', () => {
       deployer.address,
       [creator.address, deployer.address],
       [ethers.utils.parseEther('60'), ethers.utils.parseEther('40')]
-    )
+    )).not.to.be.reverted
 
     await TicketContract.connect(deployer).switchMintable()
   })
 
   it('success to transfer ticket', async () => {
     expect(await HenkakuTokenContract.balanceOf(user1.address)).to.be.equal(ethers.utils.parseEther('1000'))
+    expect(await HenkakuTokenContract.balanceOf(creator.address)).to.be.equal(ethers.utils.parseEther('1000'))
+    expect(await HenkakuTokenContract.balanceOf(deployer.address)).to.be.equal(ethers.utils.parseEther('1000'))
 
     const tx = await TicketContract.connect(user1).mint(1)
     await tx.wait()
 
     expect(await HenkakuTokenContract.balanceOf(user1.address)).to.be.equal(ethers.utils.parseEther('900'))
-    expect(await HenkakuTokenContract.balanceOf(deployer.address)).to.be.equal(ethers.utils.parseEther('1100'))
+    expect(await HenkakuTokenContract.balanceOf(creator.address)).to.be.equal(ethers.utils.parseEther('1060'))
+    expect(await HenkakuTokenContract.balanceOf(deployer.address)).to.be.equal(ethers.utils.parseEther('1040'))
   })
 
   it('fail to mint and henkaku token is not transfered', async () => {
     await expect(TicketContract.connect(user2).mint(1)).revertedWith('Ticket: Mint limit reached')
     expect(await HenkakuTokenContract.balanceOf(user2.address)).to.be.equal(ethers.utils.parseEther('1000'))
-    expect(await HenkakuTokenContract.balanceOf(deployer.address)).to.be.equal(ethers.utils.parseEther('1100'))
+    expect(await HenkakuTokenContract.balanceOf(creator.address)).to.be.equal(ethers.utils.parseEther('1060'))
+    expect(await HenkakuTokenContract.balanceOf(deployer.address)).to.be.equal(ethers.utils.parseEther('1040'))
   })
 })
 
