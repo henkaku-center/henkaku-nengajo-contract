@@ -81,7 +81,7 @@ describe('RegisterTicket', () => {
   it('revert register creative', async () => {
     // @dev test revert register creative
     expect(await HenkakuTokenContract.balanceOf(outsider.address)).to.equal(0)
-    await expect(TicketContract.connect(outsider).registerTicket(2, 'ipfs://test1', 100, 0, 0, deployer.address, [outsider.address, deployer.address], [60, 40])).to.be.revertedWith('Ticket: Insufficient Henkaku Token Balance')
+    await expect(TicketContract.connect(outsider).registerTicket(2, 'ipfs://test1', 100, 0, 0, deployer.address, [outsider.address, deployer.address], [60, 40])).to.be.revertedWith('Ticket: Insufficient HenkakuV2 token')
   })
 
 })
@@ -220,13 +220,13 @@ describe('MintTicket', () => {
   })
 
   it('failed with insufficient Henkaku Token', async () => {
-    await expect(TicketContract.connect(user4).mint(5)).to.be.revertedWith('Ticket: Insufficient Henkaku Token Balance')
+    await expect(TicketContract.connect(user4).mint(5)).to.be.revertedWith('Ticket: Insufficient HenkakuV2 token')
   })
 
   it('revert register creative', async () => {
     // @dev test revert register creative
     expect(await HenkakuTokenContract.balanceOf(outsider.address)).to.equal(0)
-    await expect(TicketContract.connect(outsider).mint(5)).to.be.revertedWith('Ticket: Insufficient Henkaku Token Balance')
+    await expect(TicketContract.connect(outsider).mint(5)).to.be.revertedWith('Ticket: Insufficient HenkakuV2 token')
   })
 })
 

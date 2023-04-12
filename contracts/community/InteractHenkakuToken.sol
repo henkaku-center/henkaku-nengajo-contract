@@ -13,21 +13,20 @@ abstract contract InteractHenakuToken is Administration, MintManager {
     }
 
     function transferHenkakuV2(uint256 _amount, address _to) internal {
-        require(checkHenkakuV2Balance(_amount), "Ticket: Insufficient HenkakuV2 token");
+        _checkHenkakuV2Balance(_amount);
         bool sent = IHenkakuToken(henkakuV2).transferFrom(msg.sender, _to, _amount);
         require(sent, "Ticket: Henkaku transfer failed");
     }
 
-    function batchTransferHenkakuV2(uint256[] memory _amounts, address[] memory _to) internal {
+    function batchTransferHenkakuV2(uint256 totalPrice, uint256[] memory _amounts, address[] memory _to) internal {
+        _checkHenkakuV2Balance(totalPrice);
+
         uint256[] memory amounts = _amounts;
         uint256 amountsLength = amounts.length;
         require(amountsLength == _to.length, "amounts and to length mismatch");
 
         for (uint256 i = 0; i < amountsLength; ) {
-            uint256 amount = amounts[i];
-
-            require(checkHenkakuV2Balance(amount), "Ticket: Insufficient HenkakuV2 token");
-            bool sent = IHenkakuToken(henkakuV2).transferFrom(msg.sender, _to[i], amount);
+            bool sent = IHenkakuToken(henkakuV2).transferFrom(msg.sender, _to[i], amounts[i]);
             require(sent, "Ticket: Henkaku transfer failed");
 
             unchecked {
@@ -36,7 +35,10 @@ abstract contract InteractHenakuToken is Administration, MintManager {
         }
     }
 
-    function checkHenkakuV2Balance(uint256 _requiredAmount) internal view returns (bool) {
-        return IHenkakuToken(henkakuV2).balanceOf(msg.sender) >= _requiredAmount ? true : false;
+    function _checkHenkakuV2Balance(uint256 _requiredAmount) internal view {
+        require(
+            IHenkakuToken(henkakuV2).balanceOf(msg.sender) >= _requiredAmount,
+            "Ticket: Insufficient HenkakuV2 token"
+        );
     }
 }

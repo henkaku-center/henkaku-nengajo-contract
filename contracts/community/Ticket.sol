@@ -69,8 +69,21 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
     }
 
     modifier onlyHenkakuHolders() {
-        require(checkHenkakuV2Balance(1), "Ticket: Insufficient Henkaku Token Balance");
+        _checkHenkakuV2Balance(1);
         _;
+    }
+
+    function _getTotalSharesAmounts(uint256[] memory _sharesAmounts) internal pure returns (uint256) {
+        uint256[] memory sharedAmounts = _sharesAmounts;
+        uint256 sharesAmountsLength = sharedAmounts.length;
+        uint256 totalSharesAmounts = 0;
+        for (uint256 i = 0; i < sharesAmountsLength; ) {
+            totalSharesAmounts = totalSharesAmounts + sharedAmounts[i];
+            unchecked {
+                ++i;
+            }
+        }
+        return totalSharesAmounts;
     }
 
     function registerTicket(
@@ -79,19 +92,23 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         uint256 _price,
         uint64 _open_blockTimestamp,
         uint64 _close_blockTimestamp,
-        address poolWallet,
+        address _poolWallet,
         address[] memory _shareholdersAddresses,
         uint256[] memory _sharesAmounts
     ) external onlyHenkakuHolders {
-        if (_maxSupply == 0 || poolWallet == address(0) || keccak256(bytes(_metaDataURL)) == keccak256(bytes("")))
-            revert InvalidParams("Ticket: invalid params");
+        if (
+            _maxSupply == 0 ||
+            _poolWallet == address(0) ||
+            keccak256(bytes(_metaDataURL)) == keccak256(bytes("")) ||
+            _getTotalSharesAmounts(_sharesAmounts) != _price
+        ) revert InvalidParams("Ticket: invalid params");
 
         uint256 tokenId = _tokenIds.current();
         ownerOfRegisteredIds[msg.sender].push(tokenId);
         registeredTickets.push(
             TicketInfo(
                 msg.sender,
-                poolWallet,
+                _poolWallet,
                 _open_blockTimestamp,
                 _close_blockTimestamp,
                 _maxSupply,
@@ -156,11 +173,9 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         require(ticket.close_blockTimestamp >= block.timestamp, "Ticket: Already closed");
         require(ticket.maxSupply > totalSupply(_tokenId), "Ticket: Mint limit reached");
 
-        require(checkHenkakuV2Balance(ticket.price), "Ticket: Insufficient Henkaku Token Balance");
-
         ownerOfMintedIds[msg.sender].push(_tokenId);
 
-        batchTransferHenkakuV2(ticket.sharesAmounts, ticket.shareholdersAddresses);
+        batchTransferHenkakuV2(ticket.price, ticket.sharesAmounts, ticket.shareholdersAddresses);
 
         _mint(msg.sender, _tokenId, 1, "");
 
