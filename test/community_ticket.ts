@@ -53,7 +53,7 @@ describe('RegisterTicket', () => {
 
     // @dev test emit register creative
     await expect(
-      TicketContract.connect(creator).registerTicket(2, 'ipfs://test1', 100, now, now + 1000000000000, deployer.address, [creator.address, deployer.address], [60, 40])
+      TicketContract.connect(creator).registerTicket(2, 'ipfs://test1', 100, now, now + 1000000000000, [creator.address, deployer.address], [60, 40])
     )
       .to.emit(TicketContract, 'RegisterTicket')
       .withArgs(creator.address, now, now + 1000000000000, 2, 1, 100, 'ipfs://test1', [60, 40], [creator.address, deployer.address])
@@ -81,7 +81,7 @@ describe('RegisterTicket', () => {
   it('revert register creative', async () => {
     // @dev test revert register creative
     expect(await HenkakuTokenContract.balanceOf(outsider.address)).to.equal(0)
-    await expect(TicketContract.connect(outsider).registerTicket(2, 'ipfs://test1', 100, 0, 0, deployer.address, [outsider.address, deployer.address], [60, 40])).to.be.revertedWith('Ticket: Insufficient HenkakuV2 token')
+    await expect(TicketContract.connect(outsider).registerTicket(2, 'ipfs://test1', 100, 0, 0, [outsider.address, deployer.address], [60, 40])).to.be.revertedWith('Ticket: Insufficient HenkakuV2 token')
   })
 
 })
@@ -117,7 +117,6 @@ describe('MintTicket', () => {
       100,
       now,
       now + 1000000000000,
-      deployer.address,
       [creator.address, deployer.address],
       [60, 40]
     )).not.to.be.reverted
@@ -128,7 +127,6 @@ describe('MintTicket', () => {
       100,
       now,
       now + 1000000000000,
-      deployer.address,
       [creator.address, deployer.address],
       [60, 40]
     )).not.to.be.reverted
@@ -139,12 +137,11 @@ describe('MintTicket', () => {
       100,
       now + 1000000000000,
       now + 1000000000000,
-      deployer.address,
       [creator.address, deployer.address],
       [60, 40]
     )).not.to.be.reverted
 
-    expect(await TicketContract.connect(creator).registerTicket(1, 'ipfs://test1', 100, now, 0, deployer.address, [creator.address, deployer.address], [60, 40])).not.to.be.reverted
+    expect(await TicketContract.connect(creator).registerTicket(1, 'ipfs://test1', 100, now, 0, [creator.address, deployer.address], [60, 40])).not.to.be.reverted
 
     expect(await TicketContract.connect(creator).registerTicket(
       1,
@@ -152,7 +149,6 @@ describe('MintTicket', () => {
       100,
       now,
       now + 1000000000000,
-      deployer.address,
       [creator.address, deployer.address],
       [60, 40]
     )).not.to.be.reverted
@@ -369,7 +365,6 @@ describe('check henkaku token transfer', () => {
       ethers.utils.parseEther('100'),
       now,
       now + 1000000000000,
-      deployer.address,
       [creator.address, deployer.address],
       [ethers.utils.parseEther('60'), ethers.utils.parseEther('40')]
     )).not.to.be.reverted
