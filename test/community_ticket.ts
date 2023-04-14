@@ -53,10 +53,10 @@ describe('RegisterTicket', () => {
 
     // @dev test emit register creative
     await expect(
-      TicketContract.connect(creator).registerTicket(2, 'ipfs://test1', 100, now, now + 1000000000000, deployer.address)
+      TicketContract.connect(creator).registerTicket(2, 'ipfs://test1', 100, now, now + 1000000000000, [creator.address, deployer.address], [60, 40])
     )
       .to.emit(TicketContract, 'RegisterTicket')
-      .withArgs(creator.address, now, now + 1000000000000, 2, 1, 100, 'ipfs://test1')
+      .withArgs(creator.address, now, now + 1000000000000, 2, 1, 100, 'ipfs://test1', [60, 40], [creator.address, deployer.address])
 
     tokenURI = await TicketContract.uri(1)
     expect(tokenURI).equal('ipfs://test1')
@@ -81,7 +81,7 @@ describe('RegisterTicket', () => {
   it('revert register creative', async () => {
     // @dev test revert register creative
     expect(await HenkakuTokenContract.balanceOf(outsider.address)).to.equal(0)
-    await expect(TicketContract.connect(outsider).registerTicket(2, 'ipfs://test1', 100, 0, 0, deployer.address)).to.be.revertedWith('Ticket: Insufficient Henkaku Token Balance')
+    await expect(TicketContract.connect(outsider).registerTicket(2, 'ipfs://test1', 100, 0, 0, [outsider.address, deployer.address], [60, 40])).to.be.revertedWith('Ticket: Insufficient HenkakuV2 token')
   })
 
 })
@@ -111,43 +111,47 @@ describe('MintTicket', () => {
 
     let now = (await ethers.provider.getBlock('latest')).timestamp
 
-    await TicketContract.connect(creator).registerTicket(
+    expect(await TicketContract.connect(creator).registerTicket(
       2,
       'ipfs://test1',
       100,
       now,
       now + 1000000000000,
-      deployer.address
-    )
+      [creator.address, deployer.address],
+      [60, 40]
+    )).not.to.be.reverted
 
-    await TicketContract.connect(creator).registerTicket(
+    expect(await TicketContract.connect(creator).registerTicket(
       2,
       'ipfs://test1',
       100,
       now,
       now + 1000000000000,
-      deployer.address
-    )
+      [creator.address, deployer.address],
+      [60, 40]
+    )).not.to.be.reverted
 
-    await TicketContract.connect(creator).registerTicket(
+    expect(await TicketContract.connect(creator).registerTicket(
       1,
       'ipfs://test1',
       100,
       now + 1000000000000,
       now + 1000000000000,
-      deployer.address
-    )
+      [creator.address, deployer.address],
+      [60, 40]
+    )).not.to.be.reverted
 
-    await TicketContract.connect(creator).registerTicket(1, 'ipfs://test1', 100, now, 0, deployer.address)
+    expect(await TicketContract.connect(creator).registerTicket(1, 'ipfs://test1', 100, now, 0, [creator.address, deployer.address], [60, 40])).not.to.be.reverted
 
-    await TicketContract.connect(creator).registerTicket(
+    expect(await TicketContract.connect(creator).registerTicket(
       1,
       'ipfs://test1',
       100,
       now,
       now + 1000000000000,
-      deployer.address
-    )
+      [creator.address, deployer.address],
+      [60, 40]
+    )).not.to.be.reverted
   })
 
   it('mint ticket', async () => {
@@ -212,13 +216,13 @@ describe('MintTicket', () => {
   })
 
   it('failed with insufficient Henkaku Token', async () => {
-    await expect(TicketContract.connect(user4).mint(5)).to.be.revertedWith('Ticket: Insufficient Henkaku Token Balance')
+    await expect(TicketContract.connect(user4).mint(5)).to.be.revertedWith('Ticket: Insufficient HenkakuV2 token')
   })
 
   it('revert register creative', async () => {
     // @dev test revert register creative
     expect(await HenkakuTokenContract.balanceOf(outsider.address)).to.equal(0)
-    await expect(TicketContract.connect(outsider).mint(5)).to.be.revertedWith('Ticket: Insufficient Henkaku Token Balance')
+    await expect(TicketContract.connect(outsider).mint(5)).to.be.revertedWith('Ticket: Insufficient HenkakuV2 token')
   })
 })
 
@@ -355,32 +359,37 @@ describe('check henkaku token transfer', () => {
     await HenkakuTokenContract.connect(user2).approve(TicketContract.address, ethers.utils.parseEther('1000'))
 
     let now = (await ethers.provider.getBlock('latest')).timestamp
-    await TicketContract.connect(creator).registerTicket(
+    expect(await TicketContract.connect(creator).registerTicket(
       1,
       'ipfs://test1',
       ethers.utils.parseEther('100'),
       now,
       now + 1000000000000,
-      deployer.address
-    )
+      [creator.address, deployer.address],
+      [ethers.utils.parseEther('60'), ethers.utils.parseEther('40')]
+    )).not.to.be.reverted
 
     await TicketContract.connect(deployer).switchMintable()
   })
 
   it('success to transfer ticket', async () => {
     expect(await HenkakuTokenContract.balanceOf(user1.address)).to.be.equal(ethers.utils.parseEther('1000'))
+    expect(await HenkakuTokenContract.balanceOf(creator.address)).to.be.equal(ethers.utils.parseEther('1000'))
+    expect(await HenkakuTokenContract.balanceOf(deployer.address)).to.be.equal(ethers.utils.parseEther('1000'))
 
     const tx = await TicketContract.connect(user1).mint(1)
     await tx.wait()
 
     expect(await HenkakuTokenContract.balanceOf(user1.address)).to.be.equal(ethers.utils.parseEther('900'))
-    expect(await HenkakuTokenContract.balanceOf(deployer.address)).to.be.equal(ethers.utils.parseEther('1100'))
+    expect(await HenkakuTokenContract.balanceOf(creator.address)).to.be.equal(ethers.utils.parseEther('1060'))
+    expect(await HenkakuTokenContract.balanceOf(deployer.address)).to.be.equal(ethers.utils.parseEther('1040'))
   })
 
   it('fail to mint and henkaku token is not transfered', async () => {
     await expect(TicketContract.connect(user2).mint(1)).revertedWith('Ticket: Mint limit reached')
     expect(await HenkakuTokenContract.balanceOf(user2.address)).to.be.equal(ethers.utils.parseEther('1000'))
-    expect(await HenkakuTokenContract.balanceOf(deployer.address)).to.be.equal(ethers.utils.parseEther('1100'))
+    expect(await HenkakuTokenContract.balanceOf(creator.address)).to.be.equal(ethers.utils.parseEther('1060'))
+    expect(await HenkakuTokenContract.balanceOf(deployer.address)).to.be.equal(ethers.utils.parseEther('1040'))
   })
 })
 

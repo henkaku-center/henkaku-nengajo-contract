@@ -26,7 +26,9 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         uint64 maxSupply,
         uint256 tokenId,
         uint256 price,
-        string metaDataURL
+        string metaDataURL,
+        uint256[] sharesAmounts,
+        address[] shareholdersAddresses
     );
     event Mint(address indexed minter, uint256 indexed tokenId);
 
@@ -39,13 +41,14 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
      */
     struct TicketInfo {
         address creator;
-        address poolWallet;
         uint64 open_blockTimestamp;
         uint64 close_blockTimestamp;
         uint64 maxSupply;
         uint256 id;
         uint256 price;
         string uri;
+        uint256[] sharesAmounts;
+        address[] shareholdersAddresses;
     }
 
     TicketInfo[] private registeredTickets;
@@ -58,13 +61,26 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         name = _name;
         symbol = _symbol;
 
-        registeredTickets.push(TicketInfo(address(0), address(0), 0, 0, 0, 0, 0, ""));
+        registeredTickets.push(TicketInfo(address(0), 0, 0, 0, 0, 0, "", new uint256[](0), new address[](0)));
         _tokenIds.increment();
     }
 
     modifier onlyHenkakuHolders() {
-        require(checkHenkakuV2Balance(1), "Ticket: Insufficient Henkaku Token Balance");
+        _checkHenkakuV2Balance(1);
         _;
+    }
+
+    function _getTotalSharesAmounts(uint256[] memory _sharesAmounts) internal pure returns (uint256) {
+        uint256[] memory sharedAmounts = _sharesAmounts;
+        uint256 sharesAmountsLength = sharedAmounts.length;
+        uint256 totalSharesAmounts = 0;
+        for (uint256 i = 0; i < sharesAmountsLength; ) {
+            totalSharesAmounts = totalSharesAmounts + sharedAmounts[i];
+            unchecked {
+                ++i;
+            }
+        }
+        return totalSharesAmounts;
     }
 
     function registerTicket(
@@ -73,23 +89,28 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         uint256 _price,
         uint64 _open_blockTimestamp,
         uint64 _close_blockTimestamp,
-        address poolWallet
+        address[] memory _shareholdersAddresses,
+        uint256[] memory _sharesAmounts
     ) external onlyHenkakuHolders {
-        if (_maxSupply == 0 || poolWallet == address(0) || keccak256(bytes(_metaDataURL)) == keccak256(bytes("")))
-            revert InvalidParams("Ticket: invalid params");
+        if (
+            _maxSupply == 0 ||
+            keccak256(bytes(_metaDataURL)) == keccak256(bytes("")) ||
+            _getTotalSharesAmounts(_sharesAmounts) != _price
+        ) revert InvalidParams("Ticket: invalid params");
 
         uint256 tokenId = _tokenIds.current();
         ownerOfRegisteredIds[msg.sender].push(tokenId);
         registeredTickets.push(
             TicketInfo(
                 msg.sender,
-                poolWallet,
                 _open_blockTimestamp,
                 _close_blockTimestamp,
                 _maxSupply,
                 tokenId,
                 _price,
-                _metaDataURL
+                _metaDataURL,
+                _sharesAmounts,
+                _shareholdersAddresses
             )
         );
         _tokenIds.increment();
@@ -103,7 +124,9 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
             _maxSupply,
             tokenId,
             _price,
-            _metaDataURL
+            _metaDataURL,
+            _sharesAmounts,
+            _shareholdersAddresses
         );
     }
 
@@ -144,11 +167,9 @@ contract Ticket is ERC1155, ERC1155Supply, Administration, MintManager, Interact
         require(ticket.close_blockTimestamp >= block.timestamp, "Ticket: Already closed");
         require(ticket.maxSupply > totalSupply(_tokenId), "Ticket: Mint limit reached");
 
-        require(checkHenkakuV2Balance(ticket.price), "Ticket: Insufficient Henkaku Token Balance");
-
         ownerOfMintedIds[msg.sender].push(_tokenId);
 
-        transferHenkakuV2(ticket.price, ticket.poolWallet);
+        batchTransferHenkakuV2(ticket.price, ticket.sharesAmounts, ticket.shareholdersAddresses);
 
         _mint(msg.sender, _tokenId, 1, "");
 
