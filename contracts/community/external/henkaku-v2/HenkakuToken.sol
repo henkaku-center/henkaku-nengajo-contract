@@ -23,10 +23,7 @@ contract HenkakuToken is ERC20, Ownable {
     }
 
     function burn(address _of, uint256 amount) public {
-        require(
-            _of == msg.sender || msg.sender == owner(),
-            "INVALID: NOT YOUR ASSET"
-        );
+        require(_of == msg.sender || msg.sender == owner(), "INVALID: NOT YOUR ASSET");
         _burn(_of, amount);
     }
 
@@ -37,9 +34,7 @@ contract HenkakuToken is ERC20, Ownable {
 
     modifier onlyAdmin() {
         require(
-            msg.sender == owner() ||
-                msg.sender == gateKeeper ||
-                msg.sender == dev,
+            msg.sender == owner() || msg.sender == gateKeeper || msg.sender == dev,
             "INVALID: ONLY ADMIN CAN EXECUTE"
         );
         _;
@@ -81,18 +76,8 @@ contract HenkakuToken is ERC20, Ownable {
         whitelist[user] = false;
     }
 
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal virtual override {
-        require(
-            whitelist[from] || unlock || from == address(0),
-            "INVALID: SENDER IS NOT ALLOWED"
-        );
-        require(
-            whitelist[to] || unlock || from == address(0),
-            "INVALID: RECEIVER IS NOT ALLOWED"
-        );
+    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override {
+        require(whitelist[from] || unlock || from == address(0), "INVALID: SENDER IS NOT ALLOWED");
+        require(whitelist[to] || unlock || from == address(0), "INVALID: RECEIVER IS NOT ALLOWED");
     }
 }

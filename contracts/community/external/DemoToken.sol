@@ -76,8 +76,5 @@ contract HenkakuToken is ERC20, Ownable {
         whitelist[user] = false;
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override {
-        require(unlock || from == address(0), "INVALID: SENDER IS NOT ALLOWED");
-        require(unlock || from == address(0), "INVALID: RECEIVER IS NOT ALLOWED");
-    }
+    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override {}
 }
