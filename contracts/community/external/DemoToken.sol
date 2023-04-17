@@ -6,7 +6,7 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract HenkakuToken is ERC20, Ownable {
+contract DemoToken is ERC20, Ownable {
     uint256 private maxSupply = 1_000_000_000e18; // 1 billion henkaku
     mapping(address => bool) private whitelist;
     address public gateKeeper; // multisig contract address managed by henkaku community
