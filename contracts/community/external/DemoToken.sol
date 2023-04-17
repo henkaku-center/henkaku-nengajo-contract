@@ -6,7 +6,7 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract HenkakuToken is ERC20, Ownable {
+contract DemoToken is ERC20, Ownable {
     uint256 private maxSupply = 1_000_000_000e18; // 1 billion henkaku
     mapping(address => bool) private whitelist;
     address public gateKeeper; // multisig contract address managed by henkaku community
@@ -17,7 +17,7 @@ contract HenkakuToken is ERC20, Ownable {
         unlock = false;
     }
 
-    function mint(address _to, uint256 amount) public onlyOwner {
+    function mint(address _to, uint256 amount) public {
         require(maxSupply >= (totalSupply() + amount), "EXCEED MAX SUPPLY");
         _mint(_to, amount);
     }
@@ -76,8 +76,5 @@ contract HenkakuToken is ERC20, Ownable {
         whitelist[user] = false;
     }
 
-    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override {
-        require(whitelist[from] || unlock || from == address(0), "INVALID: SENDER IS NOT ALLOWED");
-        require(whitelist[to] || unlock || from == address(0), "INVALID: RECEIVER IS NOT ALLOWED");
-    }
+    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override {}
 }
