@@ -1,0 +1,15 @@
+venv
+node_modules
+.openzeppelin
+.vscode
+
+artifacts
+cache
+dist
+typechain-types
+coverage*
+
+.next
+
+gasReporterOutput.json
+package.json

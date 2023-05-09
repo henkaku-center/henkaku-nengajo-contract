@@ -49,14 +49,32 @@ describe('RegisterTicket', () => {
     // Register the first Ticket
     // １つ目の年賀状(_tokenIdが１)を登録
 
-    let now = (await ethers.provider.getBlock('latest')).timestamp
+    const now = (await ethers.provider.getBlock('latest')).timestamp
 
     // @dev test emit register creative
     await expect(
-      TicketContract.connect(creator).registerTicket(2, 'ipfs://test1', 100, now, now + 1000000000000, [creator.address, deployer.address], [60, 40])
+      TicketContract.connect(creator).registerTicket(
+        2,
+        'ipfs://test1',
+        100,
+        now,
+        now + 1000000000000,
+        [creator.address, deployer.address],
+        [60, 40]
+      )
     )
       .to.emit(TicketContract, 'RegisterTicket')
-      .withArgs(creator.address, now, now + 1000000000000, 2, 1, 100, 'ipfs://test1', [60, 40], [creator.address, deployer.address])
+      .withArgs(
+        creator.address,
+        now,
+        now + 1000000000000,
+        2,
+        1,
+        100,
+        'ipfs://test1',
+        [60, 40],
+        [creator.address, deployer.address]
+      )
 
     tokenURI = await TicketContract.uri(1)
     expect(tokenURI).equal('ipfs://test1')
@@ -81,9 +99,18 @@ describe('RegisterTicket', () => {
   it('revert register creative', async () => {
     // @dev test revert register creative
     expect(await HenkakuTokenContract.balanceOf(outsider.address)).to.equal(0)
-    await expect(TicketContract.connect(outsider).registerTicket(2, 'ipfs://test1', 100, 0, 0, [outsider.address, deployer.address], [60, 40])).to.be.revertedWith('Ticket: Insufficient HenkakuV2 token')
+    await expect(
+      TicketContract.connect(outsider).registerTicket(
+        2,
+        'ipfs://test1',
+        100,
+        0,
+        0,
+        [outsider.address, deployer.address],
+        [60, 40]
+      )
+    ).to.be.revertedWith('Ticket: Insufficient HenkakuV2 token')
   })
-
 })
 
 describe('MintTicket', () => {
@@ -109,49 +136,67 @@ describe('MintTicket', () => {
     await HenkakuTokenContract.connect(user1).approve(TicketContract.address, ethers.utils.parseEther('1000'))
     await HenkakuTokenContract.connect(user2).approve(TicketContract.address, ethers.utils.parseEther('1000'))
 
-    let now = (await ethers.provider.getBlock('latest')).timestamp
+    const now = (await ethers.provider.getBlock('latest')).timestamp
 
-    expect(await TicketContract.connect(creator).registerTicket(
-      2,
-      'ipfs://test1',
-      100,
-      now,
-      now + 1000000000000,
-      [creator.address, deployer.address],
-      [60, 40]
-    )).not.to.be.reverted
+    expect(
+      await TicketContract.connect(creator).registerTicket(
+        2,
+        'ipfs://test1',
+        100,
+        now,
+        now + 1000000000000,
+        [creator.address, deployer.address],
+        [60, 40]
+      )
+    ).not.to.be.reverted
 
-    expect(await TicketContract.connect(creator).registerTicket(
-      2,
-      'ipfs://test1',
-      100,
-      now,
-      now + 1000000000000,
-      [creator.address, deployer.address],
-      [60, 40]
-    )).not.to.be.reverted
+    expect(
+      await TicketContract.connect(creator).registerTicket(
+        2,
+        'ipfs://test1',
+        100,
+        now,
+        now + 1000000000000,
+        [creator.address, deployer.address],
+        [60, 40]
+      )
+    ).not.to.be.reverted
 
-    expect(await TicketContract.connect(creator).registerTicket(
-      1,
-      'ipfs://test1',
-      100,
-      now + 1000000000000,
-      now + 1000000000000,
-      [creator.address, deployer.address],
-      [60, 40]
-    )).not.to.be.reverted
+    expect(
+      await TicketContract.connect(creator).registerTicket(
+        1,
+        'ipfs://test1',
+        100,
+        now + 1000000000000,
+        now + 1000000000000,
+        [creator.address, deployer.address],
+        [60, 40]
+      )
+    ).not.to.be.reverted
 
-    expect(await TicketContract.connect(creator).registerTicket(1, 'ipfs://test1', 100, now, 0, [creator.address, deployer.address], [60, 40])).not.to.be.reverted
+    expect(
+      await TicketContract.connect(creator).registerTicket(
+        1,
+        'ipfs://test1',
+        100,
+        now,
+        0,
+        [creator.address, deployer.address],
+        [60, 40]
+      )
+    ).not.to.be.reverted
 
-    expect(await TicketContract.connect(creator).registerTicket(
-      1,
-      'ipfs://test1',
-      100,
-      now,
-      now + 1000000000000,
-      [creator.address, deployer.address],
-      [60, 40]
-    )).not.to.be.reverted
+    expect(
+      await TicketContract.connect(creator).registerTicket(
+        1,
+        'ipfs://test1',
+        100,
+        now,
+        now + 1000000000000,
+        [creator.address, deployer.address],
+        [60, 40]
+      )
+    ).not.to.be.reverted
   })
 
   it('mint ticket', async () => {
@@ -358,16 +403,18 @@ describe('check henkaku token transfer', () => {
     await HenkakuTokenContract.connect(user1).approve(TicketContract.address, ethers.utils.parseEther('1000'))
     await HenkakuTokenContract.connect(user2).approve(TicketContract.address, ethers.utils.parseEther('1000'))
 
-    let now = (await ethers.provider.getBlock('latest')).timestamp
-    expect(await TicketContract.connect(creator).registerTicket(
-      1,
-      'ipfs://test1',
-      ethers.utils.parseEther('100'),
-      now,
-      now + 1000000000000,
-      [creator.address, deployer.address],
-      [ethers.utils.parseEther('60'), ethers.utils.parseEther('40')]
-    )).not.to.be.reverted
+    const now = (await ethers.provider.getBlock('latest')).timestamp
+    expect(
+      await TicketContract.connect(creator).registerTicket(
+        1,
+        'ipfs://test1',
+        ethers.utils.parseEther('100'),
+        now,
+        now + 1000000000000,
+        [creator.address, deployer.address],
+        [ethers.utils.parseEther('60'), ethers.utils.parseEther('40')]
+      )
+    ).not.to.be.reverted
 
     await TicketContract.connect(deployer).switchMintable()
   })

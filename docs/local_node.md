@@ -8,10 +8,10 @@
 $ cp ./.env.example ./.env
 ```
 
-**LOCAL_PRIVATE_KEY**  
-ローカルノードを立ち上げたときに出力されたウォレットのどれでも好きなもの。.env.exampleに一番目のアドレスのPrivateKeyをいれてます。
+**LOCAL_PRIVATE_KEY**
+ローカルノードを立ち上げたときに出力されたウォレットのどれでも好きなもの。.env.example に一番目のアドレスの PrivateKey をいれてます。
 
-**LOCAL_USERS_ADDRESSES**  
+**LOCAL_USERS_ADDRESSES**
 自分で開発に使いたいウォレットアドレスをカンマ(,)区切りで入れてください。ここに入力したアドレスにローカルチェーン上の HenkakuV2 トークンをミントします。
 
 例
@@ -82,13 +82,13 @@ Ticket  : 0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9
 $ cp ./.env.sample ./.env.local
 ```
 
-**NEXT_PUBLIC_CHAIN_ID**  
+**NEXT_PUBLIC_CHAIN_ID**
 Hardhat のローカルチェーンのチェーン ID は**31337**です。
 
-**NEXT_PUBLIC_CONTRACT_HENKAKUV2_ADDRESS**  
+**NEXT_PUBLIC_CONTRACT_HENKAKUV2_ADDRESS**
 コントラクトデプロイしたときに出力された HenkakuV2 のアドレス
 
-**NEXT_PUBLIC_CONTRACT_TICKET_ADDRESS**  
+**NEXT_PUBLIC_CONTRACT_TICKET_ADDRESS**
 コントラクトデプロイしたときに出力された Ticket のアドレス
 
 ## フロントエンド起動
