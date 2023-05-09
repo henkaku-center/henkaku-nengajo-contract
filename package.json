@@ -2,10 +2,13 @@
   "name": "hardhat-project",
   "main": "index.js",
   "scripts": {
-    "test": "yarn hardhat test",
-    "compile": "yarn hardhat compile",
     "localnode": "yarn hardhat node",
     "clean": "yarn hardhat clean",
+    "compile": "yarn hardhat compile",
+    "test": "yarn hardhat test",
+    "psummary": "slither . --print human-summary",
+    "prettier": "prettier --ignore-unknown --no-error-on-unmatched-pattern --ignore-path .prettierignore --write .",
+    "prettier:check": "prettier --ignore-unknown --no-error-on-unmatched-pattern --ignore-path .prettierignore --check .",
     "deploy:local": "yarn hardhat run scripts/community/deploy_local.ts --network local",
     "deploy:polygon": "yarn hardhat run scripts/community/deploy_mainnet.ts --network polygon",
     "deploy:mumbai": "yarn hardhat run scripts/community/deploy_testnet.ts --network mumbai",
@@ -43,5 +46,8 @@
     "ts-node": ">=8.0.0",
     "typechain": "^8.1.0",
     "typescript": ">=4.5.0"
+  },
+  "dependencies": {
+    "solc": "^0.8.19"
   }
 }

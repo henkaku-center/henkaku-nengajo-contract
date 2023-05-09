@@ -1,14 +1,24 @@
+# packages
+venv
 node_modules
-.env
-coverage
-coverage.json
+
+# types
 typechain
 typechain-types
+
+# build
+build
+
+# tests
+coverage
+coverage.json
 
 #Hardhat files
 cache
 artifacts
 
-scripts/ticket_argument.ts
+# env files
+.env
 
-build
+# sensitive
+scripts/ticket_argument.ts
