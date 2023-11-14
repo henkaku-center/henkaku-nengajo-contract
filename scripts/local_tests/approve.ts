@@ -25,7 +25,21 @@ const main = async () => {
     const HenkakuV2Factory = await ethers.getContractFactory('HenkakuToken')
     const HenkakuV2Contract = await HenkakuV2Factory.attach('0x5FbDB2315678afecb367f032d93F642f64180aa3')
 
-    await (await HenkakuV2Contract.connect(user).approve('0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9', 100)).wait()
+    let currentAllowance
+    currentAllowance = await HenkakuV2Contract.allowance(user.address, '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9')
+
+    console.log('pre approve:', currentAllowance.toString())
+
+    await (
+      await HenkakuV2Contract.connect(user).approve(
+        '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9',
+        currentAllowance.add(100)
+      )
+    ).wait()
+
+    currentAllowance = await HenkakuV2Contract.allowance(user.address, '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9')
+
+    console.log('post approve:', currentAllowance.toString())
 
     // const open_blockTimestamp: number = 1671458400
     // const close_blockTimestamp: number = 2671458400
