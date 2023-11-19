@@ -16,10 +16,10 @@ const config: HardhatUserConfig = {
       url: process.env.MUMBAI_ALCHEMY_KEY!,
       accounts: [process.env.TEST_PRIVATE_KEY!],
     },
-    goerli: {
-      url: process.env.GOERLI_ALCHEMY_KEY!,
-      accounts: [process.env.TEST_PRIVATE_KEY!],
-    },
+    // goerli: {
+    //   url: process.env.GOERLI_ALCHEMY_KEY!,
+    //   accounts: [process.env.TEST_PRIVATE_KEY!],
+    // },
     local: {
       url: 'http://localhost:8545',
       accounts: [`${process.env.LOCAL_PRIVATE_KEY}`],
