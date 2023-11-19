@@ -7,8 +7,7 @@ const main = async () => {
   const testnetUserAddresses = String(process.env.TESTNET_USERS_ADDRESSES).split(',')
 
   const HenkakuV2Factory = await ethers.getContractFactory('HenkakuToken')
-  const HenkakuV2Contract = await HenkakuV2Factory.deploy()
-  await HenkakuV2Contract.deployed()
+  const HenkakuV2Contract = await HenkakuV2Factory.attach('0x095F411f6759Fa8C088327399293eCc9a0E35fbb')
 
   await HenkakuV2Contract.addWhitelistUsers(testnetUserAddresses)
   for (const address of testnetUserAddresses) {
