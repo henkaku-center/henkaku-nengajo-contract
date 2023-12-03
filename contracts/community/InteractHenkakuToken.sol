@@ -11,7 +11,6 @@ abstract contract InteractHenakuToken is Administration, MintManager {
 
     constructor(address _henkakuV2, address _henkakuPoolWallet) {
         henkakuV2 = _henkakuV2;
-        // @note henkakuPoolWalletは変更の可能性はないか？
         henkakuPoolWallet = _henkakuPoolWallet;
     }
 
