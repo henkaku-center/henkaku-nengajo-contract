@@ -1,16 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
 import "./Administration.sol";
 import "./InteractHenkakuToken.sol";
 import "./MintManager.sol";
 
 contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, InteractHenakuToken {
     //@dev count up tokenId from 0
-    using Counters for Counters.Counter;
-    Counters.Counter private _tokenIds;
+    uint256 private _tokenIds;
 
     string public name;
     string public symbol;
@@ -53,7 +51,7 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
         symbol = _symbol;
 
         registeredNengajoes.push(NengajoInfo(0, "", address(0), 0));
-        _tokenIds.increment();
+        ++_tokenIds;
     }
 
     modifier whenMintable() {
@@ -69,10 +67,10 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
         require(_maxSupply != 0 || keccak256(bytes(_metaDataURL)) != keccak256(bytes("")), "Nengajo: invalid params");
         uint256 amount = calcPrice(_maxSupply);
 
-        uint256 tokenId = _tokenIds.current();
+        uint256 tokenId = _tokenIds;
         ownerOfRegisteredIds[msg.sender].push(tokenId);
         registeredNengajoes.push(NengajoInfo(tokenId, _metaDataURL, msg.sender, _maxSupply));
-        _tokenIds.increment();
+        ++_tokenIds;
 
         transferHenkakuV2(amount);
 
@@ -203,14 +201,12 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
         return retrieveRegisteredNengajo(_tokenId).uri;
     }
 
-    function _beforeTokenTransfer(
-        address _operator,
-        address _from,
-        address _to,
-        uint256[] memory _ids,
-        uint256[] memory _amounts,
-        bytes memory _data
+    function _update(
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory values
     ) internal virtual override(ERC1155, ERC1155Supply) {
-        ERC1155Supply._beforeTokenTransfer(_operator, _from, _to, _ids, _amounts, _data);
+        ERC1155Supply._update(from, to, ids, values);
     }
 }
