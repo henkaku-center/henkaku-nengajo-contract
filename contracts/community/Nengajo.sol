@@ -88,11 +88,10 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
     }
 
     function retrieveRegisteredCount() public view returns (uint256) {
-        NengajoInfo[] memory _registeredNengajoes = registeredNengajoes;
         uint256[] memory _ownerOfRegisteredIds = ownerOfRegisteredIds[msg.sender];
         uint256 registeredCount;
         for (uint256 i = 0; i < _ownerOfRegisteredIds.length; ) {
-            registeredCount += _registeredNengajoes[_ownerOfRegisteredIds[i]].maxSupply;
+            registeredCount += registeredNengajoes[_ownerOfRegisteredIds[i]].maxSupply;
             unchecked {
                 ++i;
             }
