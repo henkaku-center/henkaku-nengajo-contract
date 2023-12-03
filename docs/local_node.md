@@ -64,7 +64,7 @@ Polygon などデフォルトで入っていないチェーンを追加する要
 ## コントラクトのデプロイ
 
 ```
-$ yarn deploy:local
+$ yarn deploy:local:community
 ```
 
 こんな感じでデプロイされたコントラクトアドレスが出力されるはずです。
