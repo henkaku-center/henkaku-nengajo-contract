@@ -82,6 +82,12 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
     }
 
     function calcPrice(uint256 _maxSupply) public view returns (uint256) {
+        uint256 registeredCount = retrieveRegisteredCount();
+        uint256 amount = _calcPrice(_maxSupply + registeredCount) - _calcPrice(registeredCount);
+        return amount;
+    }
+
+    function retrieveRegisteredCount() public view returns (uint256) {
         NengajoInfo[] memory _registeredNengajoes = registeredNengajoes;
         uint256[] memory _ownerOfRegisteredIds = ownerOfRegisteredIds[msg.sender];
         uint256 registeredCount;
@@ -91,14 +97,19 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
                 ++i;
             }
         }
+        return registeredCount;
+    }
+
+    function _calcPrice(uint256 maxSupply) private pure returns (uint256) {
         uint256 amount;
-        uint256 totalMaxSupply = registeredCount + _maxSupply;
-        if (totalMaxSupply <= 10) {
+        if (maxSupply < 1) {
+            amount = 0;
+        } else if (1 <= maxSupply && maxSupply <= 10) {
             amount = 10 * 10 ** 18;
-        } else if (10 < totalMaxSupply || totalMaxSupply < 101) {
-            amount = (totalMaxSupply * 5 - 40) * 10 ** 18;
+        } else if (10 < maxSupply && maxSupply < 101) {
+            amount = (maxSupply * 5 - 40) * 10 ** 18;
         } else {
-            amount = (totalMaxSupply * 10 - 540) * 10 ** 18;
+            amount = (maxSupply * 10 - 540) * 10 ** 18;
         }
         return amount;
     }
