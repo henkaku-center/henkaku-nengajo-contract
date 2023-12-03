@@ -13,7 +13,7 @@ contract HenkakuToken is ERC20, Ownable {
     address public dev; // EOA which updates whitelist systematically like using crontab.
     bool unlock;
 
-    constructor() ERC20("HENKAKU", "HENKAKU") {
+    constructor() ERC20("HENKAKU", "HENKAKU") Ownable(msg.sender) {
         unlock = false;
     }
 
@@ -81,11 +81,7 @@ contract HenkakuToken is ERC20, Ownable {
         whitelist[user] = false;
     }
 
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal virtual override {
+    function _update(address from, address to, uint256 value) internal virtual override {
         require(
             whitelist[from] || unlock || from == address(0),
             "INVALID: SENDER IS NOT ALLOWED"
@@ -94,5 +90,6 @@ contract HenkakuToken is ERC20, Ownable {
             whitelist[to] || unlock || from == address(0),
             "INVALID: RECEIVER IS NOT ALLOWED"
         );
+        super._update(from, to, value);
     }
 }

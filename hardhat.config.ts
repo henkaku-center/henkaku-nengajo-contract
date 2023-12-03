@@ -6,7 +6,7 @@ import 'hardhat-gas-reporter'
 dotenv.config()
 
 const config: HardhatUserConfig = {
-  solidity: '0.8.17',
+  solidity: '0.8.20',
   networks: {
     // polygon: {
     //   url: process.env.POLYGON_ALCHEMY_KEY!,
