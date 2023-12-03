@@ -36,14 +36,18 @@ const calcRequiredHenkakuForRegister: (params: {
     },
     0
   )
+  let amount: BigNumber = _calcRequiredHenkakuForRegister(registeredCount + maxSupply).sub(_calcRequiredHenkakuForRegister(registeredCount))
+  return amount
+}
+
+const _calcRequiredHenkakuForRegister: (maxSupply: number) => BigNumber = (maxSupply) => {
   let amount
-  let totalMaxSupply = registeredCount + maxSupply
-  if (totalMaxSupply <= 10) {
+  if (maxSupply <= 10) {
     amount = ethers.utils.parseEther('10')
-  } else if (10 < totalMaxSupply || totalMaxSupply < 101) {
-    amount = ethers.utils.parseEther(`${totalMaxSupply * 5 - 40}`)
+  } else if (10 < maxSupply && maxSupply < 101) {
+    amount = ethers.utils.parseEther(`${maxSupply * 5 - 40}`)
   } else {
-    amount = ethers.utils.parseEther(`${totalMaxSupply * 10 - 540}`)
+    amount = ethers.utils.parseEther(`${maxSupply * 10 - 540}`)
   }
   return amount
 }
@@ -96,7 +100,15 @@ describe('RegisterNengajo', () => {
     expect(getRegisteredNengajo.creator).to.equal(ethers.constants.AddressZero)
     expect(getRegisteredNengajo.maxSupply).to.equal(0)
 
+    let henkakuBalance
+    henkakuBalance = await HenkakuTokenContract.balanceOf(creator.address)
+    expect(henkakuBalance).to.equal(ethers.utils.parseEther('1000'))
+
     await HenkakuTokenContract.connect(creator).approve(NengajoContract.address, ethers.utils.parseEther('200'))
+    
+    henkakuBalance = await HenkakuTokenContract.balanceOf(creator.address)
+    expect(henkakuBalance).to.equal(ethers.utils.parseEther('1000'))
+
     // Register the first Nengajo
     // １つ目の年賀状(_tokenIdが１)を登録
 
@@ -104,6 +116,10 @@ describe('RegisterNengajo', () => {
     await expect(NengajoContract.connect(creator).registerNengajo(2, 'ipfs://test1'))
       .to.emit(NengajoContract, 'RegisterNengajo')
       .withArgs(creator.address, 1, 'ipfs://test1', 2)
+    
+    henkakuBalance = await HenkakuTokenContract.balanceOf(creator.address)
+    expect(henkakuBalance).to.equal(ethers.utils.parseEther('990'))
+    
 
     tokenURI = await NengajoContract.uri(1)
     expect(tokenURI).equal('ipfs://test1')
@@ -576,5 +592,154 @@ describe('after minting term', () => {
     if (checkRemainingOpenTime || (!checkRemainingCloseTime && !mintable)) {
       await expect(NengajoContract.connect(user1).mint(1)).to.be.revertedWith('Nengajo: Not mintable')
     }
+  })
+})
+
+describe('check calculation of Henkaku amount', () => {
+  let NengajoContract: Nengajo
+  let HenkakuTokenContract: HenkakuToken
+  let deployer: SignerWithAddress
+  let creator: SignerWithAddress
+  let user1: SignerWithAddress
+  let user2: SignerWithAddress
+
+  const day = 24 * 60 * 60
+  const hour = 60 * 60
+  const minute = 60
+  const second = 1
+
+  const calcRemainingTime = (time: number) => {
+    const remainingTime = time
+
+    const days = Math.floor(remainingTime / day)
+    const hours = Math.floor((remainingTime % day) / hour)
+    const minutes = Math.floor((remainingTime % hour) / minute)
+    const seconds = Math.floor((remainingTime % minute) / second)
+    const returnTime = `${days}日 ${hours}時間 ${minutes}分 ${seconds}秒`
+
+    return returnTime
+  }
+
+  let registeredCount
+  let henkakuBalance
+
+  before(async () => {
+    ;[deployer, creator, user1, user2] = await ethers.getSigners()
+    HenkakuTokenContract = await deployAndDistributeHenkakuV2({
+      deployer,
+      addresses: [creator.address, user1.address, user2.address, deployer.address],
+      amount: ethers.utils.parseEther('1000'),
+    })
+    const NengajoFactory = (await ethers.getContractFactory('Nengajo')) as Nengajo__factory
+    NengajoContract = await NengajoFactory.deploy(
+      'Henkaku Nengajo',
+      'HNJ',
+      946652400,
+      946652400,
+      HenkakuTokenContract.address,
+      deployer.address
+    )
+    await NengajoContract.deployed()
+
+    await HenkakuTokenContract.connect(creator).approve(NengajoContract.address, ethers.utils.parseEther('1000'))
+  })
+
+  it('register total 1', async () => {
+    registeredCount = await NengajoContract.connect(creator).retrieveRegisteredCount()
+    expect(registeredCount).to.equal(0)
+    henkakuBalance = await HenkakuTokenContract.balanceOf(creator.address)
+    expect(henkakuBalance).to.equal(ethers.utils.parseEther('1000'))
+
+    await NengajoContract.connect(creator).registerNengajo(1, 'ipfs://test1')
+
+
+    registeredCount = await NengajoContract.connect(creator).retrieveRegisteredCount()
+    expect(registeredCount).to.equal(1)
+    henkakuBalance = await HenkakuTokenContract.balanceOf(creator.address)
+    expect(henkakuBalance).to.equal(ethers.utils.parseEther('990'))
+  })
+
+  it('register total 10', async () => {
+    registeredCount = await NengajoContract.connect(creator).retrieveRegisteredCount()
+    expect(registeredCount).to.equal(1)
+    henkakuBalance = await HenkakuTokenContract.balanceOf(creator.address)
+    expect(henkakuBalance).to.equal(ethers.utils.parseEther('990'))
+
+    await NengajoContract.connect(creator).registerNengajo(9, 'ipfs://test1')
+
+    registeredCount = await NengajoContract.connect(creator).retrieveRegisteredCount()
+    expect(registeredCount).to.equal(10)
+    henkakuBalance = await HenkakuTokenContract.balanceOf(creator.address)
+    expect(henkakuBalance).to.equal(ethers.utils.parseEther('990'))
+  })
+
+  it('register total 11', async () => {
+    registeredCount = await NengajoContract.connect(creator).retrieveRegisteredCount()
+    expect(registeredCount).to.equal(10)
+    henkakuBalance = await HenkakuTokenContract.balanceOf(creator.address)
+    expect(henkakuBalance).to.equal(ethers.utils.parseEther('990'))
+
+    await NengajoContract.connect(creator).registerNengajo(1, 'ipfs://test1')
+
+    registeredCount = await NengajoContract.connect(creator).retrieveRegisteredCount()
+    expect(registeredCount).to.equal(11)
+    henkakuBalance = await HenkakuTokenContract.balanceOf(creator.address)
+    expect(henkakuBalance).to.equal(ethers.utils.parseEther('985'))
+  })
+
+  it('register total 12', async () => {
+    registeredCount = await NengajoContract.connect(creator).retrieveRegisteredCount()
+    expect(registeredCount).to.equal(11)
+    henkakuBalance = await HenkakuTokenContract.balanceOf(creator.address)
+    expect(henkakuBalance).to.equal(ethers.utils.parseEther('985'))
+
+    await NengajoContract.connect(creator).registerNengajo(1, 'ipfs://test1')
+
+    registeredCount = await NengajoContract.connect(creator).retrieveRegisteredCount()
+    expect(registeredCount).to.equal(12)
+    henkakuBalance = await HenkakuTokenContract.balanceOf(creator.address)
+    expect(henkakuBalance).to.equal(ethers.utils.parseEther('980'))
+  })
+
+  it('register total 100', async () => {
+    registeredCount = await NengajoContract.connect(creator).retrieveRegisteredCount()
+    expect(registeredCount).to.equal(12)
+    henkakuBalance = await HenkakuTokenContract.balanceOf(creator.address)
+    expect(henkakuBalance).to.equal(ethers.utils.parseEther('980'))
+
+    await NengajoContract.connect(creator).registerNengajo(88, 'ipfs://test1')
+
+    registeredCount = await NengajoContract.connect(creator).retrieveRegisteredCount()
+    expect(registeredCount).to.equal(100)
+    henkakuBalance = await HenkakuTokenContract.balanceOf(creator.address)
+    expect(henkakuBalance).to.equal(ethers.utils.parseEther('540'))
+  })
+
+  it('register total 101', async () => {
+    registeredCount = await NengajoContract.connect(creator).retrieveRegisteredCount()
+    expect(registeredCount).to.equal(100)
+    henkakuBalance = await HenkakuTokenContract.balanceOf(creator.address)
+    expect(henkakuBalance).to.equal(ethers.utils.parseEther('540'))
+
+    await NengajoContract.connect(creator).registerNengajo(1, 'ipfs://test1')
+
+    registeredCount = await NengajoContract.connect(creator).retrieveRegisteredCount()
+    expect(registeredCount).to.equal(101)
+    henkakuBalance = await HenkakuTokenContract.balanceOf(creator.address)
+    expect(henkakuBalance).to.equal(ethers.utils.parseEther('530'))
+  })
+
+  it('register total 102', async () => {
+    registeredCount = await NengajoContract.connect(creator).retrieveRegisteredCount()
+    expect(registeredCount).to.equal(101)
+    henkakuBalance = await HenkakuTokenContract.balanceOf(creator.address)
+    expect(henkakuBalance).to.equal(ethers.utils.parseEther('530'))
+
+    await NengajoContract.connect(creator).registerNengajo(1, 'ipfs://test1')
+
+    registeredCount = await NengajoContract.connect(creator).retrieveRegisteredCount()
+    expect(registeredCount).to.equal(102)
+    henkakuBalance = await HenkakuTokenContract.balanceOf(creator.address)
+    expect(henkakuBalance).to.equal(ethers.utils.parseEther('520'))
   })
 })
