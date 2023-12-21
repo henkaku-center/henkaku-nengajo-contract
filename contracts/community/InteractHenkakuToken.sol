@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./Administration.sol";
-import "./MintManager.sol";
+import "../libs/Administration.sol";
+import "../libs/MintManager.sol";
 import "./interfaces/IHenkakuToken.sol";
 
 abstract contract InteractHenakuToken is Administration, MintManager {

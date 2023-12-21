@@ -3,9 +3,9 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
-import "./Administration.sol";
+import "../libs/Administration.sol";
+import "../libs/MintManager.sol";
 import "./InteractHenkakuToken.sol";
-import "./MintManager.sol";
 
 contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, InteractHenakuToken, ERC2771Context {
     //@dev count up tokenId from 0
