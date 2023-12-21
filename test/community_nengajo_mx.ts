@@ -38,7 +38,7 @@ describe('Mint via Fowarder', () => {
     ;[deployer, creator, user1] = await hardhatEthers.getSigners()
     HenkakuTokenContract = await deployAndDistributeHenkakuV2({
       deployer,
-      addresses: [creator.address, user1.address],
+      addresses: [deployer.address, creator.address, user1.address],
       amount: ethers.utils.parseEther('1000'),
     })
     const ForwarderFactory = (await hardhatEthers.getContractFactory('Forwarder')) as Forwarder__factory
@@ -55,6 +55,12 @@ describe('Mint via Fowarder', () => {
       ForwarderContract.address
     )
     await NengajoContract.deployed()
+
+    await HenkakuTokenContract.connect(deployer).approve(NengajoContract.address, ethers.utils.parseEther('1000'))
+
+    await HenkakuTokenContract.connect(creator).approve(NengajoContract.address, ethers.utils.parseEther('1000'))
+
+    await HenkakuTokenContract.connect(user1).approve(NengajoContract.address, ethers.utils.parseEther('1000'))
 
     await ForwarderContract.whitelistTarget(NengajoContract.address, true)
     const x = NengajoContract.interface.encodeFunctionData('mint', [1]).substring(0, 10)
