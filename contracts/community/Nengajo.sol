@@ -2,11 +2,12 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
-import "./Administration.sol";
+import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
+import "../libs/Administration.sol";
+import "../libs/MintManager.sol";
 import "./InteractHenkakuToken.sol";
-import "./MintManager.sol";
 
-contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, InteractHenakuToken {
+contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, InteractHenakuToken, ERC2771Context {
     //@dev count up tokenId from 0
     uint256 private _tokenIds;
 
@@ -41,9 +42,11 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
         uint256 _open_blockTimestamp,
         uint256 _close_blockTimestamp,
         address _henkakuTokenV2,
-        address _henkakuPoolWallet
+        address _henkakuPoolWallet,
+        address _trustedForwarder
     )
         ERC1155("")
+        ERC2771Context(_trustedForwarder)
         MintManager(_open_blockTimestamp, _close_blockTimestamp)
         InteractHenakuToken(_henkakuTokenV2, _henkakuPoolWallet)
     {
@@ -59,7 +62,6 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
             (block.timestamp > open_blockTimestamp && close_blockTimestamp > block.timestamp) || mintable,
             "Nengajo: Not mintable"
         );
-        require(checkHenkakuV2Balance(1), "Nengajo: Insufficient Henkaku Token Balance");
         _;
     }
 
@@ -68,15 +70,15 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
         uint256 amount = calcPrice(_maxSupply);
 
         uint256 tokenId = _tokenIds;
-        ownerOfRegisteredIds[msg.sender].push(tokenId);
-        registeredNengajoes.push(NengajoInfo(tokenId, _metaDataURL, msg.sender, _maxSupply));
+        ownerOfRegisteredIds[_msgSender()].push(tokenId);
+        registeredNengajoes.push(NengajoInfo(tokenId, _metaDataURL, _msgSender(), _maxSupply));
         ++_tokenIds;
 
         transferHenkakuV2(amount);
 
         // @dev Emit registeredNengajo
         // @param address, tokenId, URL of meta data, max supply
-        emit RegisterNengajo(msg.sender, tokenId, _metaDataURL, _maxSupply);
+        emit RegisterNengajo(_msgSender(), tokenId, _metaDataURL, _maxSupply);
     }
 
     function calcPrice(uint256 _maxSupply) public view returns (uint256) {
@@ -86,7 +88,7 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
     }
 
     function retrieveRegisteredCount() public view returns (uint256) {
-        uint256[] memory _ownerOfRegisteredIds = ownerOfRegisteredIds[msg.sender];
+        uint256[] memory _ownerOfRegisteredIds = ownerOfRegisteredIds[_msgSender()];
         uint256 registeredCount;
         for (uint256 i = 0; i < _ownerOfRegisteredIds.length; ) {
             registeredCount += registeredNengajoes[_ownerOfRegisteredIds[i]].maxSupply;
@@ -140,19 +142,19 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
     }
 
     function checkNengajoAmount(uint256 _tokenId) private view {
-        require(balanceOf(msg.sender, _tokenId) == 0, "Nengajo: You already have this nengajo");
+        require(balanceOf(_msgSender(), _tokenId) == 0, "Nengajo: You already have this nengajo");
         require(retrieveRegisteredNengajo(_tokenId).maxSupply > totalSupply(_tokenId), "Nengajo: Mint limit reached");
     }
 
     // @dev mint function
     function mint(uint256 _tokenId) public whenMintable {
         checkNengajoAmount(_tokenId);
-        ownerOfMintedIds[msg.sender].push(_tokenId);
-        _mint(msg.sender, _tokenId, 1, "");
+        ownerOfMintedIds[_msgSender()].push(_tokenId);
+        _mint(_msgSender(), _tokenId, 1, "");
 
         // @dev Emit mint event
         // @param address, tokenId
-        emit Mint(msg.sender, _tokenId);
+        emit Mint(_msgSender(), _tokenId);
     }
 
     // @dev mint batch function
@@ -163,17 +165,17 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
         for (uint256 i = 0; i < tokenIdsLength; ) {
             checkNengajoAmount(_tokenIdsList[i]);
             amountList[i] = 1;
-            ownerOfMintedIds[msg.sender].push(_tokenIdsList[i]);
+            ownerOfMintedIds[_msgSender()].push(_tokenIdsList[i]);
             unchecked {
                 ++i;
             }
         }
 
-        _mintBatch(msg.sender, _tokenIdsList, amountList, "");
+        _mintBatch(_msgSender(), _tokenIdsList, amountList, "");
 
         // @dev Emit mint batch event
         // @param address,tokenId list
-        emit MintBatch(msg.sender, _tokenIdsList);
+        emit MintBatch(_msgSender(), _tokenIdsList);
     }
 
     // @return holding tokenIds with address
@@ -208,5 +210,23 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
         uint256[] memory values
     ) internal virtual override(ERC1155, ERC1155Supply) {
         ERC1155Supply._update(from, to, ids, values);
+    }
+
+    function _msgSender() internal view virtual override(Context, ERC2771Context) returns (address sender) {
+        if (isTrustedForwarder(msg.sender)) {
+            assembly {
+                sender := shr(96, calldataload(sub(calldatasize(), 20)))
+            }
+        } else {
+            return super._msgSender();
+        }
+    }
+
+    function _msgData() internal view virtual override(Context, ERC2771Context) returns (bytes calldata) {
+        if (isTrustedForwarder(msg.sender)) {
+            return msg.data[:msg.data.length - 20];
+        } else {
+            return super._msgData();
+        }
     }
 }

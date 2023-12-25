@@ -60,9 +60,10 @@ describe('RegisterNengajo', () => {
   let user1: SignerWithAddress
   let user2: SignerWithAddress
   let user3: SignerWithAddress
+  let externalUser1: SignerWithAddress
 
   before(async () => {
-    ;[deployer, creator, user1, user2, user3] = await ethers.getSigners()
+    ;[deployer, creator, user1, user2, user3, externalUser1] = await ethers.getSigners()
     HenkakuTokenContract = await deployAndDistributeHenkakuV2({
       deployer,
       addresses: [creator.address, user1.address, user2.address, user3.address, deployer.address],
@@ -75,7 +76,8 @@ describe('RegisterNengajo', () => {
       open_blockTimestamp,
       close_blockTimestamp,
       HenkakuTokenContract.address,
-      deployer.address
+      deployer.address,
+      deployer.address,
     )
     await NengajoContract.deployed()
   })
@@ -175,10 +177,10 @@ describe('MintNengajo', () => {
   let user1: SignerWithAddress
   let user2: SignerWithAddress
   let user3: SignerWithAddress
-  let user4: SignerWithAddress
+  let externalUser1: SignerWithAddress
 
   before(async () => {
-    ;[deployer, creator, user1, user2, user3, user4] = await ethers.getSigners()
+    ;[deployer, creator, user1, user2, user3, externalUser1] = await ethers.getSigners()
     HenkakuTokenContract = await deployAndDistributeHenkakuV2({
       deployer,
       addresses: [creator.address, user1.address, user2.address, user3.address, deployer.address],
@@ -191,6 +193,7 @@ describe('MintNengajo', () => {
       open_blockTimestamp,
       close_blockTimestamp,
       HenkakuTokenContract.address,
+      deployer.address,
       deployer.address
     )
     await NengajoContract.deployed()
@@ -311,10 +314,8 @@ describe('MintNengajo', () => {
     await expect(NengajoContract.connect(user3).mint(0)).to.be.revertedWith('Nengajo: Mint limit reached')
   })
 
-  it('failed with insufficient Henkaku Token', async () => {
-    await expect(NengajoContract.connect(user4).mint(2)).to.be.revertedWith(
-      'Nengajo: Insufficient Henkaku Token Balance'
-    )
+  it('should mint nengajo by an external user', async () => {
+    await expect(NengajoContract.connect(externalUser1).mint(2)).not.to.be.reverted
   })
 })
 
@@ -341,6 +342,7 @@ describe('CheckMintable', () => {
       open_blockTimestamp,
       close_blockTimestamp,
       HenkakuTokenContract.address,
+      deployer.address,
       deployer.address
     )
     await NengajoContract.deployed()
@@ -506,6 +508,7 @@ describe('check timestamp', () => {
       open_blockTimestamp,
       close_blockTimestamp,
       HenkakuTokenContract.address,
+      deployer.address,
       deployer.address
     )
     await NengajoContract.deployed()
@@ -561,6 +564,7 @@ describe('after minting term', () => {
       946652400,
       946652400,
       HenkakuTokenContract.address,
+      deployer.address,
       deployer.address
     )
     await NengajoContract.deployed()
@@ -637,6 +641,7 @@ describe('check calculation of Henkaku amount', () => {
       946652400,
       946652400,
       HenkakuTokenContract.address,
+      deployer.address,
       deployer.address
     )
     await NengajoContract.deployed()
