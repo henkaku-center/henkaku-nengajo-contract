@@ -88,7 +88,7 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
     }
 
     function retrieveRegisteredCount() public view returns (uint256) {
-        uint256[] memory _ownerOfRegisteredIds = ownerOfRegisteredIds[msg.sender];
+        uint256[] memory _ownerOfRegisteredIds = ownerOfRegisteredIds[_msgSender()];
         uint256 registeredCount;
         for (uint256 i = 0; i < _ownerOfRegisteredIds.length; ) {
             registeredCount += registeredNengajoes[_ownerOfRegisteredIds[i]].maxSupply;
@@ -126,7 +126,7 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
 
     // @return registered NengajoInfo by address
     function retrieveRegisteredNengajoes(address _address) public view returns (NengajoInfo[] memory) {
-                uint256[] memory _ownerOfRegisteredIds = ownerOfRegisteredIds[_address];
+        uint256[] memory _ownerOfRegisteredIds = ownerOfRegisteredIds[_address];
         NengajoInfo[] memory _ownerOfRegisteredNengajoes = new NengajoInfo[](_ownerOfRegisteredIds.length);
 
         for (uint256 i = 0; i < _ownerOfRegisteredIds.length; ) {
@@ -180,7 +180,7 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
 
     // @return holding tokenIds with address
     function retrieveMintedNengajoes(address _address) public view returns (NengajoInfo[] memory) {
-                uint256[] memory _ownerOfMintedIds = ownerOfMintedIds[_address];
+        uint256[] memory _ownerOfMintedIds = ownerOfMintedIds[_address];
         NengajoInfo[] memory _ownerOfMintedNengajoes = new NengajoInfo[](_ownerOfMintedIds.length);
 
         for (uint256 i = 0; i < _ownerOfMintedIds.length; ) {
@@ -212,13 +212,7 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
         ERC1155Supply._update(from, to, ids, values);
     }
 
-    function _msgSender()
-        internal
-        view
-        virtual
-        override(Context, ERC2771Context)
-        returns (address sender)
-    {
+    function _msgSender() internal view virtual override(Context, ERC2771Context) returns (address sender) {
         if (isTrustedForwarder(msg.sender)) {
             assembly {
                 sender := shr(96, calldataload(sub(calldatasize(), 20)))
@@ -228,13 +222,7 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
         }
     }
 
-    function _msgData()
-        internal
-        view
-        virtual
-        override(Context, ERC2771Context)
-        returns (bytes calldata)
-    {
+    function _msgData() internal view virtual override(Context, ERC2771Context) returns (bytes calldata) {
         if (isTrustedForwarder(msg.sender)) {
             return msg.data[:msg.data.length - 20];
         } else {
