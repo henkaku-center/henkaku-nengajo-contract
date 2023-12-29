@@ -1,0 +1,353 @@
+{
+  "manifestVersion": "3.2",
+  "proxies": [
+    {
+      "address": "0xf0348CE6E51fBC7E3F05b65932cE37E9f5A9cBc2",
+      "txHash": "0x3b616811531afbcf08afe34beaf30cfb9be81c6f6a22e49a71d1c7cb52ff19cf",
+      "kind": "uups"
+    },
+    {
+      "address": "0xE47303371dAFd76eFFb113900aA14c40A3264e06",
+      "txHash": "0xc59a8b33ad2e8b044b5d94d2574f5fbdbc9cabe476e6ac4b600caf08ec98c2c6",
+      "kind": "uups"
+    },
+    {
+      "address": "0x693Da325e16763f72B09fae02D20455b0093CBC1",
+      "txHash": "0xde354010d4f5a0056f0220ad1c4d9ccef5cea87fd93768fac97ed449a740c488",
+      "kind": "uups"
+    },
+    {
+      "address": "0x59B2F790D3640a4868e0E0B4e0e19Ec4564510a2",
+      "txHash": "0xbaec78c8e4f879572387d0f1afcf378e191b37b3eda4973f38730fa8a93bf339",
+      "kind": "uups"
+    },
+    {
+      "address": "0x880AdAAb63fD8eCcC429d03f0109A9Cd41FABD6C",
+      "txHash": "0x80a0f772dbfd10de3d43eb7059f8fe0f3ea555194693267e9691b509ed804740",
+      "kind": "uups"
+    }
+  ],
+  "impls": {
+    "6659cf28fdc7a5b83f1dfdad2a1137f1734266b4006470640fde7f84b6803c21": {
+      "address": "0x04d0aB3A3969Df728E37898E66f47753f724d182",
+      "txHash": "0x93f0a18ef704c782d608e9b08aabf8e18160b7cc4fc8c485ece78fe69307e8fc",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "_admins",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "AdministrationUpgradeable",
+            "src": "contracts/libs/AdministrationUpgradeable.sol:7"
+          },
+          {
+            "label": "mintable",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_bool",
+            "contract": "MintManager",
+            "src": "contracts/libs/MintManager.sol:8"
+          },
+          {
+            "label": "open_blockTimestamp",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256",
+            "contract": "MintManager",
+            "src": "contracts/libs/MintManager.sol:9"
+          },
+          {
+            "label": "close_blockTimestamp",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_uint256",
+            "contract": "MintManager",
+            "src": "contracts/libs/MintManager.sol:10"
+          },
+          {
+            "label": "henkakuV2",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_address",
+            "contract": "InteractHenakuToken",
+            "src": "contracts/community/InteractHenkakuToken.sol:10"
+          },
+          {
+            "label": "henkakuPoolWallet",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_address",
+            "contract": "InteractHenakuToken",
+            "src": "contracts/community/InteractHenkakuToken.sol:11"
+          },
+          {
+            "label": "_trustedForwarder",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_address",
+            "contract": "ERC2771ContextUpgradeable",
+            "src": "contracts/libs/ERC2771ContextUpgradeable.sol:9"
+          },
+          {
+            "label": "_tokenIds",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_uint256",
+            "contract": "Nengajo",
+            "src": "contracts/community/Nengajo.sol:13"
+          },
+          {
+            "label": "name",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_string_storage",
+            "contract": "Nengajo",
+            "src": "contracts/community/Nengajo.sol:15"
+          },
+          {
+            "label": "symbol",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_string_storage",
+            "contract": "Nengajo",
+            "src": "contracts/community/Nengajo.sol:16"
+          },
+          {
+            "label": "ownerOfRegisteredIds",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_mapping(t_address,t_array(t_uint256)dyn_storage)",
+            "contract": "Nengajo",
+            "src": "contracts/community/Nengajo.sol:18"
+          },
+          {
+            "label": "ownerOfMintedIds",
+            "offset": 0,
+            "slot": "11",
+            "type": "t_mapping(t_address,t_array(t_uint256)dyn_storage)",
+            "contract": "Nengajo",
+            "src": "contracts/community/Nengajo.sol:19"
+          },
+          {
+            "label": "registeredNengajoes",
+            "offset": 0,
+            "slot": "12",
+            "type": "t_array(t_struct(NengajoInfo)6628_storage)dyn_storage",
+            "contract": "Nengajo",
+            "src": "contracts/community/Nengajo.sol:38"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_bool))": {
+            "label": "mapping(address => mapping(address => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(ERC1155Storage)156_storage": {
+            "label": "struct ERC1155Upgradeable.ERC1155Storage",
+            "members": [
+              {
+                "label": "_balances",
+                "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_operatorApprovals",
+                "type": "t_mapping(t_address,t_mapping(t_address,t_bool))",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "_uri",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_struct(ERC1155SupplyStorage)251_storage": {
+            "label": "struct ERC1155SupplyUpgradeable.ERC1155SupplyStorage",
+            "members": [
+              {
+                "label": "_totalSupply",
+                "type": "t_mapping(t_uint256,t_uint256)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_totalSupplyAll",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(InitializableStorage)10_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_array(t_struct(NengajoInfo)6628_storage)dyn_storage": {
+            "label": "struct Nengajo.NengajoInfo[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_array(t_uint256)dyn_storage)": {
+            "label": "mapping(address => uint256[])",
+            "numberOfBytes": "32"
+          },
+          "t_struct(NengajoInfo)6628_storage": {
+            "label": "struct Nengajo.NengajoInfo",
+            "members": [
+              {
+                "label": "id",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "uri",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "creator",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "maxSupply",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ERC1155Supply": [
+            {
+              "contract": "ERC1155SupplyUpgradeable",
+              "label": "_totalSupply",
+              "type": "t_mapping(t_uint256,t_uint256)",
+              "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155SupplyUpgradeable.sol:25",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "ERC1155SupplyUpgradeable",
+              "label": "_totalSupplyAll",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155SupplyUpgradeable.sol:26",
+              "offset": 0,
+              "slot": "1"
+            }
+          ],
+          "erc7201:openzeppelin.storage.ERC1155": [
+            {
+              "contract": "ERC1155Upgradeable",
+              "label": "_balances",
+              "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+              "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol:27",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "ERC1155Upgradeable",
+              "label": "_operatorApprovals",
+              "type": "t_mapping(t_address,t_mapping(t_address,t_bool))",
+              "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol:29",
+              "offset": 0,
+              "slot": "1"
+            },
+            {
+              "contract": "ERC1155Upgradeable",
+              "label": "_uri",
+              "type": "t_string_storage",
+              "src": "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol:32",
+              "offset": 0,
+              "slot": "2"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
