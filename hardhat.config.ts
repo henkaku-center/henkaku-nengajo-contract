@@ -2,11 +2,20 @@ import * as dotenv from 'dotenv'
 import { HardhatUserConfig } from 'hardhat/config'
 import '@nomicfoundation/hardhat-toolbox'
 import 'hardhat-gas-reporter'
+import '@openzeppelin/hardhat-upgrades'
 
 dotenv.config()
 
 const config: HardhatUserConfig = {
-  solidity: '0.8.20',
+  solidity: {
+    version: "0.8.20",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
+    },
+  },
   networks: {
     // polygon: {
     //   url: process.env.POLYGON_ALCHEMY_KEY!,

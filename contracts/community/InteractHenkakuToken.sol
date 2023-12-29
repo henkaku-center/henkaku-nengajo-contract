@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "../libs/Administration.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "../libs/AdministrationUpgradeable.sol";
 import "../libs/MintManager.sol";
 import "./interfaces/IHenkakuToken.sol";
 
-abstract contract InteractHenakuToken is Administration, MintManager {
+abstract contract InteractHenakuToken is Initializable, AdministrationUpgradeable, MintManager {
     address public henkakuV2;
     address public henkakuPoolWallet;
 
-    constructor(address _henkakuV2, address _henkakuPoolWallet) {
+    function __InteractHenakuToken_init(address _henkakuV2, address _henkakuPoolWallet) internal onlyInitializing {
         henkakuV2 = _henkakuV2;
         henkakuPoolWallet = _henkakuPoolWallet;
     }

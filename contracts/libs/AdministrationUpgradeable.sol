@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-abstract contract Administration {
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+
+abstract contract AdministrationUpgradeable is Initializable {
     mapping(address => bool) private _admins;
 
-    constructor() {
+    function __Administration_init() internal onlyInitializing {
         _admins[msg.sender] = true;
     }
 

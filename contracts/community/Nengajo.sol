@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
-import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
-import "../libs/Administration.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155SupplyUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "../libs/ERC2771ContextUpgradeable.sol";
+import "../libs/AdministrationUpgradeable.sol";
 import "../libs/MintManager.sol";
 import "./InteractHenkakuToken.sol";
 
-contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, InteractHenakuToken, ERC2771Context {
+contract Nengajo is ERC1155Upgradeable, ERC1155SupplyUpgradeable, AdministrationUpgradeable, MintManager, InteractHenakuToken, ERC2771ContextUpgradeable, UUPSUpgradeable {
     //@dev count up tokenId from 0
     uint256 private _tokenIds;
 
@@ -36,7 +37,7 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
 
     NengajoInfo[] private registeredNengajoes;
 
-    constructor(
+    function initialize(
         string memory _name,
         string memory _symbol,
         uint256 _open_blockTimestamp,
@@ -44,12 +45,14 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
         address _henkakuTokenV2,
         address _henkakuPoolWallet,
         address _trustedForwarder
-    )
-        ERC1155("")
-        ERC2771Context(_trustedForwarder)
-        MintManager(_open_blockTimestamp, _close_blockTimestamp)
-        InteractHenakuToken(_henkakuTokenV2, _henkakuPoolWallet)
-    {
+    ) external initializer {
+        __ERC2771ContextUpgradeable_init(_trustedForwarder);
+        __Administration_init();
+        __MintManager_init(_open_blockTimestamp, _close_blockTimestamp);
+        __InteractHenakuToken_init(_henkakuTokenV2, _henkakuPoolWallet);
+        __ERC1155_init("");
+        __UUPSUpgradeable_init();
+
         name = _name;
         symbol = _symbol;
 
@@ -194,7 +197,7 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
     }
 
     // @return token metadata uri
-    function uri(uint256 _tokenId) public view override(ERC1155) returns (string memory) {
+    function uri(uint256 _tokenId) public view override(ERC1155Upgradeable) returns (string memory) {
         return retrieveRegisteredNengajo(_tokenId).uri;
     }
 
@@ -208,25 +211,23 @@ contract Nengajo is ERC1155, ERC1155Supply, Administration, MintManager, Interac
         address to,
         uint256[] memory ids,
         uint256[] memory values
-    ) internal virtual override(ERC1155, ERC1155Supply) {
-        ERC1155Supply._update(from, to, ids, values);
+    ) internal virtual override(ERC1155Upgradeable, ERC1155SupplyUpgradeable) {
+        ERC1155SupplyUpgradeable._update(from, to, ids, values);
     }
 
-    function _msgSender() internal view virtual override(Context, ERC2771Context) returns (address sender) {
-        if (isTrustedForwarder(msg.sender)) {
-            assembly {
-                sender := shr(96, calldataload(sub(calldatasize(), 20)))
-            }
-        } else {
-            return super._msgSender();
-        }
+    function _msgSender() internal view virtual override(ContextUpgradeable, ERC2771ContextUpgradeable) returns (address sender) {
+        return ERC2771ContextUpgradeable._msgSender();
     }
 
-    function _msgData() internal view virtual override(Context, ERC2771Context) returns (bytes calldata) {
-        if (isTrustedForwarder(msg.sender)) {
-            return msg.data[:msg.data.length - 20];
-        } else {
-            return super._msgData();
-        }
+    function _msgData() internal view virtual override(ContextUpgradeable, ERC2771ContextUpgradeable) returns (bytes calldata) {
+        return ERC2771ContextUpgradeable._msgData();
     }
+
+    function _contextSuffixLength() internal view virtual override(ContextUpgradeable, ERC2771ContextUpgradeable) returns (uint256) {
+        return ERC2771ContextUpgradeable._contextSuffixLength();
+    }
+
+    function _authorizeUpgrade(
+        address newImplementation
+    ) internal override onlyAdmins {}
 }

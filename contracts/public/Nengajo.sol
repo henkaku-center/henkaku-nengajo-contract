@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
-import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
-import "./Administration.sol";
-import "./MintManager.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC1155/extensions/ERC1155SupplyUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "../libs/ERC2771ContextUpgradeable.sol";
+import "../libs/AdministrationUpgradeable.sol";
+import "../libs//MintManager.sol";
 
-contract PublicNengajo is ERC1155, ERC1155Supply, ERC2771Context, Administration, MintManager {
+contract PublicNengajo is ERC1155Upgradeable, ERC1155SupplyUpgradeable, ERC2771ContextUpgradeable, AdministrationUpgradeable, MintManager, UUPSUpgradeable {
     //@dev count up tokenId from 0
     uint256 private _tokenIds;
 
@@ -35,17 +36,19 @@ contract PublicNengajo is ERC1155, ERC1155Supply, ERC2771Context, Administration
 
     NengajoInfo[] private registeredNengajoes;
 
-    constructor(
+    function initialize(
         string memory _name,
         string memory _symbol,
         uint256 _open_blockTimestamp,
         uint256 _close_blockTimestamp,
         address _trustedForwarder
-    )
-        ERC1155("")
-        ERC2771Context(_trustedForwarder)
-        MintManager(_open_blockTimestamp, _close_blockTimestamp)
-    {
+    ) external initializer {
+        __ERC2771ContextUpgradeable_init(_trustedForwarder);
+        __Administration_init();
+        __MintManager_init(_open_blockTimestamp, _close_blockTimestamp);
+        __ERC1155_init("");
+        __UUPSUpgradeable_init();
+
         name = _name;
         symbol = _symbol;
 
@@ -158,7 +161,7 @@ contract PublicNengajo is ERC1155, ERC1155Supply, ERC2771Context, Administration
     }
 
     // @return token metadata uri
-    function uri(uint256 _tokenId) public view override(ERC1155) returns (string memory) {
+    function uri(uint256 _tokenId) public view override(ERC1155Upgradeable) returns (string memory) {
         return retrieveRegisteredNengajo(_tokenId).uri;
     }
 
@@ -172,15 +175,15 @@ contract PublicNengajo is ERC1155, ERC1155Supply, ERC2771Context, Administration
         address to,
         uint256[] memory ids,
         uint256[] memory values
-    ) internal virtual override(ERC1155, ERC1155Supply) {
-        ERC1155Supply._update(from, to, ids, values);
+    ) internal virtual override(ERC1155Upgradeable, ERC1155SupplyUpgradeable) {
+        ERC1155SupplyUpgradeable._update(from, to, ids, values);
     }
 
     function _msgSender()
         internal
         view
         virtual
-        override(Context, ERC2771Context)
+        override(ContextUpgradeable, ERC2771ContextUpgradeable)
         returns (address sender)
     {
         if (isTrustedForwarder(msg.sender)) {
@@ -196,7 +199,7 @@ contract PublicNengajo is ERC1155, ERC1155Supply, ERC2771Context, Administration
         internal
         view
         virtual
-        override(Context, ERC2771Context)
+        override(ContextUpgradeable, ERC2771ContextUpgradeable)
         returns (bytes calldata)
     {
         if (isTrustedForwarder(msg.sender)) {
@@ -205,4 +208,12 @@ contract PublicNengajo is ERC1155, ERC1155Supply, ERC2771Context, Administration
             return super._msgData();
         }
     }
+
+    function _contextSuffixLength() internal view virtual override(ContextUpgradeable, ERC2771ContextUpgradeable) returns (uint256) {
+        return 20;
+    }
+
+    function _authorizeUpgrade(
+        address newImplementation
+    ) internal override onlyAdmins {}
 }

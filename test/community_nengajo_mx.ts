@@ -1,6 +1,5 @@
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
-import { ethers as hardhatEthers } from 'hardhat'
-import { BigNumber, ethers } from 'ethers'
+import { ethers as hardhatEthers, upgrades } from 'hardhat'
+import { Signer, ethers } from 'ethers'
 import { HenkakuToken, HenkakuToken__factory,Forwarder, Forwarder__factory, Nengajo, Nengajo__factory } from '../typechain-types'
 import ethSignUtil from 'eth-sig-util'
 import { expect } from 'chai'
@@ -9,13 +8,12 @@ const open_blockTimestamp: number = 0
 const close_blockTimestamp: number = 2704034800
 
 const deployAndDistributeHenkakuV2: (params: {
-  deployer: SignerWithAddress
+  deployer: Signer
   addresses: string[]
-  amount: BigNumber
+  amount: bigint
 }) => Promise<HenkakuToken> = async ({ deployer, addresses, amount }) => {
-  const HenkakuV2Factory = (await hardhatEthers.getContractFactory('HenkakuToken')) as HenkakuToken__factory
-  const HenkakuV2Contract = await HenkakuV2Factory.connect(deployer).deploy()
-  await HenkakuV2Contract.deployed()
+  const HenkakuV2Factory = (await hardhatEthers.getContractFactory('HenkakuToken'))
+  const HenkakuV2Contract = await HenkakuV2Factory.connect(deployer).deploy() as unknown as HenkakuToken
 
   await HenkakuV2Contract.addWhitelistUsers(addresses)
 
@@ -30,50 +28,55 @@ describe('Mint via Fowarder', () => {
   let NengajoContract: Nengajo
   let HenkakuTokenContract: HenkakuToken
   let ForwarderContract: Forwarder
-  let deployer: SignerWithAddress
-  let creator: SignerWithAddress
-  let user1: SignerWithAddress
+  let deployer: Signer
+  let creator: Signer
+  let user1: Signer
 
   before(async () => {
     ;[deployer, creator, user1] = await hardhatEthers.getSigners()
     HenkakuTokenContract = await deployAndDistributeHenkakuV2({
       deployer,
-      addresses: [deployer.address, creator.address, user1.address],
-      amount: ethers.utils.parseEther('1000'),
+      addresses: [await deployer.getAddress(), await creator.getAddress(), await user1.getAddress()],
+      amount: ethers.parseEther('1000'),
     })
-    const ForwarderFactory = (await hardhatEthers.getContractFactory('Forwarder')) as Forwarder__factory
-    ForwarderContract = await ForwarderFactory.connect(deployer).deploy()
-    await ForwarderContract.deployed()
-    const NengajoFactory = (await hardhatEthers.getContractFactory('Nengajo')) as Nengajo__factory
-    NengajoContract = await NengajoFactory.connect(deployer).deploy(
-      'Henkaku Nengajo',
-      'HNJ',
-      open_blockTimestamp,
-      close_blockTimestamp,
-      HenkakuTokenContract.address,
-      deployer.address,
-      ForwarderContract.address
-    )
-    await NengajoContract.deployed()
+    const ForwarderFactory = (await hardhatEthers.getContractFactory('Forwarder'))
+    ForwarderContract = await ForwarderFactory.connect(deployer).deploy() as unknown as Forwarder
+    const NengajoFactory = (await hardhatEthers.getContractFactory('Nengajo'))
+    NengajoContract = (await upgrades.deployProxy(
+      NengajoFactory,
+      [
+        'Henkaku Nengajo',
+        'HNJ',
+        open_blockTimestamp,
+        close_blockTimestamp,
+        await HenkakuTokenContract.getAddress(),
+        await deployer.getAddress(),
+        await deployer.getAddress()
+      ],
+      {
+        kind: 'uups',
+        initializer: 'initialize'
+      }
+    )) as unknown as Nengajo
 
-    await HenkakuTokenContract.connect(deployer).approve(NengajoContract.address, ethers.utils.parseEther('1000'))
+    await HenkakuTokenContract.connect(deployer).approve(await NengajoContract.getAddress(), ethers.parseEther('1000'))
 
-    await HenkakuTokenContract.connect(creator).approve(NengajoContract.address, ethers.utils.parseEther('1000'))
+    await HenkakuTokenContract.connect(creator).approve(await NengajoContract.getAddress(), ethers.parseEther('1000'))
 
-    await HenkakuTokenContract.connect(user1).approve(NengajoContract.address, ethers.utils.parseEther('1000'))
+    await HenkakuTokenContract.connect(user1).approve(await NengajoContract.getAddress(), ethers.parseEther('1000'))
 
-    await ForwarderContract.whitelistTarget(NengajoContract.address, true)
+    await ForwarderContract.whitelistTarget(await NengajoContract.getAddress(), true)
     const x = NengajoContract.interface.encodeFunctionData('mint', [1]).substring(0, 10)
-    await ForwarderContract.whitelistMethod(NengajoContract.address, x, true)
+    await ForwarderContract.whitelistMethod(await NengajoContract.getAddress(), x, true)
 
-    await NengajoContract.addAdmins([creator.address])
+    await NengajoContract.addAdmins([await creator.getAddress()])
     await NengajoContract.connect(creator).registerNengajo(100, 'https://test.com')
   })
 
   it('mint Nengajo', async () => {
-    const from = user1.address
+    const from = await user1.getAddress()
     const data = NengajoContract.interface.encodeFunctionData('mint', [1])
-    const to = NengajoContract.address
+    const to = await NengajoContract.getAddress()
 
     const { request, signature } = await signMetaTxRequest(user1.provider, ForwarderContract, {
       to,
@@ -83,13 +86,13 @@ describe('Mint via Fowarder', () => {
 
     await ForwarderContract.execute(request, signature)
 
-    const balance = await NengajoContract.balanceOf(user1.address, 1)
-    expect(balance.toNumber()).to.equal(1)
+    const balance = await NengajoContract.balanceOf(await user1.getAddress(), 1)
+    expect(Number(balance)).to.equal(1)
   })
 
   it('tx fail when execute not allowed target', async () => {
-    const from = user1.address
-    const data = NengajoContract.interface.encodeFunctionData('mint', [[1]])
+    const from = await user1.getAddress()
+    const data = NengajoContract.interface.encodeFunctionData('mint', [1])
 
     const { request, signature } = await signMetaTxRequest(user1.provider, ForwarderContract, {
       to: '0xcbEAF3BDe82155F56486Fb5a1072cb8baAf547cc',
@@ -103,9 +106,9 @@ describe('Mint via Fowarder', () => {
   })
 
   it('tx fail when execute not allowed method', async () => {
-    const from = user1.address
+    const from = await user1.getAddress()
     const data = NengajoContract.interface.encodeFunctionData('mintBatch', [[1]])
-    const to = NengajoContract.address
+    const to = await NengajoContract.getAddress()
 
     const { request, signature } = await signMetaTxRequest(user1.provider, ForwarderContract, {
       to,
@@ -171,7 +174,7 @@ export const buildRequest = async (forwarder: ethers.Contract, input: any) => {
 
 export const buildTypedData = async (forwarder: ethers.Contract, request: any) => {
   const chainId = await forwarder.provider.getNetwork().then((n) => n.chainId)
-  const typeData = getMetaTxTypeData(chainId, forwarder.address)
+  const typeData = getMetaTxTypeData(chainId, await forwarder.getAddress())
   return { ...typeData, message: request }
 }
 

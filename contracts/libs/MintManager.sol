@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./Administration.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "./AdministrationUpgradeable.sol";
 
-abstract contract MintManager is Administration {
+abstract contract MintManager is Initializable, AdministrationUpgradeable {
     bool public mintable;
-    uint256 public immutable open_blockTimestamp;
-    uint256 public immutable close_blockTimestamp;
+    uint256 public open_blockTimestamp;
+    uint256 public close_blockTimestamp;
 
-    constructor(uint256 _open_blockTimestamp, uint256 _close_blockTimestamp) {
+    function __MintManager_init(uint256 _open_blockTimestamp, uint256 _close_blockTimestamp) internal onlyInitializing {
         open_blockTimestamp = _open_blockTimestamp;
         close_blockTimestamp = _close_blockTimestamp;
     }
