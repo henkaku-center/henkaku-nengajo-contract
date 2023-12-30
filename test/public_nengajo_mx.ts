@@ -1,7 +1,7 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { ethers as hardhatEthers } from 'hardhat'
 import { ethers } from 'ethers'
-import { Forwarder, Forwarder__factory, PublicNengajo, PublicNengajo__factory } from '../typechain-types'
+import { Forwarder, Forwarder__factory, Omamori, Omamori__factory } from '../typechain-types'
 import ethSignUtil from 'eth-sig-util'
 import { expect } from 'chai'
 
@@ -9,7 +9,7 @@ const open_blockTimestamp: number = 0
 const close_blockTimestamp: number = 2704034800
 
 describe('Mint via Fowarder', () => {
-  let NengajoContract: PublicNengajo
+  let NengajoContract: Omamori
   let ForwarderContract: Forwarder
   let deployer: SignerWithAddress
   let creator: SignerWithAddress
@@ -20,7 +20,7 @@ describe('Mint via Fowarder', () => {
     const ForwarderFactory = (await hardhatEthers.getContractFactory('Forwarder')) as Forwarder__factory
     ForwarderContract = await ForwarderFactory.connect(deployer).deploy()
     await ForwarderContract.deployed()
-    const NengajoFactory = (await hardhatEthers.getContractFactory('PublicNengajo')) as PublicNengajo__factory
+    const NengajoFactory = (await hardhatEthers.getContractFactory('Omamori')) as Omamori__factory
     NengajoContract = await NengajoFactory.connect(deployer).deploy(
       'Henkaku Nengajo',
       'HNJ',

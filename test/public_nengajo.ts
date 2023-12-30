@@ -1,13 +1,13 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
-import { PublicNengajo, PublicNengajo__factory } from '../typechain-types'
+import { Omamori, Omamori__factory } from '../typechain-types'
 
 const open_blockTimestamp: number = 1672498800
 const close_blockTimestamp: number = 1704034800
 
 describe('RegisterNengajo', () => {
-  let NengajoContract: PublicNengajo
+  let NengajoContract: Omamori
   let deployer: SignerWithAddress
   let creator: SignerWithAddress
   let user1: SignerWithAddress
@@ -16,7 +16,7 @@ describe('RegisterNengajo', () => {
 
   before(async () => {
     ;[deployer, creator, user1, user2, user3] = await ethers.getSigners()
-    const NengajoFactory = (await ethers.getContractFactory('PublicNengajo')) as PublicNengajo__factory
+    const NengajoFactory = (await ethers.getContractFactory('Omamori')) as Omamori__factory
     NengajoContract = await NengajoFactory.connect(deployer).deploy(
       'Henkaku Nengajo',
       'HNJ',
@@ -75,7 +75,7 @@ describe('RegisterNengajo', () => {
 })
 
 describe('MintNengajo', () => {
-  let NengajoContract: PublicNengajo
+  let NengajoContract: Omamori
   let deployer: SignerWithAddress
   let creator: SignerWithAddress
   let user1: SignerWithAddress
@@ -86,7 +86,7 @@ describe('MintNengajo', () => {
   before(async () => {
     ;[deployer, creator, user1, user2, user3, user4] = await ethers.getSigners()
 
-    const NengajoFactory = (await ethers.getContractFactory('PublicNengajo')) as PublicNengajo__factory
+    const NengajoFactory = (await ethers.getContractFactory('Omamori')) as Omamori__factory
     NengajoContract = await NengajoFactory.deploy(
       'Henkaku Nengajo',
       'HNJ',
@@ -214,7 +214,7 @@ describe('MintNengajo', () => {
 })
 
 describe('CheckMintable', () => {
-  let NengajoContract: PublicNengajo
+  let NengajoContract: Omamori
   let deployer: SignerWithAddress
   let creator: SignerWithAddress
   let user1: SignerWithAddress
@@ -223,7 +223,7 @@ describe('CheckMintable', () => {
 
   before(async () => {
     ;[deployer, creator, user1, user2, user3] = await ethers.getSigners()
-    const NengajoFactory = (await ethers.getContractFactory('PublicNengajo')) as PublicNengajo__factory
+    const NengajoFactory = (await ethers.getContractFactory('Omamori')) as Omamori__factory
     NengajoContract = await NengajoFactory.deploy(
       'Henkaku Nengajo',
       'HNJ',
@@ -328,7 +328,7 @@ describe('CheckMintable', () => {
 })
 
 describe('check timestamp', () => {
-  let NengajoContract: PublicNengajo
+  let NengajoContract: Omamori
   let deployer: SignerWithAddress
   let creator: SignerWithAddress
   let user1: SignerWithAddress
@@ -353,7 +353,7 @@ describe('check timestamp', () => {
 
   before(async () => {
     ;[deployer, creator, user1, user2] = await ethers.getSigners()
-    const NengajoFactory = (await ethers.getContractFactory('PublicNengajo')) as PublicNengajo__factory
+    const NengajoFactory = (await ethers.getContractFactory('Omamori')) as Omamori__factory
     NengajoContract = await NengajoFactory.deploy(
       'Henkaku Nengajo',
       'HNJ',
@@ -376,7 +376,7 @@ describe('check timestamp', () => {
 })
 
 describe('after minting term', () => {
-  let NengajoContract: PublicNengajo
+  let NengajoContract: Omamori
   let deployer: SignerWithAddress
   let creator: SignerWithAddress
   let user1: SignerWithAddress
@@ -401,7 +401,7 @@ describe('after minting term', () => {
 
   before(async () => {
     ;[deployer, creator, user1, user2] = await ethers.getSigners()
-    const NengajoFactory = (await ethers.getContractFactory('PublicNengajo')) as PublicNengajo__factory
+    const NengajoFactory = (await ethers.getContractFactory('Omamori')) as Omamori__factory
     NengajoContract = await NengajoFactory.deploy('Henkaku Nengajo', 'HNJ', 946652400, 946652400, deployer.address)
     await NengajoContract.deployed()
     await NengajoContract.addAdmins([creator.address])

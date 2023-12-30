@@ -17,10 +17,10 @@ const main = async () => {
 
   const open_blockTimestamp: number = 1671458400
   const close_blockTimestamp: number = 2671458400
-  const NengajoFactory = await ethers.getContractFactory('PublicNengajo')
+  const NengajoFactory = await ethers.getContractFactory('Omamori')
   const NengajoContract = await NengajoFactory.deploy(
-    'Henkaku Nengajo',
-    'HNJ',
+    'Omamori',
+    'OMM',
     open_blockTimestamp,
     close_blockTimestamp,
     ForwarderContract.address

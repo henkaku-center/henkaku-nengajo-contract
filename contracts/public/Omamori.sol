@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 import "./Administration.sol";
 import "./MintManager.sol";
 
-contract PublicNengajo is ERC1155, ERC1155Supply, ERC2771Context, Administration, MintManager {
+contract Omamori is ERC1155, ERC1155Supply, ERC2771Context, Administration, MintManager {
     //@dev count up tokenId from 0
     uint256 private _tokenIds;
 
