@@ -9,16 +9,8 @@
     "deploy:local:community": "yarn hardhat run scripts/community/deploy_local.ts --network local",
     "deploy:polygon:community": "yarn hardhat run scripts/community/deploy_mainnet.ts --network polygon",
     "deploy:mumbai:community": "yarn hardhat run scripts/community/deploy_testnet.ts --network mumbai",
-    "deploy:goerli:community": "yarn hardhat run scripts/community/deploy_testnet.ts --network goerli",
-    "deploy:local:public": "yarn hardhat run scripts/public/deploy_local.ts --network local",
-    "deploy:polygon:public": "yarn hardhat run scripts/public/deploy_mainnet.ts --network polygon",
-    "deploy:mumbai:public": "yarn hardhat run scripts/public/deploy_testnet.ts --network mumbai",
-    "deploy:goerli:public": "yarn hardhat run scripts/public/deploy_testnet.ts --network goerli",
     "verify:polygon": "yarn hardhat verify --network polygon",
     "verify:mumbai": "yarn hardhat verify --network mumbai",
-    "verify:goerli": "yarn hardhat verify --network goerli",
-    "uploadautotask:polygon": "yarn build && node scripts/defender-autotask/upload_polygon.js",
-    "uploadautotask:mumbai": "yarn build && node scripts/defender-autotask/upload_mumbai.js",
     "build": "rollup -c"
   },
   "devDependencies": {
