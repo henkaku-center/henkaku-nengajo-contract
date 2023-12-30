@@ -9,10 +9,18 @@ const main = async () => {
   const ForwarderContract = await ForwarderFactory.deploy()
   await ForwarderContract.deployed()
 
+  const HenkakuV2Factory = await ethers.getContractFactory('HenkakuToken')
+  const HenkakuV2Contract = await HenkakuV2Factory.deploy()
+  await HenkakuV2Contract.deployed()
 
-  const open_blockTimestamp: number = 1704078000
-  const close_blockTimestamp: number = 1706756400
+  const testnetUserAddresses = String(process.env.TESTNET_USERS_ADDRESSES).split(',')
+  await HenkakuV2Contract.addWhitelistUsers(testnetUserAddresses)
+  for (const address of testnetUserAddresses) {
+    await HenkakuV2Contract.mint(address, ethers.utils.parseEther('1000'))
+  }
 
+  const open_blockTimestamp: number = 1671458400
+  const close_blockTimestamp: number = 2671458400
 
   const NengajoFactory = await ethers.getContractFactory('Nengajo')
   const NengajoContract = await NengajoFactory.deploy(
@@ -20,12 +28,11 @@ const main = async () => {
     'HNJ2024',
     open_blockTimestamp,
     close_blockTimestamp,
-    process.env.HENKAKU_V2_ADDRESS!,
+    HenkakuV2Contract.address!,
     process.env.POOL_WALLET_ADDRESS!,
     ForwarderContract.address!
   )
   await NengajoContract.deployed()
-
 
   const OmamoriFactory = await ethers.getContractFactory('Omamori')
   const OmamoriContract = await OmamoriFactory.deploy(
@@ -45,23 +52,9 @@ const main = async () => {
   const y = OmamoriContract.interface.encodeFunctionData('mint', [1]).substring(0, 10)
   await ForwarderContract.whitelistMethod(OmamoriContract.address, y, true)
 
-
-  console.log(`NengajoContractAddress: ${NengajoContract.address}`)
   console.log(`Forwarder: ${ForwarderContract.address}`)
+  console.log(`NengajoContractAddress: ${NengajoContract.address}`)
   console.log(`Omamori  : ${OmamoriContract.address}`)
-
-  writeFileSync(
-    './scripts/public/deployed_contract_addr_polygon.json',
-    JSON.stringify(
-      {
-        Fowarder: ForwarderContract.address,
-        Nengajo: NengajoContract.address,
-        Omamori: OmamoriContract.address,
-      },
-      null,
-      2
-    )
-  )
 }
 
 main().catch((error) => {

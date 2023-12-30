@@ -12,10 +12,10 @@ const config: HardhatUserConfig = {
     //   url: process.env.POLYGON_ALCHEMY_KEY!,
     //   accounts: [process.env.MAIN_PRIVATE_KEY!],
     // },
-    // mumbai: {
-      //   url: process.env.MUMBAI_ALCHEMY_KEY!,
-      //   accounts: [process.env.TEST_PRIVATE_KEY!],
-    // },
+    mumbai: {
+      url: process.env.MUMBAI_ALCHEMY_KEY!,
+      accounts: [process.env.TEST_PRIVATE_KEY!],
+    },
     // goerli: {
     //   url: process.env.GOERLI_ALCHEMY_KEY!,
     //   accounts: [process.env.TEST_PRIVATE_KEY!],
