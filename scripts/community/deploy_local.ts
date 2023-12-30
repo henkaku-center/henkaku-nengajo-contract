@@ -28,7 +28,8 @@ const main = async () => {
     open_blockTimestamp,
     close_blockTimestamp,
     HenkakuV2Contract.address,
-    localUserAddresses[0]
+    localUserAddresses[0],
+    localUserAddresses[0],
   )
   await NengajoContract.deployed()
 

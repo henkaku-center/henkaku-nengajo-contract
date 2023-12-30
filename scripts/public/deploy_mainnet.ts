@@ -9,8 +9,8 @@ const main = async () => {
   const ForwarderContract = await ForwarderFactory.deploy()
   await ForwarderContract.deployed()
 
-  const open_blockTimestamp: number = 1672542000
-  const close_blockTimestamp: number = 1688180400
+  const open_blockTimestamp: number = 1704078000
+  const close_blockTimestamp: number = 1706756400
   const NengajoFactory = await ethers.getContractFactory('PublicNengajo')
   const NengajoContract = await NengajoFactory.deploy(
     'Henkaku Nengajo 2023',
