@@ -5,10 +5,13 @@ import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 import "./Administration.sol";
 import "./MintManager.sol";
+import "./IHenkaku1155Mint.sol";
 
 contract Omamori is ERC1155, ERC1155Supply, ERC2771Context, Administration, MintManager {
     //@dev count up tokenId from 0
     uint256 private _tokenIds;
+
+    address public nft;
 
     string public name;
     string public symbol;
@@ -155,6 +158,14 @@ contract Omamori is ERC1155, ERC1155Supply, ERC2771Context, Administration, Mint
         }
 
         return _ownerOfMintedNengajoes;
+    }
+
+    function setNft(address _nft) external onlyAdmins {
+        nft = _nft;
+    }
+
+    function otakiage() external {
+        IHenkaku1155Mint(nft).mint(_msgSender());
     }
 
     // @return token metadata uri
