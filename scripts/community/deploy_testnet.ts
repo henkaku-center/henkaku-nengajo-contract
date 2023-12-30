@@ -17,7 +17,10 @@ const main = async () => {
 
   // testnetのHenkakuV2のコントラクトアドレスを指定
   const HenkakuV2ContractAddress = '0x095F411f6759Fa8C088327399293eCc9a0E35fbb'
-  const ForwarderContractAddress = testnetUserAddresses[0]
+
+  const ForwarderFactory = await ethers.getContractFactory('Forwarder')
+  const ForwarderContract = await ForwarderFactory.deploy()
+  await ForwarderContract.deployed()
 
   const open_blockTimestamp: number = 0
   const close_blockTimestamp: number = 2671458400
@@ -29,9 +32,13 @@ const main = async () => {
     close_blockTimestamp,
     HenkakuV2ContractAddress,
     testnetUserAddresses[0],
-    ForwarderContractAddress
+    ForwarderContract.address
   )
   await NengajoContract.deployed()
+
+  await ForwarderContract.whitelistTarget(NengajoContract.address, true)
+  const x = NengajoContract.interface.encodeFunctionData('mint', [1]).substring(0, 10)
+  await ForwarderContract.whitelistMethod(NengajoContract.address, x, true)
 
   console.log(`HenkakuV2: ${HenkakuV2ContractAddress}`)
   console.log(`Nengajo  : ${NengajoContract.address}`)

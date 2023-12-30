@@ -3,9 +3,9 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
-import "./Administration.sol";
-import "./MintManager.sol";
-import "./IHenkaku1155Mint.sol";
+import "../libs/Administration.sol";
+import "../libs/MintManager.sol";
+import "./interfaces/IHenkaku1155Mint.sol";
 
 contract Omamori is ERC1155, ERC1155Supply, ERC2771Context, Administration, MintManager {
     //@dev count up tokenId from 0
@@ -44,11 +44,7 @@ contract Omamori is ERC1155, ERC1155Supply, ERC2771Context, Administration, Mint
         uint256 _open_blockTimestamp,
         uint256 _close_blockTimestamp,
         address _trustedForwarder
-    )
-        ERC1155("")
-        ERC2771Context(_trustedForwarder)
-        MintManager(_open_blockTimestamp, _close_blockTimestamp)
-    {
+    ) ERC1155("") ERC2771Context(_trustedForwarder) MintManager(_open_blockTimestamp, _close_blockTimestamp) {
         name = _name;
         symbol = _symbol;
 
@@ -187,13 +183,7 @@ contract Omamori is ERC1155, ERC1155Supply, ERC2771Context, Administration, Mint
         ERC1155Supply._update(from, to, ids, values);
     }
 
-    function _msgSender()
-        internal
-        view
-        virtual
-        override(Context, ERC2771Context)
-        returns (address sender)
-    {
+    function _msgSender() internal view virtual override(Context, ERC2771Context) returns (address sender) {
         if (isTrustedForwarder(msg.sender)) {
             assembly {
                 sender := shr(96, calldataload(sub(calldatasize(), 20)))
@@ -203,13 +193,7 @@ contract Omamori is ERC1155, ERC1155Supply, ERC2771Context, Administration, Mint
         }
     }
 
-    function _msgData()
-        internal
-        view
-        virtual
-        override(Context, ERC2771Context)
-        returns (bytes calldata)
-    {
+    function _msgData() internal view virtual override(Context, ERC2771Context) returns (bytes calldata) {
         if (isTrustedForwarder(msg.sender)) {
             return msg.data[:msg.data.length - 20];
         } else {
