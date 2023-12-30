@@ -17,22 +17,22 @@ const main = async () => {
 
   const open_blockTimestamp: number = 1671458400
   const close_blockTimestamp: number = 2671458400
-  const NengajoFactory = await ethers.getContractFactory('Omamori')
-  const NengajoContract = await NengajoFactory.deploy(
+  const OmamoriFactory = await ethers.getContractFactory('Omamori')
+  const OmamoriContract = await OmamoriFactory.deploy(
     'Omamori',
     'OMM',
     open_blockTimestamp,
     close_blockTimestamp,
     ForwarderContract.address
   )
-  await NengajoContract.deployed()
+  await OmamoriContract.deployed()
 
-  await ForwarderContract.whitelistTarget(NengajoContract.address, true)
-  const x = NengajoContract.interface.encodeFunctionData('mint', [1]).substring(0, 10)
-  await ForwarderContract.whitelistMethod(NengajoContract.address, x, true)
+  await ForwarderContract.whitelistTarget(OmamoriContract.address, true)
+  const x = OmamoriContract.interface.encodeFunctionData('mint', [1]).substring(0, 10)
+  await ForwarderContract.whitelistMethod(OmamoriContract.address, x, true)
 
   console.log(`Forwarder: ${ForwarderContract.address}`)
-  console.log(`Nengajo  : ${NengajoContract.address}`)
+  console.log(`Omamori  : ${OmamoriContract.address}`)
 }
 
 main().catch((error) => {
