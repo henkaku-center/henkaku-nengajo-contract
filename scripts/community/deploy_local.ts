@@ -41,6 +41,7 @@ const main = async () => {
   const x = NengajoContract.interface.encodeFunctionData('mint', [1]).substring(0, 10)
   await ForwarderContract.whitelistMethod(NengajoContract.address, x, true)
 
+  console.log(`Forwarder: ${ForwarderContract.address}`)
   console.log(`HenkakuV2: ${HenkakuV2Contract.address}`)
   console.log(`Nengajo  : ${NengajoContract.address}`)
 }
