@@ -42,8 +42,8 @@ const main = async () => {
   const y = OmamoriContract.interface.encodeFunctionData('mint', [1]).substring(0, 10)
   await ForwarderContract.whitelistMethod(OmamoriContract.address, y, true)
 
-  console.log(`NengajoContractAddress: ${NengajoContract.address}`)
   console.log(`Forwarder: ${ForwarderContract.address}`)
+  console.log(`NengajoContractAddress: ${NengajoContract.address}`)
   console.log(`Omamori  : ${OmamoriContract.address}`)
 }
 

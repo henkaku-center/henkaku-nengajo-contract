@@ -1,10 +1,16 @@
 import * as dotenv from 'dotenv'
+import { setBalance } from '@nomicfoundation/hardhat-network-helpers'
 import { writeFileSync } from 'fs'
 import { ethers } from 'hardhat'
 
 dotenv.config()
 
 const main = async () => {
+  const localUserAddresses = String(process.env.LOCAL_USERS_ADDRESSES).split(',')
+  for (const address of localUserAddresses) {
+    await setBalance(address, 100n ** 9n)
+  }
+
   const ForwarderFactory = await ethers.getContractFactory('Forwarder')
   const ForwarderContract = await ForwarderFactory.deploy()
   await ForwarderContract.deployed()
@@ -12,6 +18,11 @@ const main = async () => {
   const HenkakuV2Factory = await ethers.getContractFactory('HenkakuToken')
   const HenkakuV2Contract = await HenkakuV2Factory.deploy()
   await HenkakuV2Contract.deployed()
+
+  await HenkakuV2Contract.addWhitelistUsers(localUserAddresses)
+  for (const address of localUserAddresses) {
+    await HenkakuV2Contract.mint(address, 100n ** 12n)
+  }
 
   const open_blockTimestamp: number = 1671458400
   const close_blockTimestamp: number = 2671458400
@@ -23,7 +34,7 @@ const main = async () => {
     open_blockTimestamp,
     close_blockTimestamp,
     HenkakuV2Contract.address!,
-    process.env.POOL_WALLET_ADDRESS!,
+    "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", // local address #0
     ForwarderContract.address!
   )
   await NengajoContract.deployed()
@@ -46,8 +57,9 @@ const main = async () => {
   const y = OmamoriContract.interface.encodeFunctionData('mint', [1]).substring(0, 10)
   await ForwarderContract.whitelistMethod(OmamoriContract.address, y, true)
 
-  console.log(`NengajoContractAddress: ${NengajoContract.address}`)
   console.log(`Forwarder: ${ForwarderContract.address}`)
+  console.log(`HenkakuV2: ${HenkakuV2Contract.address}`)
+  console.log(`NengajoContractAddress: ${NengajoContract.address}`)
   console.log(`Omamori  : ${OmamoriContract.address}`)
 }
 
