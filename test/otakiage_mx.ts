@@ -8,7 +8,8 @@ import { getOmamoriMetaDataURL, omamoriTokenIdOffset, omamoriTypeCount, setUpOma
 import { deployAndSetupOtakiage } from '../scripts/utils/deployAndSetupOtakiage'
 import { allowApprovedMtxToOmamori } from '../scripts/utils/allowApprovedMtxToOmamori'
 import { addNewAdminToPastYearContracts } from '../scripts/utils/addNewAdminToPastYearContracts'
-import { setOtakiageCid } from '../scripts/utils/setOtakiageCid'
+import { setOtakiageCid, TEST_CID, TEST_IMAGE_EXTENSION } from '../scripts/utils/setOtakiageCid'
+import { mintOmamorisForTestEnv } from '../scripts/utils/mintOmamorisForTestEnv'
 
 const open_blockTimestamp: number = 0
 const close_blockTimestamp: number = 2704034800
@@ -22,14 +23,13 @@ const close_blockTimestamp: number = 2704034800
   let user1: SignerWithAddress
   let user2: SignerWithAddress
 
-  const TEST_CID = 'TESTCID'
-  const TEST_IMAGE_EXTENSION = '.png'
-
   before(async () => {
     ;[deployer, creator, user1, user2] = await hardhatEthers.getSigners()
-    const setup = await setUpOmamoriForTestEnv(creator, user1, user2, open_blockTimestamp, close_blockTimestamp)
+    const setup = await setUpOmamoriForTestEnv(open_blockTimestamp, close_blockTimestamp)
     OmamoriContract = setup.OmamoriContract
     ForwarderContract = setup.ForwarderContract
+
+    await mintOmamorisForTestEnv(OmamoriContract, user1, user2)
   })
 
   describe('Past Year Part', () => {
@@ -67,7 +67,7 @@ const close_blockTimestamp: number = 2704034800
       describe('Admin preparations', () => {
         describe('add admin of this year to Omamori and Forwarder', () => {
           it('add admin of this year to past year contracts', async () => {
-            await addNewAdminToPastYearContracts(deployer, OmamoriContract, ForwarderContract)
+            await addNewAdminToPastYearContracts(deployer.address, OmamoriContract, ForwarderContract)
           })
 
           it('check admin of this year', async () => {
@@ -150,11 +150,30 @@ const close_blockTimestamp: number = 2704034800
           it('check otakiageUsersArr before sendAllOmamori', async () => {
             const usersArr = await OtakiageContract.getOtakiageUsersArr()
             expect(usersArr).to.deep.equal([])
+
+            const usersArr2 = await OtakiageContract.getOtakiageUsersArr()
+            expect(usersArr2).to.deep.equal([])
           })
     
           it('check otakiageUserCount before sendAllOmamori', async () => {
             const userCount = await OtakiageContract.getOtakiageUserCount()
             expect(userCount).to.equal(0)
+          })
+
+          it('check otakiageUserOmamoriIds before sendAllOmamori', async () => {
+            const userOmamoriIds = await OtakiageContract.getOtakiageUserOmamoriIds(user1.address)
+            expect(userOmamoriIds).to.deep.equal([])
+
+            const userOmamoriIds2 = await OtakiageContract.getOtakiageUserOmamoriIds(user2.address)
+            expect(userOmamoriIds2).to.deep.equal([])
+          })
+
+          it('check otakiageUserOmamoriIdsCount before sendAllOmamori', async () => {
+            const userOmamoriIdsCount = await OtakiageContract.getOtakiageUserOmamoriIdsCount(user1.address)
+            expect(userOmamoriIdsCount).to.equal(0)
+
+            const userOmamoriIdsCount2 = await OtakiageContract.getOtakiageUserOmamoriIdsCount(user2.address)
+            expect(userOmamoriIdsCount2).to.equal(0)
           })
     
           it('check balance of omamori of user1', async () => {
@@ -213,6 +232,22 @@ const close_blockTimestamp: number = 2704034800
           it('check otakiageUserCount after sendAllOmamori', async () => {
             const userCount = await OtakiageContract.getOtakiageUserCount()
             expect(userCount).to.equal(2)
+          })
+
+          it('check otakiageUserOmamoriIds after sendAllOmamori', async () => {
+            const userOmamoriIds = await OtakiageContract.getOtakiageUserOmamoriIds(user1.address)
+            expect(userOmamoriIds).to.deep.equal([1, 2, 3, 4, 5, 6,])
+
+            const userOmamoriIds2 = await OtakiageContract.getOtakiageUserOmamoriIds(user2.address)
+            expect(userOmamoriIds2).to.deep.equal([1])
+          })
+
+          it('check otakiageUserOmamoriIdsCount after sendAllOmamori', async () => {
+            const userOmamoriIdsCount = await OtakiageContract.getOtakiageUserOmamoriIdsCount(user1.address)
+            expect(userOmamoriIdsCount).to.equal(6)
+
+            const userOmamoriIdsCount2 = await OtakiageContract.getOtakiageUserOmamoriIdsCount(user2.address)
+            expect(userOmamoriIdsCount2).to.equal(1)
           })
         })
       })

@@ -1,4 +1,3 @@
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { ethers as hardhatEthers } from 'hardhat'
 import { Forwarder, Forwarder__factory, Omamori, Omamori__factory } from '../../typechain-types'
 
@@ -6,20 +5,29 @@ export const omamoriTypeCount = 6
 export const omamoriTokenIdOffset = 1
 
 export const getOmamoriMetaDataURL = async (tokenId: number) => {
-  return `https://test.${tokenId}.com`
+  const urls: { [key: number]: string } = {
+    1: "ipfs://QmZjvXzaAu8wvkjF94i5b6DAbEXZT6SRk35o4iSFrjhX9E",
+    2: "ipfs://QmQQaNTatStcfn3859NvNqyqdigFcpHKXup4vUdJoWKy47",
+    3: "ipfs://QmaenfxMgPbiRzMXWtyF7dhLy6i2zfruRwP6U5rKrZGSai",
+    4: "ipfs://Qmb2rHt6VrtUt2AHB6hWVffNWtupDE5vtHzaeSYHTV48Ai",
+    5: "ipfs://Qme6gxzJFBgkhNwKPrDWtaD1fMnRLLhMyqqpH63TkVUQ9Z",
+    6: "ipfs://QmWDRXgZcqGhm8ZrU8FuWmQPtVf7t7Y5bZr73JSeCou4gP",
+  };
+  return urls[tokenId] || "";
 }
 
-export const setUpOmamoriForTestEnv = async (creator: SignerWithAddress, user1: SignerWithAddress, user2: SignerWithAddress, openBlockTimestamp: number, closeBlockTimestamp: number) => {
+export const setUpOmamoriForTestEnv = async (openBlockTimestamp: number, closeBlockTimestamp: number) => {
   let OmamoriContract: Omamori
   let ForwarderContract: Forwarder
 
   const ForwarderFactory = (await hardhatEthers.getContractFactory('Forwarder')) as Forwarder__factory
   ForwarderContract = await ForwarderFactory.deploy()
 
+  // 昨年の御守りをテストネットで再現するためのものなので、2024でOK
   const OmamoriFactory = (await hardhatEthers.getContractFactory('Omamori')) as Omamori__factory
   OmamoriContract = await OmamoriFactory.deploy(
-    'Omamori',
-    'OMORI',
+    'Omamori 2024',
+    'OMM24',
     openBlockTimestamp,
     closeBlockTimestamp,
     ForwarderContract.address
@@ -30,17 +38,9 @@ export const setUpOmamoriForTestEnv = async (creator: SignerWithAddress, user1: 
   const x = OmamoriContract.interface.encodeFunctionData('mint', [1]).substring(0, 10)
   await ForwarderContract.whitelistMethod(OmamoriContract.address, x, true)
 
-  await OmamoriContract.addAdmins([creator.address])
-
   for (let i = 0; i <= omamoriTypeCount; i++) {
-    await OmamoriContract.connect(creator).registerNengajo(100, getOmamoriMetaDataURL(i + omamoriTokenIdOffset))
+    await OmamoriContract.registerNengajo(100, getOmamoriMetaDataURL(i + omamoriTokenIdOffset))
   }
-
-  for (let i = 0; i <= omamoriTypeCount; i++) {
-    await OmamoriContract.connect(user1).mint(i + omamoriTokenIdOffset)
-  }
-
-  await OmamoriContract.connect(user2).mint(0 + omamoriTokenIdOffset)
 
   return {
     OmamoriContract,

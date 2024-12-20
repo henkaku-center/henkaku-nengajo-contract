@@ -15,8 +15,9 @@ contract Otakiage is ERC721, ERC2771Context, Administration, IERC1155Receiver {
   IERC1155 public omamoriContract;
   uint256 public omamoriTokenIdOffset;
   string public cid;
-  address[] public otakiageUsersArr;
   string public imageExtension;
+  address[] public otakiageUsersArr;
+  mapping(address => uint256[]) public otakiageUserOmamoriIds;
 
   struct TokenURIParams {
     string name;
@@ -41,6 +42,14 @@ contract Otakiage is ERC721, ERC2771Context, Administration, IERC1155Receiver {
 
   function getOtakiageUserCount() public view returns (uint256) {
     return otakiageUsersArr.length;
+  }
+
+  function getOtakiageUserOmamoriIds(address user) public view returns (uint256[] memory) {
+    return otakiageUserOmamoriIds[user];
+  }
+
+  function getOtakiageUserOmamoriIdsCount(address user) public view returns (uint256) {
+    return otakiageUserOmamoriIds[user].length;
   }
 
   function setOmamoriAddress(address _omamoriAddress) public onlyAdmins {
@@ -93,30 +102,46 @@ contract Otakiage is ERC721, ERC2771Context, Administration, IERC1155Receiver {
     return (ids, values);
   }
 
-  function _recordOtakiageUser(address user) internal {
+  function _recordOtakiageUser(address user, uint256[] memory omamoriIds) internal {
     otakiageUsersArr.push(user);
+    otakiageUserOmamoriIds[user] = omamoriIds;
   }
 
-  function _recordOtakiageUsers(address[] memory users) internal {
+  function _recordOtakiageUsers(address[] memory users, uint256[] memory omamoriIds) internal {
     for (uint256 i = 0; i < users.length; i++) {
-      _recordOtakiageUser(users[i]);
+      _recordOtakiageUser(users[i], omamoriIds);
     }
   }
 
-  function recordOtakiageUser(address user) external onlyAdmins {
-    _recordOtakiageUser(user);
+  function recordOtakiageUser(address user, uint256[] memory omamoriIds) external onlyAdmins {
+    _recordOtakiageUser(user, omamoriIds);
   }
 
-  function recordOtakiageUsers(address[] memory users) external onlyAdmins {
-    _recordOtakiageUsers(users);
+  function recordOtakiageUsers(address[] memory users, uint256[] memory omamoriIds) external onlyAdmins {
+    _recordOtakiageUsers(users, omamoriIds);
   }
-
+  
   function sendAllOmamori() public {
     (uint256[] memory ids, uint256[] memory values) = fetchHoldingOmamoriBalance();
 
     omamoriContract.safeBatchTransferFrom(_msgSender(), address(this), ids, values, "");
 
-    _recordOtakiageUser(_msgSender());
+    uint256[] memory _userOmamoriIds = new uint256[](omamoriTypeCount);
+    uint256 count = 0;
+    uint256 idsLength = ids.length;    
+    for (uint256 i = 0; i < idsLength; i++) {
+      if (values[i] > 0) {
+        _userOmamoriIds[count] = ids[i];
+        count++;
+      }
+    }
+
+    uint256[] memory userOmamoriIds = new uint256[](count);
+    for (uint256 i = 0; i < count; i++) {
+      userOmamoriIds[i] = _userOmamoriIds[i];
+    }
+
+    _recordOtakiageUser(_msgSender(), userOmamoriIds);
 
     emit SendAllOmamori(_msgSender(), ids, values);
   }
