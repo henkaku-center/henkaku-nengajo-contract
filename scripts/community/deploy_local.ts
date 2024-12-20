@@ -12,11 +12,11 @@ const main = async () => {
 
   const ForwarderFactory = await ethers.getContractFactory('Forwarder')
   const ForwarderContract = await ForwarderFactory.deploy()
-  await ForwarderContract.deployed()
+  await ForwarderContract.waitForDeployment()
 
   const HenkakuV2Factory = await ethers.getContractFactory('HenkakuToken')
   const HenkakuV2Contract = await HenkakuV2Factory.deploy()
-  await HenkakuV2Contract.deployed()
+  await HenkakuV2Contract.waitForDeployment()
 
   await HenkakuV2Contract.addWhitelistUsers(localUserAddresses)
   for (const address of localUserAddresses) {
@@ -35,7 +35,7 @@ const main = async () => {
     localUserAddresses[0],
     ForwarderContract.address
   )
-  await NengajoContract.deployed()
+  await NengajoContract.waitForDeployment()
 
   await ForwarderContract.whitelistTarget(NengajoContract.address, true)
   const x = NengajoContract.interface.encodeFunctionData('mint', [1]).substring(0, 10)

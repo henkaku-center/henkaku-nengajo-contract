@@ -11,10 +11,10 @@ const main = async () => {
 
   await HenkakuV2Contract.addWhitelistUsers(testnetUserAddresses)
   for (const address of testnetUserAddresses) {
-    await HenkakuV2Contract.mint(address, ethers.utils.parseEther('1000'))
+    await HenkakuV2Contract.mint(address, ethers.parseEther('1000'))
   }
 
-  console.log(`HenkakuV2: ${HenkakuV2Contract.address}`)
+  console.log(`HenkakuV2: ${await HenkakuV2Contract.getAddress()}`)
 }
 
 main().catch((error) => {

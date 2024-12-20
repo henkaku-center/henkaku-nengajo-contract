@@ -8,11 +8,11 @@ const main = async () => {
 
   // const HenkakuV2Factory = await ethers.getContractFactory('HenkakuToken')
   // const HenkakuV2Contract = await HenkakuV2Factory.deploy()
-  // await HenkakuV2Contract.deployed()
+  // await HenkakuV2Contract.waitForDeployment()
 
   // await HenkakuV2Contract.addWhitelistUsers(testnetUserAddresses)
   // for (const address of testnetUserAddresses) {
-  //   await HenkakuV2Contract.mint(address, ethers.utils.parseEther('1000'))
+  //   await HenkakuV2Contract.mint(address, ethers.parseEther('1000'))
   // }
 
   // testnetのHenkakuV2のコントラクトアドレスを指定
@@ -20,7 +20,7 @@ const main = async () => {
 
   const ForwarderFactory = await ethers.getContractFactory('Forwarder')
   const ForwarderContract = await ForwarderFactory.deploy()
-  await ForwarderContract.deployed()
+  await ForwarderContract.waitForDeployment()
 
   const open_blockTimestamp: number = 0
   const close_blockTimestamp: number = 2671458400
@@ -34,7 +34,7 @@ const main = async () => {
     testnetUserAddresses[0],
     ForwarderContract.address
   )
-  await NengajoContract.deployed()
+  await NengajoContract.waitForDeployment()
 
   await ForwarderContract.whitelistTarget(NengajoContract.address, true)
   const x = NengajoContract.interface.encodeFunctionData('mint', [1]).substring(0, 10)

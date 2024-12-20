@@ -13,8 +13,8 @@ const main = async () => {
   const OmamoriContract = setup.OmamoriContract
   const ForwarderContract = setup.ForwarderContract
 
-  console.log(`Forwarder: ${ForwarderContract.address}`)
-  console.log(`Omamori  : ${OmamoriContract.address}`)
+  console.log(`Forwarder: ${await ForwarderContract.getAddress()}`)
+  console.log(`Omamori  : ${await OmamoriContract.getAddress()}`)
 
   for (let i = 0; i <= omamoriTypeCount; i++) {
     await OmamoriContract.mint(i + omamoriTokenIdOffset)

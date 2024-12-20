@@ -1,4 +1,4 @@
-import { ethers as hardhatEthers } from 'hardhat'
+import { ethers } from "hardhat";
 import { Forwarder, Forwarder__factory, Omamori, Omamori__factory } from '../../typechain-types'
 
 export const omamoriTypeCount = 6
@@ -20,23 +20,23 @@ export const setUpOmamoriForTestEnv = async (openBlockTimestamp: number, closeBl
   let OmamoriContract: Omamori
   let ForwarderContract: Forwarder
 
-  const ForwarderFactory = (await hardhatEthers.getContractFactory('Forwarder')) as Forwarder__factory
+  const ForwarderFactory = await ethers.getContractFactory('Forwarder') as unknown as Forwarder__factory
   ForwarderContract = await ForwarderFactory.deploy()
 
   // 昨年の御守りをテストネットで再現するためのものなので、2024でOK
-  const OmamoriFactory = (await hardhatEthers.getContractFactory('Omamori')) as Omamori__factory
+  const OmamoriFactory = (await ethers.getContractFactory('Omamori')) as unknown as Omamori__factory
   OmamoriContract = await OmamoriFactory.deploy(
     'Omamori 2024',
     'OMM24',
     openBlockTimestamp,
     closeBlockTimestamp,
-    ForwarderContract.address
+    await ForwarderContract.getAddress()
   )
-  await OmamoriContract.deployed()
+  await OmamoriContract.waitForDeployment()
 
-  await ForwarderContract.whitelistTarget(OmamoriContract.address, true)
+  await ForwarderContract.whitelistTarget(await OmamoriContract.getAddress(), true)
   const x = OmamoriContract.interface.encodeFunctionData('mint', [1]).substring(0, 10)
-  await ForwarderContract.whitelistMethod(OmamoriContract.address, x, true)
+  await ForwarderContract.whitelistMethod(await OmamoriContract.getAddress(), x, true)
 
   for (let i = 0; i <= omamoriTypeCount; i++) {
     await OmamoriContract.registerNengajo(100, getOmamoriMetaDataURL(i + omamoriTokenIdOffset))

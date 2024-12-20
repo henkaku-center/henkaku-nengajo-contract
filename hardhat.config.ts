@@ -2,6 +2,10 @@ import * as dotenv from 'dotenv'
 import { HardhatUserConfig } from 'hardhat/config'
 import '@nomicfoundation/hardhat-toolbox'
 import 'hardhat-gas-reporter'
+import "@nomicfoundation/hardhat-verify";
+import type { NetworksUserConfig } from "hardhat/types";
+import "@nomicfoundation/hardhat-ethers";
+import "@nomicfoundation/hardhat-chai-matchers";
 
 dotenv.config()
 
@@ -19,10 +23,20 @@ const config: HardhatUserConfig = {
     amoy: {
       url: process.env.AMOY_ALCHEMY_KEY!,
       accounts: [process.env.TEST_PRIVATE_KEY!],
+      verify: {
+        etherscan: {
+          apiKey: process.env.POLYGONSCAN_API_KEY
+        }
+      }
     },
     holesky: {
       url: process.env.HOLESKY_ALCHEMY_KEY!,
       accounts: [process.env.TEST_PRIVATE_KEY!],
+      verify: {
+        etherscan: {
+          apiKey: process.env.ETHERSCAN_API_KEY
+        }
+      }
     },
     // goerli: {
     //   url: process.env.GOERLI_ALCHEMY_KEY!,
@@ -39,8 +53,10 @@ const config: HardhatUserConfig = {
       polygonMumbai: process.env.POLYGONSCAN_API_KEY!,
       polygon: process.env.POLYGONSCAN_API_KEY!,
       goerli: process.env.ETHERSCAN_API_KEY!,
+      holesky: process.env.ETHERSCAN_API_KEY!,
+      polygonAmoy: process.env.POLYGONSCAN_API_KEY!,
     },
   },
-}
+} as HardhatUserConfig;
 
 export default config
