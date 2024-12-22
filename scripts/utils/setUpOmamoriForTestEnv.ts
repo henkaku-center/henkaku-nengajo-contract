@@ -1,5 +1,6 @@
 import { ethers } from "hardhat";
 import { Forwarder, Forwarder__factory, Omamori, Omamori__factory } from '../../typechain-types'
+import { ContractTransactionResponse } from "ethers";
 
 export const omamoriTypeCount = 6
 export const omamoriTokenIdOffset = 1
@@ -39,7 +40,8 @@ export const setUpOmamoriForTestEnv = async (openBlockTimestamp: number, closeBl
   await ForwarderContract.whitelistMethod(await OmamoriContract.getAddress(), x, true)
 
   for (let i = 0; i <= omamoriTypeCount; i++) {
-    await OmamoriContract.registerNengajo(100, getOmamoriMetaDataURL(i + omamoriTokenIdOffset))
+    const tx = await OmamoriContract.registerNengajo(100, getOmamoriMetaDataURL(i + omamoriTokenIdOffset)) as ContractTransactionResponse
+    await tx.wait()
   }
 
   return {

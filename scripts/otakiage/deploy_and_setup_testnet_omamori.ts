@@ -1,5 +1,6 @@
 import * as dotenv from 'dotenv'
 import { omamoriTokenIdOffset, omamoriTypeCount, setUpOmamoriForTestEnv } from '../utils/setUpOmamoriForTestEnv'
+import { ContractTransactionResponse } from 'ethers'
 
 dotenv.config()
 
@@ -16,11 +17,9 @@ const main = async () => {
   console.log(`Forwarder: ${await ForwarderContract.getAddress()}`)
   console.log(`Omamori  : ${await OmamoriContract.getAddress()}`)
 
-  for (let i = 0; i <= omamoriTypeCount; i++) {
-    await OmamoriContract.mint(i + omamoriTokenIdOffset)
-  }
-
-  await OmamoriContract.mint(0 + omamoriTokenIdOffset)
+  const tx = await OmamoriContract.mint(omamoriTokenIdOffset) as ContractTransactionResponse
+  await tx.wait()
+  
   console.log(`Omamori minted`)
 }
 
