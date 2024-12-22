@@ -172,11 +172,10 @@ contract Otakiage is ERC721, ERC2771Context, Administration, IERC1155Receiver {
   ) public view override returns (string memory) {
     string memory tokenIdString = Strings.toString(tokenId);
     TokenURIParams memory params = TokenURIParams({
-      name: string.concat("Medical DAO NFT ", tokenIdString),
+      name: string.concat("Otakiage NFT ", tokenIdString),
       description: string.concat(
-        "Medical DAO NFT ",
-        tokenIdString,
-        " is a member of the Medical DAO"
+        "Otakiage NFT ",
+        tokenIdString
       ),
       image: getImage(tokenId)
     });

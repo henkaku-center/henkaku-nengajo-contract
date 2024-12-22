@@ -3,11 +3,12 @@ import { omamoriAddresses, otakiageAddresses, forwarderAddresses } from "./deplo
 
 const openBlockTimestamp = 0
 const closeBlockTimestamp = 4102326000
-const forwarderAddress = forwarderAddresses['20241220-1']
+const forwarderAddress = Object.values(forwarderAddresses)[0]
+const omamoriAddress = Object.values(omamoriAddresses)[0]
 
 const main = async () => {
   await run("verify:verify", {
-    address: omamoriAddresses['20241220-1'],
+    address: omamoriAddress,
     constructorArguments: [
       'Omamori 2024',
       'OMM24',

@@ -38,6 +38,15 @@ const config: HardhatUserConfig = {
         }
       }
     },
+    sepolia : {
+      url: process.env.SEPOLIA_ALCHEMY_KEY!,
+      accounts: [process.env.TEST_PRIVATE_KEY!],
+      verify: {
+        etherscan: {
+          apiKey: process.env.ETHERSCAN_API_KEY
+        }
+      }
+    },
     // goerli: {
     //   url: process.env.GOERLI_ALCHEMY_KEY!,
     //   accounts: [process.env.TEST_PRIVATE_KEY!],
@@ -55,6 +64,7 @@ const config: HardhatUserConfig = {
       goerli: process.env.ETHERSCAN_API_KEY!,
       holesky: process.env.ETHERSCAN_API_KEY!,
       polygonAmoy: process.env.POLYGONSCAN_API_KEY!,
+      sepolia: process.env.ETHERSCAN_API_KEY!,
     },
   },
 } as HardhatUserConfig;

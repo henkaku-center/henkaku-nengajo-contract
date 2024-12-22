@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv'
 import { addNewAdminToPastYearContracts } from '../utils/addNewAdminToPastYearContracts'
 import { ethers } from 'hardhat'
-import { Forwarder, Omamori, Otakiage, Otakiage__factory } from '../../typechain-types'
+import { Forwarder, Omamori, Otakiage } from '../../typechain-types'
 import { deployAndSetupOtakiage } from '../utils/deployAndSetupOtakiage'
 import { setOtakiageCid, TEST_CID } from '../utils/setOtakiageCid'
 import { allowApprovedMtxToOmamori } from '../utils/allowApprovedMtxToOmamori'
@@ -28,17 +28,20 @@ const main = async () => {
   console.log(`Forwarder: ${await ForwarderContract.getAddress()}`)
   console.log(`Omamori  : ${await OmamoriContract.getAddress()}`)
 
-  const OtakiageFactory = (await ethers.getContractFactory('Otakiage')) as unknown as Otakiage__factory
-  const OtakiageContract = await OtakiageFactory.deploy(
-    await ForwarderContract.getAddress(),
-    await OmamoriContract.getAddress(),
-  )
+  await addNewAdminToPastYearContracts(adminAddress, OmamoriContract, ForwarderContract)
+
+  const result = await deployAndSetupOtakiage(ForwarderContract, OmamoriContract)
+  const OtakiageContract: Otakiage = result.OtakiageContract
 
   console.log(`Otakiage: ${await OtakiageContract.getAddress()}`)
 
   await setOtakiageCid(OtakiageContract, TEST_CID)
 
   console.log(`Otakiage CID set`)
+
+  await allowApprovedMtxToOmamori(OmamoriContract, ForwarderContract, OtakiageContract)
+
+  console.log(`Approved MTX to Omamori`)
 }
 
 main().catch((error) => {
