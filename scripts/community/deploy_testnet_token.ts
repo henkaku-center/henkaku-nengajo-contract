@@ -8,11 +8,11 @@ const main = async () => {
 
   const HenkakuV2Factory = await ethers.getContractFactory('HenkakuToken')
   const HenkakuV2Contract = await HenkakuV2Factory.deploy()
-  await HenkakuV2Contract.deployed()
+  await HenkakuV2Contract.waitForDeployment()
 
   await HenkakuV2Contract.addWhitelistUsers(testnetUserAddresses)
   for (const address of testnetUserAddresses) {
-    await HenkakuV2Contract.mint(address, ethers.utils.parseEther('1000'))
+    await HenkakuV2Contract.mint(address, ethers.parseEther('1000'))
   }
 
   console.log(`HenkakuV2: ${HenkakuV2Contract.address}`)

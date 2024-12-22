@@ -20,20 +20,20 @@ const main = async () => {
   console.log(`OmamoriAddress: ${omamoriAddress}`)
 
   const ForwarderFactory = await ethers.getContractFactory("Forwarder")
-  const ForwarderContract = ForwarderFactory.attach(forwarderAddress) as Forwarder
+  const ForwarderContract = ForwarderFactory.attach(forwarderAddress) as unknown as Forwarder
 
   const OmamoriFactory = await ethers.getContractFactory("Omamori")
-  const OmamoriContract = OmamoriFactory.attach(omamoriAddress) as Omamori
+  const OmamoriContract = OmamoriFactory.attach(omamoriAddress) as unknown as Omamori
 
-  console.log(`Forwarder: ${ForwarderContract.address}`)
-  console.log(`Omamori  : ${OmamoriContract.address}`)
+  console.log(`Forwarder: ${await ForwarderContract.getAddress()}`)
+  console.log(`Omamori  : ${await OmamoriContract.getAddress()}`)
 
   await addNewAdminToPastYearContracts(adminAddress, OmamoriContract, ForwarderContract)
 
   const result = await deployAndSetupOtakiage(ForwarderContract, OmamoriContract)
   const OtakiageContract: Otakiage = result.OtakiageContract
 
-  console.log(`Otakiage: ${OtakiageContract.address}`)
+  console.log(`Otakiage: ${await OtakiageContract.getAddress()}`)
 
   await setOtakiageCid(OtakiageContract, TEST_CID)
 

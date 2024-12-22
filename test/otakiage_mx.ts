@@ -1,15 +1,17 @@
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
+import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers'
 import { ethers as hardhatEthers } from 'hardhat'
 import { ethers } from 'ethers'
 import { Forwarder, Omamori, Otakiage } from '../typechain-types'
 import ethSignUtil from 'eth-sig-util'
 import { expect } from 'chai'
+import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { getOmamoriMetaDataURL, omamoriTokenIdOffset, omamoriTypeCount, setUpOmamoriForTestEnv } from '../scripts/utils/setUpOmamoriForTestEnv'
 import { deployAndSetupOtakiage } from '../scripts/utils/deployAndSetupOtakiage'
 import { allowApprovedMtxToOmamori } from '../scripts/utils/allowApprovedMtxToOmamori'
 import { addNewAdminToPastYearContracts } from '../scripts/utils/addNewAdminToPastYearContracts'
 import { setOtakiageCid, TEST_CID, TEST_IMAGE_EXTENSION } from '../scripts/utils/setOtakiageCid'
 import { mintOmamorisForTestEnv } from '../scripts/utils/mintOmamorisForTestEnv'
+import { Contract } from "ethers";
 
 const open_blockTimestamp: number = 0
 const close_blockTimestamp: number = 2704034800
@@ -36,11 +38,11 @@ const close_blockTimestamp: number = 2704034800
     describe("Check past year part", () => {
       describe('check setup omamori vars', () => {
         it('check OmamoriContract.address', async () => {
-          expect(OmamoriContract.address).to.not.be.undefined
+          expect(await OmamoriContract.getAddress()).to.not.be.undefined
         })
         
         it('check ForwarderContract.address', async () => {
-          expect(ForwarderContract.address).to.not.be.undefined
+          expect(await ForwarderContract.getAddress()).to.not.be.undefined
         })
     
         it('check user1 balances', async () => {
@@ -52,7 +54,9 @@ const close_blockTimestamp: number = 2704034800
             expect(await OmamoriContract.balanceOf(user1.address, i + omamoriTokenIdOffset)).to.equal(1)
           }
 
-          expect(await OmamoriContract.balanceOf(user1.address, omamoriTypeCount + omamoriTokenIdOffset)).to.be.reverted
+          await expect(
+            OmamoriContract.balanceOf(user1.address, omamoriTypeCount + omamoriTokenIdOffset)
+          ).to.be.revertedWithoutReason;
         })
     
         it('check user2 balances', async () => {
@@ -80,7 +84,7 @@ const close_blockTimestamp: number = 2704034800
           it('deploy otakiage', async () => {
             const result = await deployAndSetupOtakiage(ForwarderContract, OmamoriContract)
             OtakiageContract = result.OtakiageContract
-            expect(OtakiageContract.address).to.not.be.undefined
+            expect(await OtakiageContract.getAddress()).to.not.be.undefined
           })
 
           it('check omamoriTypeCount', async () => {
@@ -121,28 +125,32 @@ const close_blockTimestamp: number = 2704034800
         describe('setApprovalForAll omamori', () => {
           it('approve omamori by user1 with mtx', async () => {      
             const from = user1.address
-            const data = OmamoriContract.interface.encodeFunctionData('setApprovalForAll', [OtakiageContract.address, true])
-            const to = OmamoriContract.address
+            const data = OmamoriContract.interface.encodeFunctionData('setApprovalForAll', [await OtakiageContract.getAddress(), true])
+            const to = await OmamoriContract.getAddress()
     
-            const { request, signature } = await signMetaTxRequest(user1.provider, ForwarderContract, {
-              to,
-              from,
-              data,
-            })
+            const { request, signature } = await signMetaTxRequest(
+              user1.provider, 
+              ForwarderContract as unknown as Contract, 
+              {
+                to,
+                from,
+                data,
+              }
+            )
     
             await ForwarderContract.execute(request, signature)
           })
     
           it('check approval for all by user1', async () => {
-            expect(await OmamoriContract.isApprovedForAll(user1.address, OtakiageContract.address)).to.be.true
+            expect(await OmamoriContract.isApprovedForAll(user1.address, await OtakiageContract.getAddress())).to.be.true
           })
     
           it('approve omamori by user2', async () => {
-            await OmamoriContract.connect(user2).setApprovalForAll(OtakiageContract.address, true)
+            await OmamoriContract.connect(user2).setApprovalForAll(await OtakiageContract.getAddress(), true)
           })
     
           it('check approval for all by user2', async () => {
-            expect(await OmamoriContract.isApprovedForAll(user2.address, OtakiageContract.address)).to.be.true
+            expect(await OmamoriContract.isApprovedForAll(user2.address, await OtakiageContract.getAddress())).to.be.true
           })
         })
     
@@ -185,13 +193,17 @@ const close_blockTimestamp: number = 2704034800
           it('sendAllOmamori by user1', async () => {
             const from = user1.address
             const data = OtakiageContract.interface.encodeFunctionData('sendAllOmamori')
-            const to = OtakiageContract.address
+            const to = await OtakiageContract.getAddress()
     
-            const { request, signature } = await signMetaTxRequest(user1.provider, ForwarderContract, {
-              to,
-              from,
-              data,
-            })
+            const { request, signature } = await signMetaTxRequest(
+              user1.provider, 
+              ForwarderContract as unknown as Contract, 
+              {
+                to,
+                from,
+                data,
+              }
+            )
     
             await ForwarderContract.execute(request, signature)
           })
@@ -209,13 +221,17 @@ const close_blockTimestamp: number = 2704034800
           it('sendAllOmamori by user2', async () => {
             const from = user2.address
             const data = OtakiageContract.interface.encodeFunctionData('sendAllOmamori')
-            const to = OtakiageContract.address
+            const to = await OtakiageContract.getAddress()
     
-            const { request, signature } = await signMetaTxRequest(user2.provider, ForwarderContract, {
-              to,
-              from,
-              data,
-            })
+            const { request, signature } = await signMetaTxRequest(
+              user2.provider, 
+              ForwarderContract as unknown as Contract, 
+              {
+                to,
+                from,
+                data,
+              }
+            )
     
             await ForwarderContract.execute(request, signature)
           })
@@ -283,7 +299,7 @@ const close_blockTimestamp: number = 2704034800
     describe('After Otakiage event day', () => {
       describe('check omamoriNFTs in OtakiageContract', () => {
         it('check balanceOfBatch', async () => {
-          const accounts = Array(6).fill(OtakiageContract.address)
+          const accounts = Array(6).fill(await OtakiageContract.getAddress())
           const ids = Array.from({ length: omamoriTypeCount }, (_, i) => i + omamoriTokenIdOffset)
           const balances = await OmamoriContract.balanceOfBatch(accounts, ids)
           for (let i = 0; i < 6; i++) {
@@ -293,7 +309,7 @@ const close_blockTimestamp: number = 2704034800
 
         it('check balanceOf', async () => {
           for (let i = 0; i < 6; i++) {
-            expect(await OmamoriContract.balanceOf(OtakiageContract.address, i + omamoriTokenIdOffset)).not.to.equal(0)
+            expect(await OmamoriContract.balanceOf(await OtakiageContract.getAddress(), i + omamoriTokenIdOffset)).not.to.equal(0)
           }
         })
       })
@@ -361,9 +377,10 @@ export const buildRequest = async (forwarder: ethers.Contract, input: any) => {
 }
 
 export const buildTypedData = async (forwarder: ethers.Contract, request: any) => {
-  const chainId = await forwarder.provider.getNetwork().then((n) => n.chainId)
-  const typeData = getMetaTxTypeData(chainId, forwarder.address)
-  return { ...typeData, message: request }
+  const network = await forwarder.runner?.provider?.getNetwork();
+  const chainId = network ? network.chainId : 31337n; // デフォルトのHardhatチェーンID
+  const typeData = getMetaTxTypeData(Number(chainId), await forwarder.getAddress());
+  return { ...typeData, message: request };
 }
 
 export const signMetaTxRequest = async (signer: any, forwarder: ethers.Contract, input: any) => {
