@@ -8,8 +8,9 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "./interfaces/IOtakiage.sol";
 
-contract Otakiage is ERC721, ERC2771Context, Administration, IERC1155Receiver {
+contract Otakiage is ERC721, ERC2771Context, Administration, IERC1155Receiver, IOtakiage {
   uint256 public tokenIds;
   uint256 public omamoriTypeCount;
   IERC1155 public omamoriContract;
@@ -18,16 +19,6 @@ contract Otakiage is ERC721, ERC2771Context, Administration, IERC1155Receiver {
   string public imageExtension;
   address[] public otakiageUsersArr;
   mapping(address => uint256[]) public otakiageUserOmamoriIds;
-
-  struct TokenURIParams {
-    string name;
-    string description;
-    string image;
-  }
-
-  event Mint(address indexed to, uint256 indexed tokenId);
-  event SendAllOmamori(address indexed from, uint256[] ids, uint256[] values);
-  event OtakiageEvent(address[] users);
 
   constructor(address _trustedForwarder, address _omamoriAddress) ERC721("Otakiage", "OTK") ERC2771Context(_trustedForwarder) {
     omamoriContract = IERC1155(_omamoriAddress);
@@ -169,7 +160,7 @@ contract Otakiage is ERC721, ERC2771Context, Administration, IERC1155Receiver {
 
   function tokenURI(
     uint256 tokenId
-  ) public view override returns (string memory) {
+  ) public view override(ERC721, IOtakiage) returns (string memory) {
     string memory tokenIdString = Strings.toString(tokenId);
     TokenURIParams memory params = TokenURIParams({
       name: string.concat("Otakiage NFT ", tokenIdString),
