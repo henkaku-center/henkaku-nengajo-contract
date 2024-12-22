@@ -4,10 +4,9 @@ import { ethers } from 'ethers'
 import { Forwarder, Omamori, Otakiage } from '../typechain-types'
 import ethSignUtil from 'eth-sig-util'
 import { expect } from 'chai'
-import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { getOmamoriMetaDataURL, omamoriTokenIdOffset, omamoriTypeCount, setUpOmamoriForTestEnv } from '../scripts/utils/setUpOmamoriForTestEnv'
-import { deployAndSetupOtakiage } from '../scripts/utils/deployAndSetupOtakiage'
-import { allowApprovedMtxToOmamori } from '../scripts/utils/allowApprovedMtxToOmamori'
+import { deployAndSetupOtakiage } from '../scripts/utils/deployOtakiage'
+import { allowApprovedMtxFromForwarder } from '../scripts/utils/allowApprovedMtxFromForwarder'
 import { addNewAdminToPastYearContracts } from '../scripts/utils/addNewAdminToPastYearContracts'
 import { setOtakiageCid, TEST_CID, TEST_IMAGE_EXTENSION } from '../scripts/utils/setOtakiageCid'
 import { mintOmamorisForTestEnv } from '../scripts/utils/mintOmamorisForTestEnv'
@@ -54,7 +53,7 @@ const close_blockTimestamp: number = 2704034800
             expect(await OmamoriContract.balanceOf(user1.address, i + omamoriTokenIdOffset)).to.equal(1)
           }
 
-          await expect(
+          expect(
             OmamoriContract.balanceOf(user1.address, omamoriTypeCount + omamoriTokenIdOffset)
           ).to.be.revertedWithoutReason;
         })
@@ -116,7 +115,7 @@ const close_blockTimestamp: number = 2704034800
 
         describe('allow approved with mtx to Omamori', () => {
           it('add setApprovedForAll to whitelist method of Forwarder', async () => {
-            await allowApprovedMtxToOmamori(OmamoriContract, ForwarderContract, OtakiageContract)
+            await allowApprovedMtxFromForwarder(OmamoriContract, ForwarderContract, OtakiageContract)
           })
         })
       })

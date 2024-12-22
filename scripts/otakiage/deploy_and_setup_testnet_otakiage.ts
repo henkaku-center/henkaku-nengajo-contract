@@ -2,9 +2,9 @@ import * as dotenv from 'dotenv'
 import { addNewAdminToPastYearContracts } from '../utils/addNewAdminToPastYearContracts'
 import { ethers } from 'hardhat'
 import { Forwarder, Omamori, Otakiage } from '../../typechain-types'
-import { deployAndSetupOtakiage } from '../utils/deployAndSetupOtakiage'
+import { deployAndSetupOtakiage } from '../utils/deployOtakiage'
 import { setOtakiageCid, TEST_CID } from '../utils/setOtakiageCid'
-import { allowApprovedMtxToOmamori } from '../utils/allowApprovedMtxToOmamori'
+import { allowApprovedMtxFromForwarder } from '../utils/allowApprovedMtxFromForwarder'
 import { omamoriAddresses, forwarderAddresses } from './deployedContracts/testnetHoleSkyContracts'
 
 dotenv.config()
@@ -39,9 +39,9 @@ const main = async () => {
 
   console.log(`Otakiage CID set`)
 
-  await allowApprovedMtxToOmamori(OmamoriContract, ForwarderContract, OtakiageContract)
+  await allowApprovedMtxFromForwarder(OmamoriContract, ForwarderContract, OtakiageContract)
 
-  console.log(`Approved MTX to Omamori`)
+  console.log(`Approved MTX from Forwarder`)
 }
 
 main().catch((error) => {

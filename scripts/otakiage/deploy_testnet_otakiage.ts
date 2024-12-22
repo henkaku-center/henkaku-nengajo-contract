@@ -2,9 +2,8 @@ import * as dotenv from 'dotenv'
 import { addNewAdminToPastYearContracts } from '../utils/addNewAdminToPastYearContracts'
 import { ethers } from 'hardhat'
 import { Forwarder, Omamori, Otakiage, Otakiage__factory } from '../../typechain-types'
-import { deployAndSetupOtakiage } from '../utils/deployAndSetupOtakiage'
+import { deployAndSetupOtakiage } from '../utils/deployOtakiage'
 import { setOtakiageCid, TEST_CID } from '../utils/setOtakiageCid'
-import { allowApprovedMtxToOmamori } from '../utils/allowApprovedMtxToOmamori'
 import { omamoriAddresses, forwarderAddresses } from './deployedContracts/testnetHoleSkyContracts'
 
 dotenv.config()
