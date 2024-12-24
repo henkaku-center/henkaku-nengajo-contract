@@ -9,8 +9,12 @@
     "deploy:local:community": "yarn hardhat run scripts/community/deploy_local.ts --network local",
     "deploy:polygon:community": "yarn hardhat run scripts/community/deploy_mainnet.ts --network polygon",
     "deploy:mumbai:community": "yarn hardhat run scripts/community/deploy_testnet.ts --network mumbai",
+    "deploy:otakiage:omamori:holesky": "yarn hardhat run scripts/otakiage/deploy_and_setup_testnet_omamori.ts --network holesky",
+    "deploy:otakiage:otakiage:holesky": "yarn hardhat run scripts/otakiage/deploy_and_setup_testnet_otakiage.ts --network holesky",
     "verify:polygon": "yarn hardhat verify --network polygon",
     "verify:mumbai": "yarn hardhat verify --network mumbai",
+    "verify:otakiage:omamori:holesky": "yarn hardhat run scripts/otakiage/verify_omamori.ts --network holesky",
+    "verify:otakiage:otakiage:holesky": "yarn hardhat run scripts/otakiage/verify_otakiage.ts --network holesky",
     "build": "rollup -c"
   },
   "devDependencies": {
