@@ -1,12 +1,13 @@
 import { run } from "hardhat";
 import { omamoriAddresses, otakiageAddresses, forwarderAddresses } from "./deployedContracts/testnetHoleSkyContracts";
 
-const forwarderAddress = forwarderAddresses['20241220-1']
-const omamoriAddress = omamoriAddresses['20241220-1']
+const forwarderAddress = Object.values(forwarderAddresses)[0]
+const omamoriAddress = Object.values(omamoriAddresses)[0]
+const otakiageAddress = Object.values(otakiageAddresses)[0]
 
 const main = async () => {
   await run("verify:verify", {
-    address: otakiageAddresses['20241220-1'],
+    address: otakiageAddress,
     constructorArguments: [
       forwarderAddress,
       omamoriAddress,

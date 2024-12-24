@@ -8,9 +8,5 @@ export const deployAndSetupOtakiage = async (ForwarderContract: Forwarder, Omamo
     await OmamoriContract.getAddress(),
   )
 
-  await ForwarderContract.whitelistTarget(await OtakiageContract.getAddress(), true)
-  const x = OtakiageContract.interface.encodeFunctionData('sendAllOmamori').substring(0, 10)
-  await ForwarderContract.whitelistMethod(await OtakiageContract.getAddress(), x, true)
-
   return { OtakiageContract }
 }
