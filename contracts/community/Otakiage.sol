@@ -27,6 +27,17 @@ contract Otakiage is ERC721, ERC2771Context, Administration, IERC1155Receiver, I
     imageExtension = ".png";
   }
 
+  function getOtakiageOmamoriBalances() public view returns (uint256[] memory) {
+    uint256 length = omamoriTypeCount;
+    address[] memory accounts = new address[](length);
+    uint256[] memory ids = new uint256[](length);
+    for (uint256 i = 0; i < length; i++) {
+        accounts[i] = address(this);
+        ids[i] = i + omamoriTokenIdOffset;
+    }
+    return omamoriContract.balanceOfBatch(accounts, ids);
+  }
+
   function getOtakiageUsersArr() public view returns (address[] memory) {
     return otakiageUsersArr;
   }

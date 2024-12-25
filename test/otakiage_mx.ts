@@ -188,6 +188,11 @@ const close_blockTimestamp: number = 2704034800
               expect(await OmamoriContract.balanceOf(user1.address, i + omamoriTokenIdOffset)).to.equal(1)
             }
           })
+
+          it('check getOtakiageOmamoriBalances before sendAllOmamori', async () => {
+            const omamoriIds = await OtakiageContract.getOtakiageOmamoriBalances()
+            expect(omamoriIds).to.deep.equal([0n, 0n, 0n, 0n, 0n, 0n])
+          })
     
           it('sendAllOmamori by user1', async () => {
             const from = user1.address
@@ -237,6 +242,11 @@ const close_blockTimestamp: number = 2704034800
     
           it('check balance of omamori of user2', async () => {
             expect(await OmamoriContract.balanceOf(user2.address, omamoriTokenIdOffset)).to.equal(0)
+          })
+
+          it('check getOtakiageOmamoriBalances after sendAllOmamori', async () => {
+            const omamoriIds = await OtakiageContract.getOtakiageOmamoriBalances()
+            expect(omamoriIds).to.deep.equal([2n, 1n, 1n, 1n, 1n, 1n])
           })
     
           it('check otakiageUsersArr after sendAllOmamori', async () => {
