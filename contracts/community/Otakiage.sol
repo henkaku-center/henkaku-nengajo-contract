@@ -8,12 +8,13 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "./interfaces/IOmamori.sol";
 import "./interfaces/IOtakiage.sol";
 
 contract Otakiage is ERC721, ERC2771Context, Administration, IERC1155Receiver, IOtakiage {
   uint256 public tokenIds;
   uint256 public omamoriTypeCount;
-  IERC1155 public omamoriContract;
+  IOmamori public omamoriContract;
   uint256 public omamoriTokenIdOffset;
   string public cid;
   string public imageExtension;
@@ -21,7 +22,7 @@ contract Otakiage is ERC721, ERC2771Context, Administration, IERC1155Receiver, I
   mapping(address => uint256[]) public otakiageUserOmamoriIds;
 
   constructor(address _trustedForwarder, address _omamoriAddress) ERC721("Otakiage", "OTK") ERC2771Context(_trustedForwarder) {
-    omamoriContract = IERC1155(_omamoriAddress);
+    omamoriContract = IOmamori(_omamoriAddress);
     omamoriTypeCount = 6;
     omamoriTokenIdOffset = 1;
     imageExtension = ".png";
@@ -36,6 +37,59 @@ contract Otakiage is ERC721, ERC2771Context, Administration, IERC1155Receiver, I
         ids[i] = i + omamoriTokenIdOffset;
     }
     return omamoriContract.balanceOfBatch(accounts, ids);
+  }
+
+  function getOtakiageOmamoriInfo() public view returns (IOmamori.NengajoInfo[] memory) {
+    uint256[] memory balances = getOtakiageOmamoriBalances();
+    IOmamori.NengajoInfo[] memory nengajoInfos = omamoriContract.retrieveAllNengajoes();
+
+    uint256 validBalanceCount = 0;
+    for (uint256 i = 0; i < balances.length; i++) {
+        if (balances[i] > 0) {
+            validBalanceCount++;
+        }
+    }
+
+    uint256 length = validBalanceCount;
+    IOmamori.NengajoInfo[] memory otakiageOmamories = new IOmamori.NengajoInfo[](length);
+    for (uint256 i = 0; i < length; i++) {
+        if(balances[i] > 0){
+            otakiageOmamories[i] = IOmamori.NengajoInfo(
+                nengajoInfos[i+1].id,
+                nengajoInfos[i+1].uri,
+                nengajoInfos[i+1].creator,
+                nengajoInfos[i+1].maxSupply
+            );
+        }
+    }
+    return otakiageOmamories;
+  }
+
+  function getOtakiageOmamoriInfoWithBalance() public view returns (NengajoInfoWithBalance[] memory) {
+    uint256[] memory balances = getOtakiageOmamoriBalances();
+    IOmamori.NengajoInfo[] memory nengajoInfos = omamoriContract.retrieveAllNengajoes();
+
+    uint256 validBalanceCount = 0;
+    for (uint256 i = 0; i < balances.length; i++) {
+        if (balances[i] > 0) {
+            validBalanceCount++;
+        }
+    }
+
+    uint256 length = validBalanceCount;
+    NengajoInfoWithBalance[] memory otakiageOmamoriesWithBalances = new NengajoInfoWithBalance[](length);
+    for (uint256 i = 0; i < length; i++) {
+        if(balances[i] > 0){
+            otakiageOmamoriesWithBalances[i] = NengajoInfoWithBalance(
+                nengajoInfos[i+1].id,
+                nengajoInfos[i+1].uri,
+                nengajoInfos[i+1].creator,
+                nengajoInfos[i+1].maxSupply,
+                balances[i]
+            );
+        }
+    }
+    return otakiageOmamoriesWithBalances;
   }
 
   function getOtakiageUsersArr() public view returns (address[] memory) {
@@ -55,7 +109,7 @@ contract Otakiage is ERC721, ERC2771Context, Administration, IERC1155Receiver, I
   }
 
   function setOmamoriAddress(address _omamoriAddress) public onlyAdmins {
-    omamoriContract = IERC1155(_omamoriAddress);
+    omamoriContract = IOmamori(_omamoriAddress);
   }
 
   function setOmamoriTypeCount(uint256 _omamoriTypeCount) public onlyAdmins {

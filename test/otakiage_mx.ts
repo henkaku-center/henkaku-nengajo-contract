@@ -193,6 +193,16 @@ const close_blockTimestamp: number = 2704034800
             const omamoriIds = await OtakiageContract.getOtakiageOmamoriBalances()
             expect(omamoriIds).to.deep.equal([0n, 0n, 0n, 0n, 0n, 0n])
           })
+
+          it('check getOtakiageOmamoriInfo before sendAllOmamori', async () => {
+            const omamoriInfos = await OtakiageContract.getOtakiageOmamoriInfo()
+            expect(omamoriInfos).to.deep.equal([])
+          })
+
+          it('check getOtakiageOmamoriInfoWithBalance before sendAllOmamori', async () => {
+            const omamoriInfos = await OtakiageContract.getOtakiageOmamoriInfoWithBalance()
+            expect(omamoriInfos).to.deep.equal([])
+          })
     
           it('sendAllOmamori by user1', async () => {
             const from = user1.address
@@ -248,6 +258,37 @@ const close_blockTimestamp: number = 2704034800
             const omamoriIds = await OtakiageContract.getOtakiageOmamoriBalances()
             expect(omamoriIds).to.deep.equal([2n, 1n, 1n, 1n, 1n, 1n])
           })
+
+          it('check getOtakiageOmamoriInfo after sendAllOmamori', async () => {
+            const omamoriInfos = await OtakiageContract.getOtakiageOmamoriInfo()
+            
+            const expectedOmamoriInfos = [];
+            for (let i = 1; i <= omamoriTypeCount; i++) {
+              expectedOmamoriInfos.push([
+                BigInt(i),
+                await getOmamoriMetaDataURL(i),
+                deployer.address,
+                BigInt(100)
+              ]);
+            }
+            expect(omamoriInfos).to.deep.equal(expectedOmamoriInfos);
+          })
+
+          it('check getOtakiageOmamoriInfoWithBalance after sendAllOmamori', async () => {
+            const omamoriInfos = await OtakiageContract.getOtakiageOmamoriInfoWithBalance()
+            
+            const expectedOmamoriInfos = [];
+            for (let i = 1; i <= omamoriTypeCount; i++) {
+              expectedOmamoriInfos.push([
+                BigInt(i),
+                await getOmamoriMetaDataURL(i),
+                deployer.address,
+                BigInt(100),
+                i === 1 ? BigInt(2) : BigInt(1)
+              ]);
+            }
+            expect(omamoriInfos).to.deep.equal(expectedOmamoriInfos);
+          }) 
     
           it('check otakiageUsersArr after sendAllOmamori', async () => {
             const usersArr = await OtakiageContract.getOtakiageUsersArr()

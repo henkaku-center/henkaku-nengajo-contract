@@ -10,6 +10,13 @@ interface IOtakiage is IERC721 {
     string description;
     string image;
   }
+  struct NengajoInfoWithBalance {
+      uint256 id;
+      string uri;
+      address creator;
+      uint256 maxSupply;
+      uint256 balance;
+  }
 
   event Mint(address indexed to, uint256 indexed tokenId);
   event SendAllOmamori(address indexed from, uint256[] ids, uint256[] values);
