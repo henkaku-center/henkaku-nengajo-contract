@@ -70,7 +70,7 @@ const close_blockTimestamp: number = 2704034800
       describe('Admin preparations', () => {
         describe('add admin of this year to Omamori and Forwarder', () => {
           it('add admin of this year to past year contracts', async () => {
-            await addNewAdminToPastYearContracts(deployer.address, OmamoriContract, ForwarderContract)
+            await addNewAdminToPastYearContracts([deployer.address], OmamoriContract, ForwarderContract)
           })
 
           it('check admin of this year', async () => {

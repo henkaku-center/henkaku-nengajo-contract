@@ -28,7 +28,7 @@ const main = async () => {
   console.log(`Forwarder: ${await ForwarderContract.getAddress()}`)
   console.log(`Omamori  : ${await OmamoriContract.getAddress()}`)
 
-  await addNewAdminToPastYearContracts(adminAddress, OmamoriContract, ForwarderContract)
+  await addNewAdminToPastYearContracts([adminAddress], OmamoriContract, ForwarderContract)
 
   const result = await deployAndSetupOtakiage(ForwarderContract, OmamoriContract)
   const OtakiageContract: Otakiage = result.OtakiageContract
