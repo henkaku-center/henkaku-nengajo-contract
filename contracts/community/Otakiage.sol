@@ -228,10 +228,9 @@ contract Otakiage is ERC721, ERC2771Context, Administration, IERC1155Receiver, I
   ) public view override(ERC721, IOtakiage) returns (string memory) {
     string memory tokenIdString = Strings.toString(tokenId);
     TokenURIParams memory params = TokenURIParams({
-      name: string.concat("Otakiage NFT ", tokenIdString),
+      name: string.concat("Certification of Participation in Otakiage No. ", tokenIdString),
       description: string.concat(
-        "Otakiage NFT ",
-        tokenIdString
+        "This NFT certifies the participation of the 2024 HENKAKU Omamori NFT in the Otakiage event."
       ),
       image: getImage(tokenId)
     });
