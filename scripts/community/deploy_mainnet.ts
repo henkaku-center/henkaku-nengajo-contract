@@ -16,7 +16,7 @@ const main = async () => {
     process.env.POOL_WALLET_ADDRESS!,
     process.env.FORWARDER_ADDRESS!
   )
-  await NengajoContract.deployed()
+  await NengajoContract.waitForDeployment()
 
   console.log(`NengajoContractAddress: ${NengajoContract.address}`)
 }

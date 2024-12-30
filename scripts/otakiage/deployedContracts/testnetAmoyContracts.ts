@@ -1,0 +1,9 @@
+export const forwarderAddresses = {
+  '20241220-2': '0xAb5AF21D84C3eFe35A36922Ecfe7268d9192635B',
+  '20241220-1': '0x73F84a6bEb710302a4E234EC530446cF9327142a',
+}
+
+export const omamoriAddresses = {
+  '20241220-1': '0x09d290E79Eb6ac7bFb1f779ada680Fbe252b336C',
+  '20241220-2': '0x73F84a6bEb710302a4E234EC530446cF9327142a',
+}

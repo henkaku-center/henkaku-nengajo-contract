@@ -7,16 +7,16 @@ dotenv.config()
 const main = async () => {
   const ForwarderFactory = await ethers.getContractFactory('Forwarder')
   const ForwarderContract = await ForwarderFactory.deploy()
-  await ForwarderContract.deployed()
+  await ForwarderContract.waitForDeployment()
 
   const HenkakuV2Factory = await ethers.getContractFactory('HenkakuToken')
   const HenkakuV2Contract = await HenkakuV2Factory.deploy()
-  await HenkakuV2Contract.deployed()
+  await HenkakuV2Contract.waitForDeployment()
 
   const testnetUserAddresses = String(process.env.TESTNET_USERS_ADDRESSES).split(',')
   await HenkakuV2Contract.addWhitelistUsers(testnetUserAddresses)
   for (const address of testnetUserAddresses) {
-    await HenkakuV2Contract.mint(address, ethers.utils.parseEther('1000'))
+    await HenkakuV2Contract.mint(address, ethers.parseEther('1000'))
   }
 
   const open_blockTimestamp: number = 1671458400
@@ -32,7 +32,7 @@ const main = async () => {
     process.env.POOL_WALLET_ADDRESS!,
     ForwarderContract.address!
   )
-  await NengajoContract.deployed()
+  await NengajoContract.waitForDeployment()
 
   const OmamoriFactory = await ethers.getContractFactory('Omamori')
   const OmamoriContract = await OmamoriFactory.deploy(
@@ -42,7 +42,7 @@ const main = async () => {
     close_blockTimestamp,
     ForwarderContract.address
   )
-  await OmamoriContract.deployed()
+  await OmamoriContract.waitForDeployment()
 
   await ForwarderContract.whitelistTarget(NengajoContract.address, true)
   const x = NengajoContract.interface.encodeFunctionData('mint', [1]).substring(0, 10)

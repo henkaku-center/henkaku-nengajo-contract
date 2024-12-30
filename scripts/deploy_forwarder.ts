@@ -6,9 +6,9 @@ dotenv.config()
 const main = async () => {
   const ForwarderFactory = await ethers.getContractFactory('Forwarder')
   const ForwarderContract = await ForwarderFactory.deploy()
-  await ForwarderContract.deployed()
+  await ForwarderContract.waitForDeployment()
 
-  console.log(`Forwarder: ${ForwarderContract.address}`)
+  console.log(`Forwarder: ${await ForwarderContract.getAddress()}`)
 }
 
 main().catch((error) => {
