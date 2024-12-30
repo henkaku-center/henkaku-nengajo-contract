@@ -7,5 +7,6 @@ export const omamoriAddresses = {
 }
 
 export const otakiageAddresses = {
-  '0': '',
+  '1': '0xdc57E79A5B01a0F96C8Cf31a2356a28999F22e46',
+  '0': '0x8469630D9f204b2F55FfABB27eDf9ecb25400763',
 }

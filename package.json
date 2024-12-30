@@ -11,7 +11,7 @@
     "deploy:mumbai:community": "yarn hardhat run scripts/community/deploy_testnet.ts --network mumbai",
     "deploy:otakiage:omamori:holesky": "yarn hardhat run scripts/otakiage/deploy_and_setup_testnet_omamori.ts --network holesky",
     "deploy:otakiage:otakiage:holesky": "yarn hardhat run scripts/otakiage/deploy_and_setup_testnet_otakiage.ts --network holesky",
-    "deploy:otakiage:otakiage:mainnet": "yarn hardhat run scripts/otakiage/deploy_and_setup_testnet_otakiage.ts --network polygon",
+    "deploy:otakiage:otakiage:mainnet": "yarn hardhat run scripts/otakiage/deploy_and_setup_mainnet_otakiage.ts --network polygon",
     "verify:polygon": "yarn hardhat verify --network polygon",
     "verify:mumbai": "yarn hardhat verify --network mumbai",
     "verify:otakiage:omamori:holesky": "yarn hardhat run scripts/otakiage/verify_testnet_omamori.ts --network holesky",
